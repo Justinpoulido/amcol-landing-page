@@ -121,91 +121,101 @@ export default function Home() {
       </section>
 
       {/* Category Cards */}
-      <section className="border-t border-zinc-200 py-16 sm:py-24">
-        <div className="mx-auto max-w-6xl flex flex-col gap-6 px-4 sm:px-6 lg:flex-row lg:gap-8 lg:px-8">
-          {/* Energy Card */}
-          <div className="group relative mb-6 min-h-[320px] overflow-hidden rounded-2xl sm:min-h-[380px] lg:mb-0 lg:flex-1">
-            <div
-              className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-              style={{ backgroundImage: "url('/images/solar_panel.png')" }}
-            />
-            <div className="absolute inset-0 bg-black/50" />
-            <div className="relative flex h-full min-h-[320px] flex-col items-center justify-center p-8 sm:min-h-[380px]">
-              <button
-                type="button"
-                className="absolute left-4 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-zinc-900 shadow-md transition-colors hover:bg-white"
-                aria-label="Previous"
-              >
-                <svg
-                  className="size-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 19l-7-7 7-7"
-                  />
-                </svg>
-              </button>
-              <h2 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
-                Energy
-              </h2>
-              <a
-                href="#"
-                className="mt-6 rounded-lg bg-white px-8 py-3 text-base font-medium text-zinc-900 transition-colors hover:bg-zinc-100"
-              >
-                Shop Now
-              </a>
-            </div>
-          </div>
-
-          {/* Safety Card */}
-          <div className="group relative min-h-[320px] overflow-hidden rounded-2xl sm:min-h-[380px] lg:flex-1">
-            <div
-              className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-              style={{
-                backgroundImage:
-                  "url('https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800')",
-              }}
-            />
-            <div className="absolute inset-0 bg-black/50" />
-            <div className="relative flex h-full min-h-[320px] flex-col items-center justify-center p-8 sm:min-h-[380px]">
-              <h2 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
-                Safety
-              </h2>
-              <a
-                href="#"
-                className="mt-6 rounded-lg bg-white px-8 py-3 text-base font-medium text-zinc-900 transition-colors hover:bg-zinc-100"
-              >
-                Shop Now
-              </a>
-              <button
-                type="button"
-                className="absolute right-4 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-zinc-900 shadow-md transition-colors hover:bg-white"
-                aria-label="Next"
-              >
-                <svg
-                  className="size-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </button>
-            </div>
-          </div>
+      {/* Category Cards */}
+<section className="border-t border-zinc-200 py-16 sm:py-24">
+  <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    {/* Grid container: 1 col on mobile, 2 on tablet, 4 on desktop */}
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      
+      {/* Energy Card */}
+      <div className="group relative min-h-[320px] overflow-hidden rounded-2xl sm:min-h-[380px]">
+        <div
+          className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+          style={{ backgroundImage: "url('/images/solar_panel.png')" }}
+        />
+        <div className="absolute inset-0 bg-black/50" />
+        <div className="relative flex h-full flex-col items-center justify-center p-8">
+          <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl text-center">
+            Energy
+          </h2>
+          <a
+            href="#"
+            className="mt-6 rounded-lg bg-white px-8 py-3 text-base font-medium text-zinc-900 transition-colors hover:bg-zinc-100"
+          >
+            Shop Now
+          </a>
         </div>
-      </section>
+      </div>
 
+      {/* Industrial Welding Card */}
+      <div className="group relative min-h-[320px] overflow-hidden rounded-2xl sm:min-h-[380px]">
+        <div
+          className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+          style={{
+            backgroundImage:
+              "url('https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?auto=format&fit=crop&w=800')",
+          }}
+        />
+        <div className="absolute inset-0 bg-black/50" />
+        <div className="relative flex h-full flex-col items-center justify-center p-8">
+          <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl text-center">
+            Industrial Welding
+          </h2>
+          <a
+            href="#"
+            className="mt-6 rounded-lg bg-white px-8 py-3 text-base font-medium text-zinc-900 transition-colors hover:bg-zinc-100"
+          >
+            Shop Now
+          </a>
+        </div>
+      </div>
+
+      {/* Safety Card */}
+      <div className="group relative min-h-[320px] overflow-hidden rounded-2xl sm:min-h-[380px]">
+        <div
+          className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+          style={{ backgroundImage: "url('/images/protective_equipment.png')" }}
+        />
+        <div className="absolute inset-0 bg-black/50" />
+        <div className="relative flex h-full flex-col items-center justify-center p-8">
+          <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl text-center">
+            Safety
+          </h2>
+          <a
+            href="#"
+            className="mt-6 rounded-lg bg-white px-8 py-3 text-base font-medium text-zinc-900 transition-colors hover:bg-zinc-100"
+          >
+            Shop Now
+          </a>
+        </div>
+      </div>
+
+      {/* Tools/Hardware Card (Adding a 4th for balance) */}
+      <div className="group relative min-h-[320px] overflow-hidden rounded-2xl sm:min-h-[380px]">
+        <div
+          className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+          style={{
+            backgroundImage:
+              "url('https://images.unsplash.com/photo-1581244276891-83393a6b324d?auto=format&fit=crop&w=800')",
+          }}
+        />
+        <div className="absolute inset-0 bg-black/50" />
+        <div className="relative flex h-full flex-col items-center justify-center p-8">
+          <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl text-center">
+            Power Tools
+          </h2>
+          <a
+            href="#"
+            className="mt-6 rounded-lg bg-white px-8 py-3 text-base font-medium text-zinc-900 transition-colors hover:bg-zinc-100"
+          >
+            Shop Now
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
       {/* Features Grid */}
       <section
         id="features"
