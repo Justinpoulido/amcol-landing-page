@@ -249,7 +249,7 @@ export default function Home() {
               </a>
             </div>
             <p className="mt-4 text-sm text-zinc-500">
-              No credit card required ·
+              
             </p>
           </div>
         </div>
