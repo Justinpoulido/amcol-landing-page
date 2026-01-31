@@ -13,9 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AMCOL — Do more with less effort",
-  description:
-    "The simplest way to streamline your workflow. Join thousands of teams who ship faster.",
+  title: "AMCOL",
+  description: "AMCOL Landing Page",
 };
 
 export default function RootLayout({

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 
 const heroImages = [
-  "/images/industrial_energy.png",
+  "/images/Heritage Industry.jpg",
   "/images/TGU.jpg",
 ];
 
@@ -115,7 +115,7 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-24 sm:pt-40 sm:pb-32 lg:pt-48 lg:pb-40 overflow-hidden">
+      <section className="relative min-h-[60vh] flex items-center overflow-hidden bg-transparent pt-32 pb-24 sm:pt-40 sm:pb-32 lg:pt-48 lg:pb-40">
         {isBannerVisible && (
           <div
             id="sticky-banner"
@@ -185,7 +185,7 @@ export default function Home() {
           </div>
         )}
         {/* Background Slideshow */}
-        <div className="absolute inset-0 -z-10">
+        <div className="absolute inset-0 z-0">
           {heroImages.map((image, index) => (
             <div
               key={image}
@@ -195,13 +195,13 @@ export default function Home() {
               style={{ backgroundImage: `url('${image}')` }}
             />
           ))}
-          <div className="absolute inset-0 bg-white/80" />
+          <div className="absolute inset-0 bg-black/30" />
         </div>
 
         {/* Carousel Controls */}
         <button
           onClick={prevImage}
-          className="absolute left-4 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/50 p-3 text-zinc-900 backdrop-blur-sm transition-colors hover:bg-white/80 focus:outline-none focus:ring-2 focus:ring-zinc-500 hidden sm:block"
+          className="absolute left-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/50 p-3 text-zinc-900 backdrop-blur-sm transition-colors hover:bg-white/80 focus:outline-none focus:ring-2 focus:ring-zinc-500 hidden sm:block"
           aria-label="Previous slide"
         >
           <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -210,7 +210,7 @@ export default function Home() {
         </button>
         <button
           onClick={nextImage}
-          className="absolute right-4 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/50 p-3 text-zinc-900 backdrop-blur-sm transition-colors hover:bg-white/80 focus:outline-none focus:ring-2 focus:ring-zinc-500 hidden sm:block"
+          className="absolute right-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/50 p-3 text-zinc-900 backdrop-blur-sm transition-colors hover:bg-white/80 focus:outline-none focus:ring-2 focus:ring-zinc-500 hidden sm:block"
           aria-label="Next slide"
         >
           <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -219,7 +219,7 @@ export default function Home() {
         </button>
 
         {/* Carousel Indicators */}
-        <div className="absolute bottom-8 left-0 right-0 z-10 flex justify-center gap-3">
+        <div className="absolute bottom-8 left-0 right-0 z-20 flex justify-center gap-3">
           {heroImages.map((_, index) => (
             <button
               key={index}
@@ -232,16 +232,8 @@ export default function Home() {
           ))}
         </div>
 
-        <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
-            <h1 className="text-4xl font-semibold tracking-tight text-zinc-900 sm:text-5xl lg:text-6xl">
-              Do more with{" "}
-              <span className="text-zinc-600">less effort</span>
-            </h1>
-            <p className="mt-6 text-lg leading-8 text-zinc-600 sm:text-xl">
-              The simplest way to streamline your workflow. Join thousands of
-              teams who ship faster.
-            </p>
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <a
                 href="#"
@@ -302,7 +294,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-black/50" />
         <div className="relative flex h-full flex-col items-center justify-center p-8">
           <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl text-center">
-            Industrial Welding
+           Welding
           </h2>
           <a
             href="#"
