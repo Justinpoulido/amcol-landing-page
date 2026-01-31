@@ -1,4 +1,31 @@
+"use client";
+
+import { useState, useEffect } from "react";
+
+const heroImages = [
+  "/images/industrial_energy.png",
+  "/images/TGU.jpg",
+];
+
 export default function Home() {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isBannerVisible, setIsBannerVisible] = useState(true);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % heroImages.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const nextImage = () => {
+    setCurrentImageIndex((prev) => (prev + 1) % heroImages.length);
+  };
+
+  const prevImage = () => {
+    setCurrentImageIndex((prev) => (prev === 0 ? heroImages.length - 1 : prev - 1));
+  };
+
   const features = [
     {
       title: "Lightning Fast",
@@ -88,8 +115,124 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-24 sm:pt-40 sm:pb-32 lg:pt-48 lg:pb-40">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+      <section className="relative pt-32 pb-24 sm:pt-40 sm:pb-32 lg:pt-48 lg:pb-40 overflow-hidden">
+        {isBannerVisible && (
+          <div
+            id="sticky-banner"
+            tabIndex={-1}
+            className="fixed top-0 start-0 z-50 flex justify-between w-full p-4 border-b border-zinc-200 bg-zinc-50"
+          >
+            <div className="flex items-center mx-auto">
+              <p className="flex items-center text-sm font-normal text-zinc-500">
+                <span className="inline-flex items-center justify-center w-6 h-6 shrink-0 me-2.5 bg-zinc-200 rounded-full">
+                  <svg
+                    className="w-3.5 h-3.5 text-zinc-500"
+                    aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M11 9H5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h6m0-6v6m0-6 5.419-3.87A1 1 0 0 1 18 5.942v12.114a1 1 0 0 1-1.581.814L11 15m7 0a3 3 0 0 0 0-6M6 15h3v5H6v-5Z"
+                    />
+                  </svg>
+                  <span className="sr-only">Bullhorn</span>
+                </span>
+                <span>
+                  New brand identity has been launched for the{" "}
+                  <a
+                    href="https://flowbite.com"
+                    className="inline font-medium text-blue-600 underline hover:no-underline"
+                  >
+                    Flowbite Library
+                  </a>
+                </span>
+              </p>
+            </div>
+            <div className="flex items-center">
+              <button
+                data-dismiss-target="#sticky-banner"
+                type="button"
+                className="shrink-0 inline-flex justify-center text-sm w-7 h-7 items-center text-zinc-500 hover:bg-zinc-200 hover:text-zinc-900 rounded-sm"
+                onClick={() => setIsBannerVisible(false)}
+              >
+                <svg
+                  className="w-4 h-4"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M6 18 17.94 6M18 18 6.06 6"
+                  />
+                </svg>
+                <span className="sr-only">Close banner</span>
+              </button>
+            </div>
+          </div>
+        )}
+        {/* Background Slideshow */}
+        <div className="absolute inset-0 -z-10">
+          {heroImages.map((image, index) => (
+            <div
+              key={image}
+              className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out ${
+                index === currentImageIndex ? "opacity-100" : "opacity-0"
+              }`}
+              style={{ backgroundImage: `url('${image}')` }}
+            />
+          ))}
+          <div className="absolute inset-0 bg-white/80" />
+        </div>
+
+        {/* Carousel Controls */}
+        <button
+          onClick={prevImage}
+          className="absolute left-4 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/50 p-3 text-zinc-900 backdrop-blur-sm transition-colors hover:bg-white/80 focus:outline-none focus:ring-2 focus:ring-zinc-500 hidden sm:block"
+          aria-label="Previous slide"
+        >
+          <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <button
+          onClick={nextImage}
+          className="absolute right-4 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/50 p-3 text-zinc-900 backdrop-blur-sm transition-colors hover:bg-white/80 focus:outline-none focus:ring-2 focus:ring-zinc-500 hidden sm:block"
+          aria-label="Next slide"
+        >
+          <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+
+        {/* Carousel Indicators */}
+        <div className="absolute bottom-8 left-0 right-0 z-10 flex justify-center gap-3">
+          {heroImages.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentImageIndex(index)}
+              className={`h-2.5 rounded-full transition-all duration-300 ${
+                index === currentImageIndex ? "w-8 bg-zinc-900" : "w-2.5 bg-zinc-400 hover:bg-zinc-600"
+              }`}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
+        </div>
+
+        <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
             <h1 className="text-4xl font-semibold tracking-tight text-zinc-900 sm:text-5xl lg:text-6xl">
               Do more with{" "}
@@ -104,7 +247,7 @@ export default function Home() {
                 href="#"
                 className="w-full rounded-full bg-zinc-900 px-8 py-4 text-center text-base font-medium text-white transition-all hover:bg-zinc-800 hover:shadow-lg sm:w-auto"
               >
-                Start free trial
+                Start Now
               </a>
               <a
                 href="#features"
@@ -114,7 +257,7 @@ export default function Home() {
               </a>
             </div>
             <p className="mt-4 text-sm text-zinc-500">
-              No credit card required · 14-day free trial
+              No credit card required ·
             </p>
           </div>
         </div>
