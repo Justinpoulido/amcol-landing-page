@@ -7,6 +7,16 @@ const heroImages = [
   "/images/TGU.jpg",
 ];
 
+const navLinks = [
+  { name: "HOME", href: "/" },
+  { name: "PRODUCTS", href: "/products" },
+  { name: "CONSTRUCTION", href: "/construction" },
+  { name: "DEPARTMENTS", href: "/departments" },
+  { name: "DEALS", href: "/deals" },
+  { name: "CONTACT US", href: "/contact" },
+  { name: "HOW TO ORDER", href: "/how-to-order" },
+];
+
 export default function Home() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isBannerVisible, setIsBannerVisible] = useState(true);
@@ -93,24 +103,23 @@ export default function Home() {
     <div className="min-h-screen bg-white">
       {/* Navigation */}
       <header className="fixed top-0 left-0 right-0 z-50 border-b border-zinc-200/80 bg-white/80 backdrop-blur-md">
-        <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <a href="#" className="text-xl font-semibold tracking-tight text-zinc-900">
-            AMCOL
-          </a>
-          <div className="flex items-center gap-6">
-            <a
-              href="#features"
-              className="hidden text-sm font-medium text-zinc-600 transition-colors hover:text-zinc-900 sm:block"
-            >
-              Features
-            </a>
-            <a
-              href="#"
-              className="rounded-full bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800"
-            >
-              Get Started
-            </a>
-          </div>
+        <nav className="mx-auto max-w-7xl border-t-2 border-red-600 bg-white shadow-sm">
+          <ul className="flex flex-wrap items-center justify-start overflow-x-auto">
+            {navLinks.map((link) => (
+              <li
+                key={link.name}
+                className="border-l border-zinc-200 last:border-r"
+              >
+                <a
+                  href={link.href}
+                  className={`inline-block px-6 py-4 text-sm font-bold tracking-tight transition-colors hover:bg-zinc-50 
+            ${link.name === "HOME" ? "text-red-600" : "text-zinc-700 hover:text-red-600"}`}
+                >
+                  {link.name}
+                </a>
+              </li>
+            ))}
+          </ul>
         </nav>
       </header>
 
@@ -359,10 +368,11 @@ export default function Home() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl">
-              Everything you need
+            Industries We Serve
+            
             </h2>
             <p className="mt-4 text-lg text-zinc-600">
-              Built for modern teams who value simplicity and performance.
+            We carry some of the top industrial brands across a number of sectors. Click the relevant option below to see more details on our brands and how they can work for you!
             </p>
           </div>
           <div className="mx-auto mt-16 grid max-w-4xl gap-8 sm:grid-cols-2 lg:grid-cols-3">
