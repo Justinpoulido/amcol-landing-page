@@ -245,35 +245,32 @@ export default function Home() {
             />
           ))}
         </div>
+      </section>
 
-        <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl text-center">
-            <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <div className="relative flex items-center w-full max-w-md leading-[28px]">
-                <svg
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                  className="absolute left-4 h-4 w-4 fill-[#bdbecb] pointer-events-none z-10"
-                >
-                  <g>
-                    <path d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-7.5-3.365-7.5-7.5z"></path>
-                  </g>
-                </svg>
-                <input
-                  id="query"
-                  className="w-full h-[45px] pl-10 text-[#bdbecb] bg-[#16171d] border-0 rounded-[12px] shadow-[0_0_0_1.5px_#2b2c37,0_0_25px_-17px_#000] outline-none transition-all duration-250 ease-[cubic-bezier(0.19,1,0.22,1)] cursor-text z-0 placeholder:text-[#bdbecb] hover:shadow-[0_0_0_2.5px_#2f303d,0px_0px_25px_-15px_#000] focus:shadow-[0_0_0_2.5px_#2f303d] active:scale-95 font-['Montserrat',sans-serif]"
-                  type="search"
-                  placeholder="Search..."
-                  name="searchbar"
-                />
-              </div>
+      <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-12">
+        <div className="mx-auto max-w-3xl text-center">
+          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <div className="relative flex items-center w-full max-w-md leading-[28px]">
+              <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+                className="absolute left-4 h-4 w-4 fill-[#bdbecb] pointer-events-none z-10"
+              >
+                <g>
+                  <path d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-3.365-7.5-7.5z"></path>
+                </g>
+              </svg>
+              <input
+                id="query"
+                className="w-full h-[45px] pl-10 text-[#bdbecb] bg-[#16171d] border-0 rounded-[12px] shadow-[0_0_0_1.5px_#2b2c37,0_0_25px_-17px_#000] outline-none transition-all duration-250 ease-[cubic-bezier(0.19,1,0.22,1)] cursor-text z-0 placeholder:text-[#bdbecb] hover:shadow-[0_0_0_2.5px_#2f303d,0px_0px_25px_-15px_#000] focus:shadow-[0_0_0_2.5px_#2f303d] active:scale-95 font-['Montserrat',sans-serif]"
+                type="search"
+                placeholder="Search..."
+                name="searchbar"
+              />
             </div>
-            <p className="mt-4 text-sm text-zinc-500">
-              
-            </p>
           </div>
         </div>
-      </section>
+      </div>
 
       {/* Category Cards */}
       {/* Category Cards */}
@@ -384,6 +381,28 @@ export default function Home() {
             <p className="mt-4 text-lg text-zinc-600">
             We carry some of the top industrial brands across a number of sectors. Click the relevant option below to see more details on our brands and how they can work for you!
             </p>
+            <div className="mt-12 w-full overflow-hidden">
+              <style>{`
+                @keyframes scroll {
+                  0% { transform: translateX(0); }
+                  100% { transform: translateX(-50%); }
+                }
+                .animate-scroll {
+                  animation: scroll 20s linear infinite;
+                }
+              `}</style>
+              <div className="flex w-[200%] animate-scroll">
+                {[0, 1].map((i) => (
+                  <div key={i} className="flex w-1/2 justify-around">
+                    {["Red Devil", "Honeywell", "MSA", "Ansell", "Dupont", "DEWALT"].map((brand) => (
+                      <div key={brand} className="flex items-center justify-center rounded-lg bg-zinc-100 px-10 py-6">
+                        <span className="text-xl font-bold text-zinc-400">{brand}</span>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
           <div className="mx-auto mt-16 grid max-w-4xl gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((feature) => (
