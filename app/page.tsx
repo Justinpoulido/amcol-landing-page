@@ -12,9 +12,7 @@ const navLinks = [
   { name: "PRODUCTS", href: "/products" },
   { name: "CONSTRUCTION", href: "/construction" },
   { name: "DEPARTMENTS", href: "/departments" },
-  { name: "DEALS", href: "/deals" },
   { name: "CONTACT US", href: "/contact" },
-  { name: "HOW TO ORDER", href: "/how-to-order" },
 ];
 
 export default function Home() {
@@ -103,8 +101,8 @@ export default function Home() {
     <div className="min-h-screen bg-white">
       {/* Navigation */}
       <header className="fixed top-0 left-0 right-0 z-50 border-b border-zinc-200/80 bg-white/80 backdrop-blur-md">
-        <nav className="mx-auto max-w-7xl border-t-2 border-red-600 bg-white shadow-sm">
-          <ul className="flex flex-wrap items-center justify-start overflow-x-auto">
+        <nav className="mx-auto max-w-7xl border-t-2 border-red-600 bg-white shadow-sm flex items-center justify-between">
+          <ul className="flex flex-1 flex-wrap items-center justify-center overflow-x-auto">
             {navLinks.map((link) => (
               <li
                 key={link.name}
@@ -120,6 +118,13 @@ export default function Home() {
               </li>
             ))}
           </ul>
+          <div className="px-6">
+            <img
+              src="/images/AMCOL_Logo.png"
+              alt="AMCOL Logo"
+              className="h-12 w-auto"
+            />
+          </div>
         </nav>
       </header>
 
@@ -244,18 +249,24 @@ export default function Home() {
         <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <a
-                href="#"
-                className="w-full rounded-full bg-zinc-900 px-8 py-4 text-center text-base font-medium text-white transition-all hover:bg-zinc-800 hover:shadow-lg sm:w-auto"
-              >
-                Start Now
-              </a>
-              <a
-                href="#features"
-                className="w-full rounded-full border border-zinc-300 px-8 py-4 text-center text-base font-medium text-zinc-700 transition-colors hover:border-zinc-400 hover:bg-zinc-50 sm:w-auto"
-              >
-                See how it works
-              </a>
+              <div className="relative flex items-center w-full max-w-md leading-[28px]">
+                <svg
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  className="absolute left-4 h-4 w-4 fill-[#bdbecb] pointer-events-none z-10"
+                >
+                  <g>
+                    <path d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-7.5-3.365-7.5-7.5z"></path>
+                  </g>
+                </svg>
+                <input
+                  id="query"
+                  className="w-full h-[45px] pl-10 text-[#bdbecb] bg-[#16171d] border-0 rounded-[12px] shadow-[0_0_0_1.5px_#2b2c37,0_0_25px_-17px_#000] outline-none transition-all duration-250 ease-[cubic-bezier(0.19,1,0.22,1)] cursor-text z-0 placeholder:text-[#bdbecb] hover:shadow-[0_0_0_2.5px_#2f303d,0px_0px_25px_-15px_#000] focus:shadow-[0_0_0_2.5px_#2f303d] active:scale-95 font-['Montserrat',sans-serif]"
+                  type="search"
+                  placeholder="Search..."
+                  name="searchbar"
+                />
+              </div>
             </div>
             <p className="mt-4 text-sm text-zinc-500">
               
@@ -334,19 +345,18 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Tools/Hardware Card (Adding a 4th for balance) */}
+      {/*Marine/Hardware Card (Adding a 4th for balance) */}
       <div className="group relative min-h-[320px] overflow-hidden rounded-2xl sm:min-h-[380px]">
         <div
           className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
           style={{
-            backgroundImage:
-              "url('https://images.unsplash.com/photo-1581244276891-83393a6b324d?auto=format&fit=crop&w=800')",
+            backgroundImage: "url('/images/RIG.jpg')",
           }}
         />
         <div className="absolute inset-0 bg-black/50" />
         <div className="relative flex h-full flex-col items-center justify-center p-8">
           <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl text-center">
-            Power Tools
+            Marine
           </h2>
           <a
             href="#"
