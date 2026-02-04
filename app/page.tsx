@@ -262,11 +262,40 @@ export default function Home() {
               <div className="flex w-[200%] animate-scroll">
                 {[0, 1].map((i) => (
                   <div key={i} className="flex w-1/2 justify-around">
-                    {["Red Devil", "Honeywell", "MSA", "Ansell", "Dupont", "DEWALT"].map((brand) => (
+                    {["Red Devil", "WD-40", "Ansell", "Dupont", "DEWALT"].map((brand) => (
                       <div key={brand} className="flex items-center justify-center rounded-lg bg-zinc-100 px-10 py-6">
                         <span className="text-xl font-bold text-zinc-400">{brand}</span>
                       </div>
                     ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="mt-12 w-full overflow-hidden">
+              <div className="flex w-[200%] animate-scroll">
+                {[0, 1].map((i) => (
+                  <div key={i} className="flex w-1/2 items-center">
+                    <div className="flex-1 px-4">
+                      <img
+                        src="/images/3 WD-40 Cans Banner.png"
+                        alt="WD-40 Banner"
+                        className="w-full h-auto rounded-2xl"
+                      />
+                    </div>
+                    <div className="flex-1 px-4">
+                      <img
+                        src="/images/Simple Green Safer Choice Banner.png"
+                        alt="Simple Green Safer Choice Banner"
+                        className="w-full h-auto rounded-2xl"
+                      />
+                    </div>
+                    <div className="flex-1 px-4">
+                      <img
+                        src="/images/Silicone Tube with Red Devil Background.png"
+                        alt="Silicone Tube with Red Devil Background"
+                        className="w-full h-auto rounded-2xl"
+                      />
+                    </div>
                   </div>
                 ))}
               </div>
