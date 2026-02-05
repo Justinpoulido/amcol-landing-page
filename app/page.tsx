@@ -59,7 +59,7 @@ export default function Home() {
             <img
               src="/images/AMCOL_Logo.png"
               alt="AMCOL Logo"
-              className="h-12 w-auto"
+              className="h-24 w-auto transition-transform duration-300 hover:scale-105 drop-shadow-md"
             />
           </div>
         </nav>
@@ -281,28 +281,28 @@ export default function Home() {
                       <img
                         src="/images/3 WD-40 Cans Banner.png"
                         alt="WD-40 Banner"
-                        className="w-full h-auto rounded-2xl"
+                        className="w-full h-64 object-cover rounded-2xl"
                       />
                     </div>
                     <div className="flex-1 px-4">
                       <img
                         src="/images/Simple Green Safer Choice Banner.png"
                         alt="Simple Green Safer Choice Banner"
-                        className="w-full h-auto rounded-2xl"
+                        className="w-full h-64 object-cover rounded-2xl"
                       />
                     </div>
                     <div className="flex-1 px-4">
                       <img
                         src="/images/Silicone Tube with Red Devil Background.png"
                         alt="Silicone Tube with Red Devil Background"
-                        className="w-full h-auto rounded-2xl"
+                        className="w-full h-64 object-cover rounded-2xl"
                       />
                     </div>
                     <div className="flex-1 px-4">
                       <img
                         src="/images/Dewalt Kit.jpg"
                         alt="Dewalt Kit"
-                        className="w-full h-auto rounded-2xl"
+                        className="w-full h-64 object-cover rounded-2xl"
                       />
                     </div>
                   </div>
@@ -316,19 +316,12 @@ export default function Home() {
       <section className="py-24 sm:py-32">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="relative overflow-hidden rounded-3xl bg-zinc-900 px-8 py-16 text-center sm:px-16 sm:py-24">
-            <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-              Ready to get started?
+            <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+              News & Events
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-lg text-zinc-400">
-              Join thousands of teams already using AMCOL. Start your free trial
-              today.
+              A collection of articles on various industrial sectors, business tips and the latest happenings from in and around Americas Marketing Company
             </p>
-            <a
-              href="#"
-              className="mt-8 inline-block rounded-full bg-white px-8 py-4 text-base font-medium text-zinc-900 transition-all hover:bg-zinc-100"
-            >
-              Get started for free
-            </a>
           </div>
         </div>
       </section>
