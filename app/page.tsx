@@ -11,6 +11,7 @@ const navLinks = [
   { name: "HOME", href: "/" },
   { name: "PRODUCTS", href: "/products" },
   { name: "CONSTRUCTION", href: "/construction" },
+  { name: "INDUSTRIAL", href: "/industrial" },
   { name: "DEPARTMENTS", href: "/departments" },
   { name: "CONTACT US", href: "/contact" },
 ];
@@ -47,7 +48,7 @@ export default function Home() {
                 <a
                   href={link.href}
                   className={`inline-block px-6 py-4 text-sm font-bold tracking-tight transition-colors hover:bg-zinc-50 
-            ${link.name === "HOME" ? "text-red-600" : "text-zinc-700 hover:text-red-600"}`}
+            ${link.name === "INDUSTRIAL" ? "text-red-600" : "text-zinc-700 hover:text-red-600"}`}
                 >
                   {link.name}
                 </a>
@@ -240,7 +241,7 @@ export default function Home() {
         id="features"
         className="border-t border-zinc-200 bg-zinc-50/50 py-24 sm:py-32"
       >
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl">
             Industries We Serve
@@ -249,6 +250,7 @@ export default function Home() {
             <p className="mt-4 text-lg text-zinc-600">
             We carry some of the top industrial brands across a number of sectors. Click the relevant option below to see more details on our brands and how they can work for you!
             </p>
+          </div>
             <div className="mt-12 w-full overflow-hidden">
               <style>{`
                 @keyframes scroll {
@@ -262,7 +264,7 @@ export default function Home() {
               <div className="flex w-[200%] animate-scroll">
                 {[0, 1].map((i) => (
                   <div key={i} className="flex w-1/2 justify-around">
-                    {["Red Devil", "WD-40", "Ansell", "Dupont", "DEWALT"].map((brand) => (
+                    {["WD-40","Simple Green","Red Devil", "DEWALT"].map((brand) => (
                       <div key={brand} className="flex items-center justify-center rounded-lg bg-zinc-100 px-10 py-6">
                         <span className="text-xl font-bold text-zinc-400">{brand}</span>
                       </div>
@@ -296,11 +298,17 @@ export default function Home() {
                         className="w-full h-auto rounded-2xl"
                       />
                     </div>
+                    <div className="flex-1 px-4">
+                      <img
+                        src="/images/Dewalt Kit.jpg"
+                        alt="Dewalt Kit"
+                        className="w-full h-auto rounded-2xl"
+                      />
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
-          </div>
         </div>
       </section>
 
