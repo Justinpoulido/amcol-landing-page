@@ -396,7 +396,7 @@ export default function ContactPage() {
 
               <h4 className="font-semibold text-zinc-900 mb-2">Main Office</h4>
               <p className="text-sm text-zinc-600">
-                # 22 Ramjohn Road,
+                # 22 Ramjohn Trace,
                 <br />
                 Penal, Trinidad & Tobago
               </p>
