@@ -78,17 +78,18 @@ export default function ContactPage() {
         {/* Background Image with Overlay */}
         <div className="absolute inset-0 z-0">
           <div
-            className="absolute inset-0 bg-cover bg-center opacity-30 grayscale mix-blend-overlay"
+            className="absolute inset-0 bg-cover bg-center opacity-60 grayscale mix-blend-overlay"
             style={{ backgroundImage: "url('/images/Heritage Industry.jpg')" }}
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#1A1A1B]/90 via-[#1A1A1B]/80 to-[#1A1A1B]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#1A1A1B]/80 via-[#1A1A1B]/70 to-[#1A1A1B]" />
         </div>
 
         <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8 text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl">
-            Industrial Precision <span className="text-orange-500">Meets</span>{" "}
-            Modern Tech
-          </h1>
+        <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl">
+  Supplying <span className="text-red-600">Excellence</span>.
+  <br />
+  <span className="text-zinc-400">Built for Industry.</span>
+</h1>
           <p className="mt-6 text-lg leading-8 text-gray-300 max-w-2xl mx-auto">
             Streamlined procurement for enterprise projects. Connect directly
             with our specialized teams for structural supply, fleet maintenance,
@@ -270,7 +271,7 @@ export default function ContactPage() {
                   <p className="text-xs text-zinc-400 uppercase tracking-wider">
                     Head of Industrial Sales
                   </p>
-                  <p className="font-semibold text-lg">Michael Sterling</p>
+                  <p className="font-semibold text-lg">John Doe</p>
                 </div>
                 <div className="flex items-center gap-3 text-zinc-300">
                   <svg
@@ -311,7 +312,7 @@ export default function ContactPage() {
                     href="mailto:sales@amcol.com"
                     className="hover:text-white transition-colors"
                   >
-                    sales@amcol.com
+                    Sales1@amcolgroup.com
                   </a>
                 </div>
               </div>
@@ -388,16 +389,16 @@ export default function ContactPage() {
                 Operating Hours
               </h4>
               <p className="text-sm text-zinc-600 mb-4">
-                Mon - Fri: 7:30 AM - 4:30 PM
+                Mon - Fri: 7:00 AM - 5:00 PM
                 <br />
-                Sat: 8:00 AM - 12:00 PM
+                Sat: 7:00 AM - 4:00 PM
               </p>
 
               <h4 className="font-semibold text-zinc-900 mb-2">Main Office</h4>
               <p className="text-sm text-zinc-600">
-                123 Industrial Estate,
+                # 22 Ramjohn Road,
                 <br />
-                Point Lisas, Trinidad
+                Penal, Trinidad & Tobago
               </p>
             </div>
           </div>
