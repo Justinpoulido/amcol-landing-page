@@ -42,7 +42,8 @@ export default function ContactPage() {
     <div className="min-h-screen bg-white font-sans text-zinc-900">
       {/* Navigation */}
       <header className="fixed top-0 left-0 right-0 z-50 border-b border-zinc-200/80 bg-white/80 backdrop-blur-md">
-        <nav className="mx-auto max-w-7xl border-t-2 border-red-600 bg-white shadow-sm flex items-center justify-between">
+       
+        <nav className="w-full border-t-2 border-red-600 bg-white shadow-sm flex items-center justify-between px-4 sm:px-6 lg:px-8">
           <ul className="flex flex-1 flex-wrap items-center justify-center overflow-x-auto">
             {navLinks.map((link) => (
               <li
