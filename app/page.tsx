@@ -293,7 +293,7 @@ export default function Home() {
                     </div>
                     <div className="flex-1 px-4">
                       <img
-                        src="/images/Silicone Tube with Red Devil Background.png"
+                        src="/images/Reddevel-poster.png"
                         alt="Silicone Tube with Red Devil Background"
                         className="w-full h-64 object-cover rounded-2xl"
                       />
