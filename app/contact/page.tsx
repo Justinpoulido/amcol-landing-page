@@ -6,7 +6,7 @@ const navLinks = [
   { name: "HOME", href: "https://www.amcolhardwarett.com/index.php" },
   { name: "PRODUCTS", href: "/products" },
   { name: "CONSTRUCTION", href: "https://www.amcolhardwarett.com/construction.php" },
-  { name: "INDUSTRIAL", href: "/industrial" },
+  { name: "INDUSTRIAL", href: "/" },//industrial
   { name: "DEPARTMENTS", href: "/departments" },
   { name: "CONTACT US", href: "/contact" },
 ];
