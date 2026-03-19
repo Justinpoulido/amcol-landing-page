@@ -1,5 +1,7 @@
 ﻿"use client";
 
+import Image from "next/image";
+import Link from "next/link";
 import { useState, useEffect } from "react";
 
 const heroImages = [
@@ -14,6 +16,36 @@ const navLinks = [
   { name: "INDUSTRIAL", href: "/industrial" },
   { name: "DEPARTMENTS", href: "/departments" },
   { name: "CONTACT US", href: "/contact" },
+];
+
+const categoryRows = [
+  [
+    { name: "Cleaners & Degreasers", href: "/products", image: "/images/Simple Green Safer Choice Banner.png" },
+    { name: "Surface Disinfectants & Deodorizers", href: "/products", image: "/images/Surface Cleaner.png" },
+    { name: "Sprayers & Pumps", href: "/products", image: "/images/Heritage tank- on site.png" },
+    { name: "Adhesives, Sealants & Tape", href: "/products", image: "/images/Silicone Tube with Red Devil Background.png" },
+  ],
+  [
+    { name: "Fire Protection", href: "/products", image: "/images/Road-Work.png" },
+    { name: "Safety", href: "/products/safety", image: "/images/protective_equipment.png" },
+    { name: "Locks & Security", href: "/products", image: "/images/Industrial_ Energy.png" },
+    { name: "Lubricants", href: "/products", image: "/images/3 WD-40 Cans Banner.png" },
+    { name: "Abrasives", href: "/products", image: "/images/Abrasives1.png" },
+    { name: "Welding", href: "/products/welding", image: "/images/Welding_industrial.png" },
+  ],
+  [
+    { name: "HVAC Chemicals", href: "/products", image: "/images/HVAC.png" },
+    { name: "Coatings & Sealers", href: "/products", image: "/images/Jotun sealer.png" },
+    { name: "Corrosion Control", href: "/products", image: "/images/Wd40 bottle.png" },
+    { name: "Ladders", href: "/products", image: "/images/Industrial-Aluminium-Extension-Ladder.jpg" },
+  ],
+  [
+    { name: "Spill Containment & Emergency Response", href: "/products", image: "/images/Heritage Industry.jpg" },
+    { name: "Marine", href: "/products/marine", image: "/images/RIG.jpg" },
+    { name: "Medical", href: "/products", image: "/images/medical respirator.png" },
+    { name: "Commodity Chemicals", href: "/products", image: "/images/TGU.jpg" },
+    { name: "Matting", href: "/products", image: "/images/Dewalt Kit.jpg" },
+  ],
 ];
 
 export default function Home() {
@@ -37,36 +69,43 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
-      <header className="fixed top-0 left-0 right-0 z-50 border-b border-zinc-200/80 bg-white/80 backdrop-blur-md">
-        <nav className="w-full border-t-2 border-red-600 bg-white shadow-sm flex items-center justify-between px-4 sm:px-6 lg:px-8">
-          <ul className="flex flex-1 flex-wrap items-center justify-center overflow-x-auto">
-            {navLinks.map((link) => (
-              <li
-                key={link.name}
-                className="border-l border-zinc-200 last:border-r"
-              >
-                <a
-                  href={link.href}
-                  className={`inline-block px-6 py-4 text-sm font-bold tracking-tight transition-colors hover:bg-zinc-50 
-            ${link.name === "INDUSTRIAL" ? "text-red-600" : "text-zinc-700 hover:text-red-600"}`}
-                >
-                  {link.name}
-                </a>
-              </li>
-            ))}
-          </ul>
-          <div className="px-6">
-            <img
-              src="/images/AMCOL_Logo.png"
-              alt="AMCOL Logo"
-              className="h-24 w-auto transition-transform duration-300 hover:scale-105 drop-shadow-md"
-            />
+      <header className="hero-mainnav relative z-40">
+        <div className="flex w-full flex-col overflow-hidden md:flex-row md:items-stretch">
+          <div className="hero-brand-panel flex items-center justify-center px-6 py-5 sm:px-8 md:w-[35%] md:min-w-[340px] md:justify-start">
+            <Link className="relative z-10 shrink-0" href="/">
+              <Image
+                src="/images/AMCOL_Logo.png"
+                alt="AMCOL Logo"
+                width={420}
+                height={104}
+                priority
+                className="hero-brand-logo h-20 w-auto max-w-[420px] sm:h-24 md:h-[6.3rem]"
+              />
+            </Link>
           </div>
-        </nav>
+
+          <div className="hero-links-panel flex flex-1 items-center justify-center px-4 py-4 sm:px-6 lg:px-10">
+            <nav className="flex flex-wrap items-center justify-center gap-x-3 gap-y-3 text-[11px] font-bold uppercase tracking-[0.2em] sm:gap-x-4">
+              {navLinks.map((link) => {
+                const isActive = link.name === "INDUSTRIAL";
+
+                return (
+                  <a
+                    key={link.name}
+                    href={link.href}
+                    className={`hero-nav-link rounded-sm border px-4 py-3 ${isActive ? "border-[#39d9cd]/70 bg-[#0d2238] text-[#39d9cd]" : "border-slate-200 bg-white text-slate-700 hover:border-[#39d9cd]/45 hover:text-[#0d2238]"}`}
+                  >
+                    {link.name}
+                  </a>
+                );
+              })}
+            </nav>
+          </div>
+        </div>
       </header>
 
       {/* Hero Section */}
-      <section className="relative min-h-[60vh] flex items-center overflow-hidden bg-transparent pt-32 pb-24 sm:pt-40 sm:pb-32 lg:pt-48 lg:pb-40">
+      <section className="relative flex min-h-[60vh] items-center overflow-hidden bg-transparent pt-24 pb-24 sm:pt-28 sm:pb-32 lg:pt-36 lg:pb-40">
         {/* Background Slideshow */}
         <div className="absolute inset-0 z-0">
           {heroImages.map((image, index) => (
@@ -141,101 +180,57 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Category Cards */}
-      {/* Category Cards */}
-<section className="border-t border-zinc-200 py-16 sm:py-24">
-  <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-    {/* Grid container: 1 col on mobile, 2 on tablet, 4 on desktop */}
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-      
-      {/* Energy Card */}
-      <div className="group relative min-h-[320px] overflow-hidden rounded-2xl sm:min-h-[380px]">
-        <div
-          className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-          style={{ backgroundImage: "url('/images/solar_panel.png')" }}
-        />
-        <div className="absolute inset-0 bg-black/50" />
-        <div className="relative flex h-full flex-col items-center justify-center p-8">
-          <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl text-center">
-            Energy
-          </h2>
-          <a
-            href="#"
-            className="mt-6 rounded-lg bg-white px-8 py-3 text-base font-medium text-zinc-900 transition-colors hover:bg-zinc-100"
-          >
-            Shop Now
-          </a>
-        </div>
-      </div>
+      <section className="border-t border-zinc-200 bg-white py-16 sm:py-24">
+        <div className="mx-auto max-w-[1440px] px-6 sm:px-8 lg:px-10">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-blue-700">
+              Industrial Categories
+            </p>
+            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-black sm:text-4xl">
+              Shop by product category
+            </h2>
+            <p className="mt-4 text-base text-zinc-600 sm:text-lg">
+              Browse core industrial supply lines with a clean catalog view built for quick scanning.
+            </p>
+          </div>
 
-      {/* Industrial Welding Card */}
-      <div className="group relative min-h-[320px] overflow-hidden rounded-2xl sm:min-h-[380px]">
-        <div
-          className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-          style={{
-            backgroundImage:
-              "url('https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?auto=format&fit=crop&w=800')",
-          }}
-        />
-        <div className="absolute inset-0 bg-black/50" />
-        <div className="relative flex h-full flex-col items-center justify-center p-8">
-          <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl text-center">
-           Welding
-          </h2>
-          <a
-            href="#"
-            className="mt-6 rounded-lg bg-white px-8 py-3 text-base font-medium text-zinc-900 transition-colors hover:bg-zinc-100"
-          >
-            Shop Now
-          </a>
+          <div className="mt-14 space-y-12 sm:space-y-14 xl:space-y-16">
+            {categoryRows.map((row, rowIndex) => (
+              <div
+                key={rowIndex}
+                className={`grid gap-x-8 gap-y-12 sm:grid-cols-2 md:grid-cols-3 md:gap-x-10 md:gap-y-14 lg:gap-x-12 xl:gap-y-16 ${
+                  row.length === 4
+                    ? "xl:grid-cols-4"
+                    : row.length === 5
+                      ? "xl:grid-cols-5"
+                      : "xl:grid-cols-6"
+                }`}
+              >
+                {row.map((tile) => (
+                  <Link
+                    key={tile.name}
+                    href={tile.href}
+                    className="group flex min-h-[220px] flex-col items-center justify-start text-center"
+                  >
+                    <div className="flex h-40 w-full items-center justify-center sm:h-44">
+                      <Image
+                        src={tile.image}
+                        alt={tile.name}
+                        width={220}
+                        height={180}
+                        className="h-auto max-h-36 w-auto max-w-[180px] object-contain transition-transform duration-300 group-hover:scale-105 sm:max-h-40 sm:max-w-[190px]"
+                      />
+                    </div>
+                    <span className="mt-5 max-w-[190px] text-sm font-semibold leading-6 text-blue-700 transition-colors group-hover:text-blue-900 group-hover:underline sm:text-[15px]">
+                      {tile.name}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
-
-      {/* Safety Card */}
-      <div className="group relative min-h-[320px] overflow-hidden rounded-2xl sm:min-h-[380px]">
-        <div
-          className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-          style={{ backgroundImage: "url('/images/protective_equipment.png')" }}
-        />
-        <div className="absolute inset-0 bg-black/50" />
-        <div className="relative flex h-full flex-col items-center justify-center p-8">
-          <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl text-center">
-            Safety
-          </h2>
-          <a
-            href="#"
-            className="mt-6 rounded-lg bg-white px-8 py-3 text-base font-medium text-zinc-900 transition-colors hover:bg-zinc-100"
-          >
-            Shop Now
-          </a>
-        </div>
-      </div>
-
-      {/*Marine/Hardware Card (Adding a 4th for balance) */}
-      <div className="group relative min-h-[320px] overflow-hidden rounded-2xl sm:min-h-[380px]">
-        <div
-          className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-          style={{
-            backgroundImage: "url('/images/RIG.jpg')",
-          }}
-        />
-        <div className="absolute inset-0 bg-black/50" />
-        <div className="relative flex h-full flex-col items-center justify-center p-8">
-          <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl text-center">
-            Marine
-          </h2>
-          <a
-            href="#"
-            className="mt-6 rounded-lg bg-white px-8 py-3 text-base font-medium text-zinc-900 transition-colors hover:bg-zinc-100"
-          >
-            Shop Now
-          </a>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</section>
+      </section>
       {/* Features Grid */}
       <section
         id="features"
