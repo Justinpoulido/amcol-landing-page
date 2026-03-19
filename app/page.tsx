@@ -20,9 +20,9 @@ const navLinks = [
 
 const categoryRows = [
   [
-    { name: "Cleaners & Degreasers", href: "/products", image: "/images/Simple Green Safer Choice Banner.png" },
+    { name: "Cleaners & Degreasers", href: "/products", image: "/images/wd40 degreaser.png" },
     { name: "Surface Disinfectants & Deodorizers", href: "/products", image: "/images/Surface Cleaner.png" },
-    { name: "Sprayers & Pumps", href: "/products", image: "/images/Heritage tank- on site.png" },
+    { name: "Sprayers & Pumps", href: "/products", image: "/images/Gasoline Sprayer.png" },
     { name: "Adhesives, Sealants & Tape", href: "/products", image: "/images/Silicone Tube with Red Devil Background.png" },
   ],
   [
@@ -40,8 +40,8 @@ const categoryRows = [
     { name: "Ladders", href: "/products", image: "/images/Industrial-Aluminium-Extension-Ladder.jpg" },
   ],
   [
-    { name: "Spill Containment & Emergency Response", href: "/products", image: "/images/Heritage Industry.jpg" },
-    { name: "Marine", href: "/products/marine", image: "/images/RIG.jpg" },
+    { name: "Spill Containment & Emergency Response", href: "/products", image: "/images/Crate.png" },
+    { name: "Marine", href: "/products/marine", image: "/images/Cargo ship.png" },
     { name: "Medical", href: "/products", image: "/images/medical respirator.png" },
     { name: "Commodity Chemicals", href: "/products", image: "/images/TGU.jpg" },
     { name: "Matting", href: "/products", image: "/images/Dewalt Kit.jpg" },
