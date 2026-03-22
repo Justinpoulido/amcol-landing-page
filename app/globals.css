@@ -39,7 +39,7 @@ body {
   position: relative;
   isolation: isolate;
   background:
-    linear-gradient(145deg, rgba(10, 22, 38, 0.99), rgba(18, 44, 74, 0.97));
+    linear-gradient(145deg, rgba(8, 19, 34, 0.99), rgba(17, 43, 72, 0.98));
   clip-path: polygon(0 0, 94% 0, 100% 100%, 0 100%);
   border-right: 1px solid rgba(185, 28, 28, 0.28);
   box-shadow:
@@ -52,7 +52,8 @@ body {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(135deg, rgba(220, 38, 38, 0.12), rgba(255, 255, 255, 0.02)),
+    radial-gradient(circle at 18% 24%, rgba(34, 211, 238, 0.22), transparent 28%),
+    linear-gradient(135deg, rgba(220, 38, 38, 0.1), rgba(255, 255, 255, 0.02)),
     linear-gradient(90deg, transparent 0%, transparent 84%, rgba(220, 38, 38, 0.12) 84%, rgba(220, 38, 38, 0.04) 100%);
   pointer-events: none;
 }
@@ -67,8 +68,40 @@ body {
   pointer-events: none;
 }
 
+.hero-brand-content {
+  position: relative;
+}
+
+.hero-brand-content::after {
+  content: "";
+  position: absolute;
+  left: 92px;
+  top: 10px;
+  bottom: 10px;
+  width: 1px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0), rgba(148, 163, 184, 0.6), rgba(255, 255, 255, 0));
+}
+
+.hero-brand-logo-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 96px;
+  min-height: 96px;
+  padding: 10px 14px;
+  border-radius: 24px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 18px 30px -24px rgba(15, 23, 42, 0.7);
+}
+
 .hero-brand-logo {
   filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.28));
+}
+
+.hero-brand-eyebrow {
+  text-shadow: 0 1px 12px rgba(34, 211, 238, 0.12);
 }
 
 .hero-links-panel {
@@ -122,6 +155,10 @@ body {
   .hero-brand-panel::before {
     clip-path: none;
     inset: 10px 12px;
+  }
+
+  .hero-brand-content::after {
+    display: none;
   }
 
   .hero-links-panel {

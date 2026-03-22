@@ -7,6 +7,8 @@ import { useState, useEffect } from "react";
 const heroImages = [
   "/images/Heritage Industry.jpg",
   "/images/TGU.jpg",
+  "/images/Proman_industrial.png",
+  "/images/Port Authority.png",
 ];
 
 const navLinks = [
@@ -71,20 +73,35 @@ export default function Home() {
       {/* Navigation */}
       <header className="hero-mainnav relative z-40">
         <div className="flex w-full flex-col overflow-hidden md:flex-row md:items-stretch">
-          <div className="hero-brand-panel flex items-center justify-center px-6 py-5 sm:px-8 md:w-[35%] md:min-w-[340px] md:justify-start">
-            <Link className="relative z-10 shrink-0" href="/">
-              <Image
-                src="/images/AMCOL_Logo.png"
-                alt="AMCOL Logo"
-                width={420}
-                height={104}
-                priority
-                className="hero-brand-logo h-20 w-auto max-w-[420px] sm:h-24 md:h-[6.3rem]"
-              />
-            </Link>
+          <div className="hero-brand-panel flex items-center justify-center px-6 py-5 sm:px-8 md:w-[38%] md:min-w-[380px] md:justify-start lg:px-10">
+            <div className="hero-brand-content relative z-10 flex w-full max-w-[520px] items-center gap-4 sm:gap-5">
+              <Link className="hero-brand-logo-wrap shrink-0" href="/" aria-label="AMCOL Home">
+                <Image
+                  src="/images/AMCOL_Logo.png"
+                  alt="AMCOL Logo"
+                  width={420}
+                  height={104}
+                  priority
+                  className="hero-brand-logo h-20 w-auto max-w-[320px] sm:h-24 md:h-[6.1rem]"
+                />
+              </Link>
+
+              <div className="hero-brand-copy hidden min-w-0 flex-1 md:block">
+                <p className="hero-brand-eyebrow text-[10px] font-semibold uppercase tracking-[0.34em] text-cyan-200/90">
+                  Industrial Supply Partner
+                </p>
+                <p className="mt-2 text-sm leading-6 text-slate-200/90">
+                  Reliable products for maintenance, safety, facility operations, and industrial procurement.
+                </p>
+              </div>
+            </div>
           </div>
 
           <div className="hero-links-panel flex flex-1 items-center justify-center px-4 py-4 sm:px-6 lg:px-10">
+            <div className="flex w-full flex-col items-center justify-center gap-3 lg:flex-row lg:justify-between">
+              <div className="hidden rounded-full border border-slate-200 bg-white/75 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500 shadow-[0_10px_24px_-18px_rgba(15,23,42,0.45)] lg:inline-flex">
+                AMCOL Industrial Catalog
+              </div>
             <nav className="flex flex-wrap items-center justify-center gap-x-3 gap-y-3 text-[11px] font-bold uppercase tracking-[0.2em] sm:gap-x-4">
               {navLinks.map((link) => {
                 const isActive = link.name === "INDUSTRIAL";
@@ -100,6 +117,7 @@ export default function Home() {
                 );
               })}
             </nav>
+            </div>
           </div>
         </div>
       </header>
@@ -111,11 +129,20 @@ export default function Home() {
           {heroImages.map((image, index) => (
             <div
               key={image}
-              className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out ${
+              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
                 index === currentImageIndex ? "opacity-100" : "opacity-0"
               }`}
-              style={{ backgroundImage: `url('${image}')` }}
-            />
+              aria-hidden={index !== currentImageIndex}
+            >
+              <Image
+                src={image}
+                alt=""
+                fill
+                priority={index === 0}
+                sizes="100vw"
+                className="object-cover object-center"
+              />
+            </div>
           ))}
           <div className="absolute inset-0 bg-black/30" />
         </div>
@@ -180,25 +207,26 @@ export default function Home() {
         </div>
       </div>
 
-      <section className="border-t border-zinc-200 bg-white py-16 sm:py-24">
+      <section className="border-t border-zinc-200 bg-[linear-gradient(180deg,#f8fbff_0%,#eef5fb_48%,#ffffff_100%)] py-16 sm:py-24">
         <div className="mx-auto max-w-[1440px] px-6 sm:px-8 lg:px-10">
-          <div className="mx-auto max-w-3xl text-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-blue-700">
-              Industrial Categories
-            </p>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-black sm:text-4xl">
-              Shop by product category
-            </h2>
-            <p className="mt-4 text-base text-zinc-600 sm:text-lg">
-              Browse core industrial supply lines with a clean catalog view built for quick scanning.
-            </p>
-          </div>
+          <div className="overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white/90 px-6 py-10 shadow-[0_24px_70px_-40px_rgba(15,23,42,0.35)] backdrop-blur sm:px-8 sm:py-12 lg:px-12">
+            <div className="mx-auto max-w-4xl text-center">
+              <p className="inline-flex rounded-full border border-cyan-200 bg-cyan-50 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-800">
+                Industrial Categories
+              </p>
+              <h2 className="mt-5 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl lg:text-[2.7rem]">
+                Shop by product category
+              </h2>
+              <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
+                Explore our core industrial supply lines in a card layout designed for faster scanning, cleaner comparison, and easier navigation.
+              </p>
+            </div>
 
-          <div className="mt-14 space-y-12 sm:space-y-14 xl:space-y-16">
+            <div className="mt-14 space-y-8 sm:space-y-10 xl:space-y-12">
             {categoryRows.map((row, rowIndex) => (
               <div
                 key={rowIndex}
-                className={`grid gap-x-8 gap-y-12 sm:grid-cols-2 md:grid-cols-3 md:gap-x-10 md:gap-y-14 lg:gap-x-12 xl:gap-y-16 ${
+                className={`grid gap-5 sm:grid-cols-2 md:grid-cols-3 lg:gap-6 xl:gap-7 ${
                   row.length === 4
                     ? "xl:grid-cols-4"
                     : row.length === 5
@@ -210,24 +238,37 @@ export default function Home() {
                   <Link
                     key={tile.name}
                     href={tile.href}
-                    className="group flex min-h-[220px] flex-col items-center justify-start text-center"
+                    className="group relative flex min-h-[290px] flex-col overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white p-5 text-left shadow-[0_18px_40px_-30px_rgba(15,23,42,0.55)] transition-all duration-300 hover:-translate-y-1 hover:border-cyan-300 hover:shadow-[0_24px_50px_-26px_rgba(8,47,73,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 sm:min-h-[320px] sm:p-6"
                   >
-                    <div className="flex h-40 w-full items-center justify-center sm:h-44">
+                    <div className="absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.20),transparent_68%)] opacity-80 transition-opacity duration-300 group-hover:opacity-100" />
+                    <div className="relative flex h-44 w-full items-center justify-center rounded-[1.4rem] border border-slate-100 bg-[linear-gradient(180deg,#f8fbfd_0%,#eef6fb_100%)] px-4 sm:h-48">
                       <Image
                         src={tile.image}
                         alt={tile.name}
                         width={220}
                         height={180}
-                        className="h-auto max-h-36 w-auto max-w-[180px] object-contain transition-transform duration-300 group-hover:scale-105 sm:max-h-40 sm:max-w-[190px]"
+                        className="h-auto max-h-36 w-auto max-w-[180px] object-contain transition-transform duration-300 group-hover:scale-[1.08] sm:max-h-40 sm:max-w-[190px]"
                       />
                     </div>
-                    <span className="mt-5 max-w-[190px] text-sm font-semibold leading-6 text-blue-700 transition-colors group-hover:text-blue-900 group-hover:underline sm:text-[15px]">
-                      {tile.name}
-                    </span>
+                    <div className="relative flex flex-1 flex-col pt-5">
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-cyan-700">
+                        Industrial Supply
+                      </span>
+                      <span className="mt-3 text-base font-semibold leading-6 text-slate-900 transition-colors duration-300 group-hover:text-cyan-900 sm:text-[17px]">
+                        {tile.name}
+                      </span>
+                      <span className="mt-auto inline-flex items-center gap-3 pt-6 text-sm font-medium text-slate-600 transition-colors duration-300 group-hover:text-slate-900">
+                        Browse products
+                        <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-base text-slate-700 transition-all duration-300 group-hover:border-cyan-300 group-hover:bg-cyan-50 group-hover:text-cyan-800">
+                          →
+                        </span>
+                      </span>
+                    </div>
                   </Link>
                 ))}
               </div>
             ))}
+            </div>
           </div>
         </div>
       </section>
