@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { landingCategoryRows } from "@/lib/product-categories";
 
 const heroImages = [
   "/images/Heritage Industry.jpg",
@@ -20,34 +21,12 @@ const navLinks = [
   { name: "CONTACT US", href: "/contact" },
 ];
 
-const categoryRows = [
-  [
-    { name: "Cleaners & Degreasers", href: "/products", image: "/images/wd40 degreaser.png" },
-    { name: "Surface Disinfectants & Deodorizers", href: "/products", image: "/images/Surface Cleaner.png" },
-    { name: "Sprayers & Pumps", href: "/products", image: "/images/Gasoline Sprayer.png" },
-    { name: "Adhesives, Sealants & Tape", href: "/products", image: "/images/Silicone-Sealant.png" },
-  ],
-  [
-    { name: "Fire Protection", href: "/products", image: "/images/Fire extinguisher.png" },
-    { name: "Safety", href: "/products/safety", image: "/images/Hardhat.png" },
-    { name: "Locks & Security", href: "/products", image: "/images/FenceLock_product-.jpg" },
-    { name: "Lubricants", href: "/products", image: "/images/Wd40 bottle.png" },
-    { name: "Abrasives", href: "/products", image: "/images/Abrasives1.png" },
-    { name: "Welding", href: "/products/welding", image: "/images/Welding.jpg" },
-  ],
-  [
-    { name: "HVAC Chemicals", href: "/products", image: "/images/HVAC.png" },
-    { name: "Coatings & Sealers", href: "/products", image: "/images/Jotun sealer.png" },
-    { name: "Corrosion Control", href: "/products", image: "/images/Corrosion Spray.jpg" },
-    { name: "Ladders", href: "/products", image: "/images/Ladder.jpg" },
-  ],
-  [
-    { name: "Spill Containment & Emergency Response", href: "/products", image: "/images/Crate.png" },
-    { name: "Marine", href: "/products/marine", image: "/images/Cargo ship.png" },
-    { name: "Medical", href: "/products", image: "/images/medical respirator.png" },
-    { name: "Commodity Chemicals", href: "/products", image: "/images/TGU.jpg" },
-    { name: "Matting", href: "/products", image: "/images/Matting Industrial non-slip.jpg" },
-  ],
+const tickerItems = [
+  "Location: #22 Ramjohn Trace, Penal",
+  "Opening Hours: 7am - 5pm",
+  "Industrial, marine, safety, and maintenance supplies available",
+  "Bulk orders and business inquiries welcome",
+  "Call ahead for product availability and category support",
 ];
 
 export default function Home() {
@@ -207,6 +186,46 @@ export default function Home() {
         </div>
       </div>
 
+      <div className="relative left-1/2 z-10 mt-2 w-screen -translate-x-1/2 px-0 sm:mt-4">
+        <div className="overflow-hidden border-y border-red-200/70 bg-[linear-gradient(135deg,rgba(127,29,29,0.92)_0%,rgba(185,28,28,0.76)_45%,rgba(239,68,68,0.5)_100%)] p-[1px_0] shadow-[0_22px_50px_-28px_rgba(127,29,29,0.6)]">
+          <div className="relative overflow-hidden border-y border-white/12 bg-[linear-gradient(135deg,rgba(255,255,255,0.18),rgba(255,255,255,0.06))] px-4 py-4 backdrop-blur-2xl sm:px-6">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.28),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(254,202,202,0.18),transparent_28%)]" />
+            <div className="pointer-events-none absolute inset-y-3 left-8 w-24 rounded-full bg-white/10 blur-2xl" />
+            <div className="relative mx-auto flex max-w-[1800px] items-center gap-4 px-4 sm:px-6 lg:px-8">
+              <div className="hidden shrink-0 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-red-50 sm:inline-flex">
+                Store Updates
+              </div>
+              <div className="relative overflow-hidden">
+                <style>{`
+                  @keyframes liquidGlassTicker {
+                    0% { transform: translateX(0); }
+                    100% { transform: translateX(-50%); }
+                  }
+                  .liquid-glass-ticker {
+                    animation: liquidGlassTicker 26s linear infinite;
+                  }
+                `}</style>
+                <div className="liquid-glass-ticker flex w-max min-w-full items-center">
+                  {[0, 1].map((loop) => (
+                    <div key={loop} className="flex shrink-0 items-center gap-3 pr-3">
+                      {tickerItems.map((item) => (
+                        <div
+                          key={`${loop}-${item}`}
+                          className="inline-flex items-center gap-3 rounded-full border border-white/16 bg-white/12 px-4 py-2 text-sm font-medium text-red-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
+                        >
+                          <span className="inline-flex h-2.5 w-2.5 rounded-full bg-red-200 shadow-[0_0_16px_rgba(254,202,202,0.85)]" />
+                          <span className="whitespace-nowrap">{item}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <section className="border-t border-zinc-200 bg-[linear-gradient(180deg,#f8fbff_0%,#eef5fb_48%,#ffffff_100%)] py-16 sm:py-24">
         <div className="mx-auto max-w-[1440px] px-6 sm:px-8 lg:px-10">
           <div className="overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white/90 px-6 py-10 shadow-[0_24px_70px_-40px_rgba(15,23,42,0.35)] backdrop-blur sm:px-8 sm:py-12 lg:px-12">
@@ -223,7 +242,7 @@ export default function Home() {
             </div>
 
             <div className="mt-14 space-y-8 sm:space-y-10 xl:space-y-12">
-            {categoryRows.map((row, rowIndex) => (
+            {landingCategoryRows.map((row, rowIndex) => (
               <div
                 key={rowIndex}
                 className={`grid gap-5 sm:grid-cols-2 md:grid-cols-3 lg:gap-6 xl:gap-7 ${
