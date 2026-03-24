@@ -1,7 +1,9 @@
 "use client";
 
-import React from "react";
+import Image from "next/image";
+import Link from "next/link";
 import { useParams } from "next/navigation";
+import { productCategoryData } from "@/lib/product-categories";
 
 const navLinks = [
   { name: "HOME", href: "https://www.amcolhardwarett.com/index.php" },
@@ -12,206 +14,207 @@ const navLinks = [
   { name: "CONTACT US", href: "/contact" },
 ];
 
-const categoryData: Record<string, {
-  banner: string;
-  title: string;
-  subtitle: string;
-  description: string;
-  products: { id: number; name: string; price: string; image: string; category: string }[];
-}> = {
-  energy: {
-    banner: "/images/solar_panel.png",
-    title: "Energy Sector",
-    subtitle: "Powering the Future",
-    description: "AMCOL provides high-grade industrial equipment for the oil and gas industry, renewable energy sectors, and power generation facilities. Our commitment to quality ensures your operations run without interruption.",
-    products: [
-      { id: 1, name: "Solar Panel Module", price: "Inquire", image: "/images/solar_panel.png", category: "Energy" },
-      { id: 2, name: "Industrial Generator", price: "Call for Quote", image: "/images/solar_panel.png", category: "Power" },
-      { id: 3, name: "Battery Storage System", price: "Inquire", image: "/images/solar_panel.png", category: "Storage" },
-    ]
-  },
-  safety: {
-    banner: "/images/protective_equipment.png",
-    title: "Occupational Safety",
-    subtitle: "Protecting Your Workforce",
-    description: "Protecting your workforce with certified safety gear and equipment. From head protection to respiratory safety, we supply ANSI/ISEA compliant gear for hazardous environments.",
-    products: [
-      { id: 1, name: "Industrial Safety Gear", price: "Inquire", image: "/images/protective_equipment.png", category: "PPE" },
-      { id: 2, name: "Steel Toe Boots", price: "$450 TTD", image: "/images/protective_equipment.png", category: "Footwear" },
-      { id: 3, name: "High-Visibility Vest", price: "$45 TTD", image: "/images/protective_equipment.png", category: "Apparel" },
-      { id: 4, name: "Safety Helmet", price: "$85 TTD", image: "/images/protective_equipment.png", category: "Head Protection" },
-    ]
-  },
-  marine: {
-    banner: "/images/RIG.jpg",
-    title: "Marine & Offshore",
-    subtitle: "Navigating Excellence",
-    description: "Comprehensive marine logistics and rigging supplies for offshore operations. We provide certified hardware, lifting equipment, and marine-grade consumables designed to withstand harsh saltwater environments.",
-    products: [
-      { id: 1, name: "Marine Rigging Supplies", price: "Inquire", image: "/images/RIG.jpg", category: "Rigging" },
-      { id: 2, name: "Offshore Safety Vest", price: "$120 TTD", image: "/images/protective_equipment.png", category: "Safety" },
-      { id: 3, name: "Heavy Duty Shackle", price: "Inquire", image: "/images/RIG.jpg", category: "Hardware" },
-      { id: 4, name: "Marine Grade Lubricant", price: "$45 TTD", image: "/images/3 WD-40 Cans Banner.png", category: "Maintenance" },
-    ]
-  },
-  welding: {
-    banner: "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?auto=format&fit=crop&w=800",
-    title: "Welding & Fabrication",
-    subtitle: "Precision Joining Solutions",
-    description: "Top-tier welding machines, electrodes, and safety gear for industrial fabrication and structural repairs. We ensure you have the power and precision needed for every weld.",
-    products: [
-      { id: 1, name: "Heavy Duty Welding Machine", price: "Inquire", image: "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?auto=format&fit=crop&w=800", category: "Equipment" },
-      { id: 2, name: "Welding Electrodes (50lb)", price: "$180 TTD", image: "/images/protective_equipment.png", category: "Consumables" },
-      { id: 3, name: "Auto-Darkening Helmet", price: "$650 TTD", image: "/images/protective_equipment.png", category: "Safety" },
-      { id: 4, name: "Angle Grinder Kit", price: "$850 TTD", image: "/images/Dewalt Kit.jpg", category: "Tools" },
-    ]
-  }
-};
-
 export default function CategoryPage() {
   const params = useParams();
-  const category = typeof params?.category === 'string' ? params.category : Array.isArray(params?.category) ? params.category[0] : '';
-  const data = categoryData[category.toLowerCase()];
+  const categoryParam = params?.category;
+  const category =
+    typeof categoryParam === "string"
+      ? categoryParam
+      : Array.isArray(categoryParam)
+        ? categoryParam[0]
+        : "";
+  const data = productCategoryData[category.toLowerCase()];
 
   if (!data) {
     return (
-      <div className="min-h-screen bg-white font-sans text-zinc-900 flex flex-col">
-         {/* Navigation (Simplified for 404) */}
-         <header className="fixed top-0 left-0 right-0 z-50 border-b border-zinc-200/80 bg-white/80 backdrop-blur-md">
-            <nav className="mx-auto max-w-7xl border-t-2 border-red-600 bg-white shadow-sm flex items-center justify-between p-4">
-                <a href="/" className="text-red-600 font-bold">AMCOL</a>
-            </nav>
-         </header>
-         <div className="flex-1 flex flex-col items-center justify-center pt-24">
-            <h1 className="text-4xl font-bold text-zinc-900">Category Not Found</h1>
-            <p className="mt-4 text-zinc-600">The requested product category does not exist.</p>
-            <a href="/products" className="mt-6 rounded-md bg-red-600 px-6 py-3 text-white hover:bg-red-700 transition-colors">Return to Products</a>
-         </div>
+      <div className="min-h-screen bg-white font-sans text-zinc-900">
+        <header className="hero-mainnav relative z-40">
+          <div className="flex w-full flex-col overflow-hidden md:flex-row md:items-stretch">
+            <div className="hero-brand-panel flex items-center justify-center px-6 py-5 sm:px-8 md:w-[38%] md:min-w-[380px] md:justify-start lg:px-10">
+              <div className="hero-brand-content relative z-10 flex w-full max-w-[520px] items-center gap-4 sm:gap-5">
+                <Link className="hero-brand-logo-wrap shrink-0" href="/" aria-label="AMCOL Home">
+                  <Image
+                    src="/images/AMCOL_Logo.png"
+                    alt="AMCOL Logo"
+                    width={420}
+                    height={104}
+                    priority
+                    className="hero-brand-logo h-20 w-auto max-w-[320px] sm:h-24 md:h-[6.1rem]"
+                  />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <main className="flex min-h-[70vh] flex-col items-center justify-center px-6 text-center">
+          <p className="rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-amber-700">
+            Category Not Found
+          </p>
+          <h1 className="mt-6 text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">
+            We couldn&apos;t find that product category.
+          </h1>
+          <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
+            The link may be outdated, or the category may have moved. You can head back to the main products page and continue browsing from there.
+          </p>
+          <Link
+            href="/products"
+            className="mt-8 inline-flex items-center rounded-full border border-slate-300 bg-slate-900 px-6 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-slate-800"
+          >
+            Return to Products
+          </Link>
+        </main>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-white font-sans text-zinc-900">
-      {/* Navigation */}
-      <header className="fixed top-0 left-0 right-0 z-50 border-b border-zinc-200/80 bg-white/80 backdrop-blur-md">
-        <nav className="mx-auto max-w-7xl border-t-2 border-red-600 bg-white shadow-sm flex items-center justify-between">
-          <ul className="flex flex-1 flex-wrap items-center justify-center overflow-x-auto">
-            {navLinks.map((link) => (
-              <li
-                key={link.name}
-                className="border-l border-zinc-200 last:border-r"
-              >
-                <a
-                  href={link.href}
-                  className={`inline-block px-6 py-4 text-sm font-bold tracking-tight transition-colors hover:bg-zinc-50 
-                    ${
-                      link.name === "PRODUCTS"
-                        ? "text-red-600"
-                        : "text-zinc-700 hover:text-red-600"
-                    }`}
-                >
-                  {link.name}
-                </a>
-              </li>
-            ))}
-          </ul>
-          <div className="px-6">
-            <img
-              src="/images/AMCOL_Logo.png"
-              alt="AMCOL Logo"
-              className="h-24 w-auto transition-transform duration-300 hover:scale-105 drop-shadow-md"
-            />
-          </div>
-        </nav>
-      </header>
+      <header className="hero-mainnav relative z-40">
+        <div className="flex w-full flex-col overflow-hidden md:flex-row md:items-stretch">
+          <div className="hero-brand-panel flex items-center justify-center px-6 py-5 sm:px-8 md:w-[38%] md:min-w-[380px] md:justify-start lg:px-10">
+            <div className="hero-brand-content relative z-10 flex w-full max-w-[520px] items-center gap-4 sm:gap-5">
+              <Link className="hero-brand-logo-wrap shrink-0" href="/" aria-label="AMCOL Home">
+                <Image
+                  src="/images/AMCOL_Logo.png"
+                  alt="AMCOL Logo"
+                  width={420}
+                  height={104}
+                  priority
+                  className="hero-brand-logo h-20 w-auto max-w-[320px] sm:h-24 md:h-[6.1rem]"
+                />
+              </Link>
 
-      {/* Banner Section */}
-      <section className="relative bg-[#1A1A1B] pt-48 pb-24 sm:pt-64 sm:pb-32 overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <div
-            className="absolute inset-0 bg-cover bg-center opacity-50 grayscale mix-blend-overlay"
-            style={{ backgroundImage: `url('${data.banner}')` }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#1A1A1B]/80 via-[#1A1A1B]/60 to-[#1A1A1B]" />
-        </div>
-
-        <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8 text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl">
-            {data.title}
-          </h1>
-          <p className="mt-4 text-xl text-red-500 font-semibold">
-            {data.subtitle}
-          </p>
-          <p className="mt-6 text-lg leading-8 text-gray-300 max-w-2xl mx-auto">
-            {data.description}
-          </p>
-        </div>
-      </section>
-
-      {/* Product Grid */}
-      <section className="bg-zinc-50 py-16 sm:py-24">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <h2 className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl mb-10 text-center">
-            Available Products
-          </h2>
-
-          <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8">
-            {data.products.map((product) => (
-              <div key={product.id} className="group relative flex flex-col overflow-hidden rounded-lg bg-white shadow-sm transition-shadow hover:shadow-md border border-zinc-200">
-                <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden bg-zinc-200 lg:aspect-none group-hover:opacity-75 lg:h-64">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="h-full w-full object-cover object-center lg:h-full lg:w-full"
-                  />
-                </div>
-                <div className="flex flex-1 flex-col justify-between p-4">
-                  <div>
-                    <h3 className="text-sm font-medium text-zinc-900">
-                      <a href="#">
-                        <span aria-hidden="true" className="absolute inset-0" />
-                        {product.name}
-                      </a>
-                    </h3>
-                    <p className="mt-1 text-sm text-zinc-500">{product.category}</p>
-                  </div>
-                  <p className="mt-2 text-sm font-medium text-red-600">{product.price}</p>
-                </div>
+              <div className="hero-brand-copy hidden min-w-0 flex-1 md:block">
+                <p className="hero-brand-eyebrow text-[10px] font-semibold uppercase tracking-[0.34em] text-cyan-200/90">
+                  Industrial Supply Partner
+                </p>
+                <p className="mt-2 text-sm leading-6 text-slate-200/90">
+                  Reliable products for maintenance, safety, facility operations, and industrial procurement.
+                </p>
               </div>
-            ))}
+            </div>
           </div>
-        </div>
-      </section>
 
-      {/* Footer */}
-      <footer className="border-t border-zinc-200 py-12 bg-white">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
-            <span className="text-sm font-medium text-zinc-500">AMCOL</span>
-            <div className="flex gap-8">
-              <a
-                href="#"
-                className="text-sm text-zinc-500 transition-colors hover:text-zinc-900"
-              >
-                Privacy
-              </a>
-              <a
-                href="#"
-                className="text-sm text-zinc-500 transition-colors hover:text-zinc-900"
-              >
-                Terms
-              </a>
-              <a
-                href="#"
-                className="text-sm text-zinc-500 transition-colors hover:text-zinc-900"
-              >
-                Contact
-              </a>
+          <div className="hero-links-panel flex flex-1 items-center justify-center px-4 py-4 sm:px-6 lg:px-10">
+            <div className="flex w-full flex-col items-center justify-center gap-3 lg:flex-row lg:justify-between">
+              <div className="hidden rounded-full border border-slate-200 bg-white/75 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500 shadow-[0_10px_24px_-18px_rgba(15,23,42,0.45)] lg:inline-flex">
+                AMCOL Industrial Catalog
+              </div>
+              <nav className="flex flex-wrap items-center justify-center gap-x-3 gap-y-3 text-[11px] font-bold uppercase tracking-[0.2em] sm:gap-x-4">
+                {navLinks.map((link) => {
+                  const isActive = link.name === "PRODUCTS";
+
+                  return (
+                    <a
+                      key={link.name}
+                      href={link.href}
+                      className={`hero-nav-link rounded-sm border px-4 py-3 ${
+                        isActive
+                          ? "border-[#39d9cd]/70 bg-[#0d2238] text-[#39d9cd]"
+                          : "border-slate-200 bg-white text-slate-700 hover:border-[#39d9cd]/45 hover:text-[#0d2238]"
+                      }`}
+                    >
+                      {link.name}
+                    </a>
+                  );
+                })}
+              </nav>
             </div>
           </div>
         </div>
-      </footer>
+      </header>
+
+      <section className="relative overflow-hidden bg-[#091624] px-6 py-20 sm:px-8 sm:py-24 lg:px-10">
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-25"
+          style={{ backgroundImage: `url('${data.banner}')` }}
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(6,17,30,0.96)_0%,rgba(8,24,41,0.84)_55%,rgba(21,91,120,0.52)_100%)]" />
+
+        <div className="relative mx-auto flex max-w-7xl flex-col gap-10 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-3xl">
+            <p className="inline-flex rounded-full border border-cyan-300/30 bg-cyan-300/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-100">
+              Category Spotlight
+            </p>
+            <h1 className="mt-6 text-4xl font-semibold tracking-tight text-white sm:text-5xl lg:text-6xl">
+              {data.title}
+            </h1>
+            <p className="mt-4 text-lg font-medium text-cyan-200 sm:text-xl">
+              {data.subtitle}
+            </p>
+            <p className="mt-6 max-w-2xl text-base leading-7 text-slate-200 sm:text-lg">
+              {data.description}
+            </p>
+          </div>
+
+          <div className="relative w-full max-w-md overflow-hidden rounded-[1.75rem] border border-white/15 bg-white/10 p-6 backdrop-blur-sm">
+            <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/70 to-transparent" />
+            <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-cyan-100/80">
+              Product Focus
+            </p>
+            <p className="mt-4 text-2xl font-semibold text-white">
+              {data.products.length} featured items in this category
+            </p>
+            <p className="mt-3 text-sm leading-6 text-slate-200/85">
+              Browse a tailored selection built around this category so visitors land on relevant items instead of a generic product listing.
+            </p>
+            <Link
+              href="/products"
+              className="mt-6 inline-flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.16em] text-cyan-100 transition hover:text-white"
+            >
+              View all categories
+              <span aria-hidden="true">→</span>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-t border-slate-200 bg-[linear-gradient(180deg,#f8fbff_0%,#eef5fb_52%,#ffffff_100%)] py-16 sm:py-24">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="inline-flex rounded-full border border-cyan-200 bg-cyan-50 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-800">
+              Available Products
+            </p>
+            <h2 className="mt-5 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
+              Related items in {data.name}
+            </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
+              Each landing-page card now routes to its own category page with a short description and a focused product mix for easier browsing.
+            </p>
+          </div>
+
+          <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            {data.products.map((product) => (
+              <article
+                key={product.id}
+                className="group relative flex min-h-[360px] flex-col overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.55)] transition-all duration-300 hover:-translate-y-1 hover:border-cyan-300 hover:shadow-[0_24px_50px_-26px_rgba(8,47,73,0.35)] sm:p-6"
+              >
+                <div className="absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.20),transparent_68%)] opacity-80 transition-opacity duration-300 group-hover:opacity-100" />
+                <div className="relative flex h-52 w-full items-center justify-center rounded-[1.4rem] border border-slate-100 bg-[linear-gradient(180deg,#f8fbfd_0%,#eef6fb_100%)] px-4">
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="h-auto max-h-40 w-auto max-w-[220px] object-contain transition-transform duration-300 group-hover:scale-[1.06]"
+                  />
+                </div>
+
+                <div className="relative flex flex-1 flex-col pt-5">
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-cyan-700">
+                    {product.category}
+                  </span>
+                  <h3 className="mt-3 text-xl font-semibold leading-7 text-slate-900">
+                    {product.name}
+                  </h3>
+                  <p className="mt-auto pt-6 text-sm font-semibold uppercase tracking-[0.16em] text-slate-600">
+                    {product.price}
+                  </p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

@@ -1,6 +1,9 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link";
 import React from "react";
+import { featuredProductCategories } from "@/lib/product-categories";
 
 const navLinks = [
   { name: "HOME", href: "https://www.amcolhardwarett.com/index.php" },
@@ -70,67 +73,67 @@ const products = [
   },
 ];
 
-const categories = [
-  {
-    name: "Energy Sector",
-    href: "/products/energy",
-    image: "/images/solar_panel.png",
-  },
-  {
-    name: "Occupational Safety",
-    href: "/products/safety",
-    image: "/images/protective_equipment.png",
-  },
-  {
-    name: "Marine & Offshore",
-    href: "/products/marine",
-    image: "/images/RIG.jpg",
-  },
-  {
-    name: "Welding & Fabrication",
-    href: "/products/welding",
-    image: "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?auto=format&fit=crop&w=800",
-  },
-];
-
 export default function ProductsPage() {
   return (
     <div className="min-h-screen bg-white font-sans text-zinc-900">
       {/* Navigation */}
-      <header className="fixed top-0 left-0 right-0 z-50 border-b border-zinc-200/80 bg-white/80 backdrop-blur-md">
-        <nav className="mx-auto max-w-7xl border-t-2 border-red-600 bg-white shadow-sm flex items-center justify-between">
-          <ul className="flex flex-1 flex-wrap items-center justify-center overflow-x-auto">
-            {navLinks.map((link) => (
-              <li
-                key={link.name}
-                className="border-l border-zinc-200 last:border-r"
-              >
-                <a
-                  href={link.href}
-                  className={`inline-block px-6 py-4 text-sm font-bold tracking-tight transition-colors hover:bg-zinc-50 
-                    ${
-                      link.name === "PRODUCTS"
-                        ? "text-red-600"
-                        : "text-zinc-700 hover:text-red-600"
-                    }`}
-                >
-                  {link.name}
-                </a>
-              </li>
-            ))}
-          </ul>
-          <div className="px-6">
-            <img
-              src="/images/AMCOL_Logo.png"
-              alt="AMCOL Logo"
-              className="h-24 w-auto transition-transform duration-300 hover:scale-105 drop-shadow-md"
-            />
+      <header className="hero-mainnav relative z-40">
+        <div className="flex w-full flex-col overflow-hidden md:flex-row md:items-stretch">
+          <div className="hero-brand-panel flex items-center justify-center px-6 py-5 sm:px-8 md:w-[38%] md:min-w-[380px] md:justify-start lg:px-10">
+            <div className="hero-brand-content relative z-10 flex w-full max-w-[520px] items-center gap-4 sm:gap-5">
+              <Link className="hero-brand-logo-wrap shrink-0" href="/" aria-label="AMCOL Home">
+                <Image
+                  src="/images/AMCOL_Logo.png"
+                  alt="AMCOL Logo"
+                  width={420}
+                  height={104}
+                  priority
+                  className="hero-brand-logo h-20 w-auto max-w-[320px] sm:h-24 md:h-[6.1rem]"
+                />
+              </Link>
+
+              <div className="hero-brand-copy hidden min-w-0 flex-1 md:block">
+                <p className="hero-brand-eyebrow text-[10px] font-semibold uppercase tracking-[0.34em] text-cyan-200/90">
+                  Industrial Supply Partner
+                </p>
+                <p className="mt-2 text-sm leading-6 text-slate-200/90">
+                  Reliable products for maintenance, safety, facility operations, and industrial procurement.
+                </p>
+              </div>
+            </div>
           </div>
-        </nav>
+
+          <div className="hero-links-panel flex flex-1 items-center justify-center px-4 py-4 sm:px-6 lg:px-10">
+            <div className="flex w-full flex-col items-center justify-center gap-3 lg:flex-row lg:justify-between">
+              <div className="hidden rounded-full border border-slate-200 bg-white/75 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500 shadow-[0_10px_24px_-18px_rgba(15,23,42,0.45)] lg:inline-flex">
+                AMCOL Industrial Catalog
+              </div>
+              <nav className="flex flex-wrap items-center justify-center gap-x-3 gap-y-3 text-[11px] font-bold uppercase tracking-[0.2em] sm:gap-x-4">
+                {navLinks.map((link) => {
+                  const isActive = link.name === "PRODUCTS";
+
+                  return (
+                    <a
+                      key={link.name}
+                      href={link.href}
+                      className={`hero-nav-link rounded-sm border px-4 py-3 ${
+                        isActive
+                          ? "border-[#39d9cd]/70 bg-[#0d2238] text-[#39d9cd]"
+                          : "border-slate-200 bg-white text-slate-700 hover:border-[#39d9cd]/45 hover:text-[#0d2238]"
+                      }`}
+                    >
+                      {link.name}
+                    </a>
+                  );
+                })}
+              </nav>
+            </div>
+          </div>
+        </div>
       </header>
 
       {/* Banner Section */}
-      <section className="relative bg-[#1A1A1B] pt-48 pb-24 sm:pt-64 sm:pb-32 overflow-hidden">
+      <section className="relative overflow-hidden bg-[#1A1A1B] pt-32 pb-24 sm:pt-40 sm:pb-32">
         <div className="absolute inset-0 z-0">
           <div
             className="absolute inset-0 bg-cover bg-center opacity-50 grayscale mix-blend-overlay"
@@ -160,7 +163,7 @@ export default function ProductsPage() {
           </p>
 
           <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {categories.map((category) => (
+            {featuredProductCategories.map((category) => (
               <a
                 key={category.name}
                 href={category.href}
@@ -172,7 +175,7 @@ export default function ProductsPage() {
                 />
                 <div className="absolute inset-0 bg-black/50" />
                 <div className="relative flex flex-1 items-center justify-center">
-                  <h3 className="text-2xl font-bold text-white">{category.name}</h3>
+                  <h3 className="text-2xl font-bold text-white">{category.title}</h3>
                 </div>
               </a>
             ))}
