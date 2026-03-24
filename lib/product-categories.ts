@@ -1,9 +1,18 @@
 export type ProductItem = {
-  id: number;
+  id: number | string;
   name: string;
   price: string;
   image: string;
   category: string;
+  description?: string;
+  brand?: string;
+  sku?: string;
+  unit?: string;
+  stockStatus?: string;
+  imageAlt?: string;
+  featured?: boolean;
+  createdAt?: string;
+  source?: "seed" | "admin";
 };
 
 export type ProductCategoryPageData = {

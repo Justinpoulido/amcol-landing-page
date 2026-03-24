@@ -1,9 +1,6 @@
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
-import { featuredProductCategories } from "@/lib/product-categories";
+import { getAllProducts, getFeaturedCategories } from "@/lib/catalog-store";
 
 const navLinks = [
   { name: "HOME", href: "https://www.amcolhardwarett.com/index.php" },
@@ -12,71 +9,17 @@ const navLinks = [
   { name: "INDUSTRIAL", href: "/industrial" },
   { name: "DEPARTMENTS", href: "/departments" },
   { name: "CONTACT US", href: "/contact" },
+  { name: "ADMIN LOGIN", href: "/admin" },
 ];
 
-const products = [
-  {
-    id: 1,
-    name: "WD-40 Multi-Use Product",
-    category: "Lubricants",
-    image: "/images/3 WD-40 Cans Banner.png",
-    price: "$12.99",
-  },
-  {
-    id: 2,
-    name: "Simple Green All-Purpose Cleaner",
-    category: "Cleaning",
-    image: "/images/Simple Green Safer Choice Banner.png",
-    price: "$15.50",
-  },
-  {
-    id: 3,
-    name: "Red Devil Silicone Sealant",
-    category: "Adhesives",
-    image: "/images/Silicone Tube with Red Devil Background.png",
-    price: "$8.75",
-  },
-  {
-    id: 4,
-    name: "DeWalt Power Tool Kit",
-    category: "Tools",
-    image: "/images/Dewalt Kit.jpg",
-    price: "$299.00",
-  },
-  {
-    id: 5,
-    name: "Solar Panel Module",
-    category: "Energy",
-    image: "/images/solar_panel.png",
-    price: "Inquire",
-  },
-  {
-    id: 6,
-    name: "Industrial Safety Gear",
-    category: "Safety",
-    image: "/images/protective_equipment.png",
-    price: "Inquire",
-  },
-  {
-    id: 7,
-    name: "Marine Rigging Supplies",
-    category: "Marine",
-    image: "/images/RIG.jpg",
-    price: "Inquire",
-  },
-  {
-    id: 8,
-    name: "Heavy Duty Welding Equipment",
-    category: "Welding",
-    image: "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?auto=format&fit=crop&w=800",
-    price: "Inquire",
-  },
-];
+export default async function ProductsPage() {
+  const [products, featuredProductCategories] = await Promise.all([
+    getAllProducts(),
+    Promise.resolve(getFeaturedCategories()),
+  ]);
 
-export default function ProductsPage() {
   return (
     <div className="min-h-screen bg-white font-sans text-zinc-900">
-      {/* Navigation */}
       <header className="hero-mainnav relative z-40">
         <div className="flex w-full flex-col overflow-hidden md:flex-row md:items-stretch">
           <div className="hero-brand-panel flex items-center justify-center px-6 py-5 sm:px-8 md:w-[38%] md:min-w-[380px] md:justify-start lg:px-10">
@@ -111,13 +54,16 @@ export default function ProductsPage() {
               <nav className="flex flex-wrap items-center justify-center gap-x-3 gap-y-3 text-[11px] font-bold uppercase tracking-[0.2em] sm:gap-x-4">
                 {navLinks.map((link) => {
                   const isActive = link.name === "PRODUCTS";
+                  const isAdminLink = link.name === "ADMIN LOGIN";
 
                   return (
                     <a
                       key={link.name}
                       href={link.href}
                       className={`hero-nav-link rounded-sm border px-4 py-3 ${
-                        isActive
+                        isAdminLink
+                          ? "border-red-500 bg-red-600 text-white hover:border-red-600 hover:bg-red-700"
+                          : isActive
                           ? "border-[#39d9cd]/70 bg-[#0d2238] text-[#39d9cd]"
                           : "border-slate-200 bg-white text-slate-700 hover:border-[#39d9cd]/45 hover:text-[#0d2238]"
                       }`}
@@ -132,7 +78,6 @@ export default function ProductsPage() {
         </div>
       </header>
 
-      {/* Banner Section */}
       <section className="relative overflow-hidden bg-[#1A1A1B] pt-32 pb-24 sm:pt-40 sm:pb-32">
         <div className="absolute inset-0 z-0">
           <div
@@ -142,32 +87,39 @@ export default function ProductsPage() {
           <div className="absolute inset-0 bg-gradient-to-b from-[#1A1A1B]/80 via-[#1A1A1B]/60 to-[#1A1A1B]" />
         </div>
 
-        <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8 text-center">
+        <div className="relative z-10 mx-auto max-w-7xl px-6 text-center lg:px-8">
           <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl">
             World-Class <span className="text-red-600">Products</span>
           </h1>
-          <p className="mt-6 text-lg leading-8 text-gray-300 max-w-2xl mx-auto">
+          <p className="mt-6 mx-auto max-w-2xl text-lg leading-8 text-gray-300">
             Explore our comprehensive catalog of industrial, construction, and marine supplies designed for performance and durability.
           </p>
+          <div className="mt-8 flex justify-center">
+            <Link
+              href="/admin"
+              className="inline-flex rounded-full border border-white/20 bg-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/15"
+            >
+              Open product admin
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* Summary Text Section */}
-      <section className="py-16 bg-white">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8 text-center">
+      <section className="bg-white py-16">
+        <div className="mx-auto max-w-7xl px-6 text-center lg:px-8">
           <h2 className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
             Industries We Serve
           </h2>
-          <p className="mt-6 text-lg leading-8 text-zinc-600 max-w-3xl mx-auto">
-            At AMCOL, we pride ourselves on being the backbone of major industries. From heavy construction and industrial manufacturing to marine logistics and energy production, our diverse product range ensures that you have the right tools and materials for every job. We partner with top global brands to bring you reliability and innovation.
+          <p className="mt-6 mx-auto max-w-3xl text-lg leading-8 text-zinc-600">
+            At AMCOL, we pride ourselves on being the backbone of major industries. From heavy construction and industrial manufacturing to marine logistics and energy production, our diverse product range ensures that you have the right tools and materials for every job.
           </p>
 
           <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {featuredProductCategories.map((category) => (
-              <a
+              <Link
                 key={category.name}
                 href={category.href}
-                className="group relative flex h-64 flex-col overflow-hidden rounded-2xl hover:shadow-lg transition-all"
+                className="group relative flex h-64 flex-col overflow-hidden rounded-2xl transition-all hover:shadow-lg"
               >
                 <div
                   className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
@@ -177,45 +129,94 @@ export default function ProductsPage() {
                 <div className="relative flex flex-1 items-center justify-center">
                   <h3 className="text-2xl font-bold text-white">{category.title}</h3>
                 </div>
-              </a>
+              </Link>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Product Grid */}
       <section className="bg-zinc-50 py-16 sm:py-24">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <h2 className="sr-only">Products</h2>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-700">
+                Product Catalog
+              </p>
+              <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
+                Browse all products
+              </h2>
+            </div>
+            <p className="text-sm text-slate-600">
+              Showing {products.length} items across the AMCOL catalog.
+            </p>
+          </div>
 
-          <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8">
+          <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
             {products.map((product) => (
-              <a key={product.id} href="#" className="group relative flex flex-col overflow-hidden rounded-lg bg-white shadow-sm transition-shadow hover:shadow-md border border-zinc-200">
-                <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden bg-zinc-200 lg:aspect-none group-hover:opacity-75 lg:h-64">
-                  <img
+              <article
+                key={product.id}
+                className="group relative flex min-h-[420px] flex-col overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.55)] transition-all duration-300 hover:-translate-y-1 hover:border-cyan-300 hover:shadow-[0_24px_50px_-26px_rgba(8,47,73,0.35)] sm:p-6"
+              >
+                <div className="relative flex h-56 w-full items-center justify-center overflow-hidden rounded-[1.4rem] border border-slate-100 bg-[linear-gradient(180deg,#f8fbfd_0%,#eef6fb_100%)] px-4">
+                  <Image
                     src={product.image}
-                    alt={product.name}
-                    className="h-full w-full object-cover object-center lg:h-full lg:w-full"
+                    alt={product.imageAlt || product.name}
+                    fill
+                    sizes="(min-width: 1280px) 24vw, (min-width: 640px) 50vw, 100vw"
+                    className="object-cover transition-transform duration-300 group-hover:scale-[1.05]"
                   />
                 </div>
-                <div className="flex flex-1 flex-col justify-between p-4">
-                  <div>
-                    <h3 className="text-sm font-medium text-zinc-900">
-                      <span aria-hidden="true" className="absolute inset-0" />
-                      {product.name}
-                    </h3>
-                    <p className="mt-1 text-sm text-zinc-500">{product.category}</p>
+
+                <div className="relative flex flex-1 flex-col pt-5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Link
+                      href={`/products/${product.categorySlug}`}
+                      className="rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-cyan-800 transition hover:border-cyan-300 hover:bg-cyan-100"
+                    >
+                      {product.category}
+                    </Link>
+                    {product.featured ? (
+                      <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-amber-700">
+                        Featured
+                      </span>
+                    ) : null}
                   </div>
-                  <p className="mt-2 text-sm font-medium text-red-600">{product.price}</p>
+
+                  <h3 className="mt-3 text-xl font-semibold leading-7 text-slate-900">
+                    {product.name}
+                  </h3>
+                  <p className="mt-3 text-sm leading-6 text-slate-600">
+                    {product.description ||
+                      "Product details are available through our sales team for this category."}
+                  </p>
+
+                  <div className="mt-5 flex flex-wrap gap-3 text-sm text-slate-600">
+                    <span className="font-semibold text-red-600">{product.price}</span>
+                    {product.brand ? <span>Brand: {product.brand}</span> : null}
+                    {product.sku ? <span>SKU: {product.sku}</span> : null}
+                    {product.unit ? <span>Unit: {product.unit}</span> : null}
+                  </div>
+
+                  <div className="mt-auto flex items-center justify-between pt-6">
+                    <span className="text-sm font-medium text-slate-500">
+                      {product.stockStatus || "Call for availability"}
+                    </span>
+                    <Link
+                      href={`/products/${product.categorySlug}`}
+                      className="inline-flex items-center gap-2 text-sm font-semibold text-slate-900 transition hover:text-cyan-800"
+                    >
+                      View category
+                      <span aria-hidden="true">→</span>
+                    </Link>
+                  </div>
                 </div>
-              </a>
+              </article>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-zinc-200 py-12 bg-white">
+      <footer className="border-t border-zinc-200 bg-white py-12">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
             <span className="text-sm font-medium text-zinc-500">AMCOL</span>

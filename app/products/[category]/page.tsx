@@ -1,9 +1,6 @@
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
-import { useParams } from "next/navigation";
-import { productCategoryData } from "@/lib/product-categories";
+import { getCategoryBySlug } from "@/lib/catalog-store";
 
 const navLinks = [
   { name: "HOME", href: "https://www.amcolhardwarett.com/index.php" },
@@ -12,18 +9,18 @@ const navLinks = [
   { name: "INDUSTRIAL", href: "/industrial" },
   { name: "DEPARTMENTS", href: "/departments" },
   { name: "CONTACT US", href: "/contact" },
+  { name: "ADMIN LOGIN", href: "/admin" },
 ];
 
-export default function CategoryPage() {
-  const params = useParams();
-  const categoryParam = params?.category;
-  const category =
-    typeof categoryParam === "string"
-      ? categoryParam
-      : Array.isArray(categoryParam)
-        ? categoryParam[0]
-        : "";
-  const data = productCategoryData[category.toLowerCase()];
+type CategoryPageProps = {
+  params: Promise<{
+    category: string;
+  }>;
+};
+
+export default async function CategoryPage({ params }: CategoryPageProps) {
+  const { category } = await params;
+  const data = await getCategoryBySlug(category.toLowerCase());
 
   if (!data) {
     return (
@@ -104,13 +101,16 @@ export default function CategoryPage() {
               <nav className="flex flex-wrap items-center justify-center gap-x-3 gap-y-3 text-[11px] font-bold uppercase tracking-[0.2em] sm:gap-x-4">
                 {navLinks.map((link) => {
                   const isActive = link.name === "PRODUCTS";
+                  const isAdminLink = link.name === "ADMIN LOGIN";
 
                   return (
                     <a
                       key={link.name}
                       href={link.href}
                       className={`hero-nav-link rounded-sm border px-4 py-3 ${
-                        isActive
+                        isAdminLink
+                          ? "border-red-500 bg-red-600 text-white hover:border-red-600 hover:bg-red-700"
+                          : isActive
                           ? "border-[#39d9cd]/70 bg-[#0d2238] text-[#39d9cd]"
                           : "border-slate-200 bg-white text-slate-700 hover:border-[#39d9cd]/45 hover:text-[#0d2238]"
                       }`}
@@ -180,7 +180,7 @@ export default function CategoryPage() {
               Related items in {data.name}
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
-              Each landing-page card now routes to its own category page with a short description and a focused product mix for easier browsing.
+              Each category includes the seeded product lineup plus any additional items uploaded through the admin dashboard.
             </p>
           </div>
 
@@ -188,26 +188,49 @@ export default function CategoryPage() {
             {data.products.map((product) => (
               <article
                 key={product.id}
-                className="group relative flex min-h-[360px] flex-col overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.55)] transition-all duration-300 hover:-translate-y-1 hover:border-cyan-300 hover:shadow-[0_24px_50px_-26px_rgba(8,47,73,0.35)] sm:p-6"
+                className="group relative flex min-h-[390px] flex-col overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.55)] transition-all duration-300 hover:-translate-y-1 hover:border-cyan-300 hover:shadow-[0_24px_50px_-26px_rgba(8,47,73,0.35)] sm:p-6"
               >
                 <div className="absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.20),transparent_68%)] opacity-80 transition-opacity duration-300 group-hover:opacity-100" />
-                <div className="relative flex h-52 w-full items-center justify-center rounded-[1.4rem] border border-slate-100 bg-[linear-gradient(180deg,#f8fbfd_0%,#eef6fb_100%)] px-4">
-                  <img
+                <div className="relative flex h-52 w-full items-center justify-center overflow-hidden rounded-[1.4rem] border border-slate-100 bg-[linear-gradient(180deg,#f8fbfd_0%,#eef6fb_100%)] px-4">
+                  <Image
                     src={product.image}
-                    alt={product.name}
-                    className="h-auto max-h-40 w-auto max-w-[220px] object-contain transition-transform duration-300 group-hover:scale-[1.06]"
+                    alt={product.imageAlt || product.name}
+                    fill
+                    sizes="(min-width: 1280px) 24vw, (min-width: 640px) 50vw, 100vw"
+                    className="object-cover transition-transform duration-300 group-hover:scale-[1.05]"
                   />
                 </div>
 
                 <div className="relative flex flex-1 flex-col pt-5">
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-cyan-700">
-                    {product.category}
-                  </span>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-cyan-700">
+                      {product.category}
+                    </span>
+                    {product.featured ? (
+                      <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-amber-700">
+                        Featured
+                      </span>
+                    ) : null}
+                  </div>
                   <h3 className="mt-3 text-xl font-semibold leading-7 text-slate-900">
                     {product.name}
                   </h3>
-                  <p className="mt-auto pt-6 text-sm font-semibold uppercase tracking-[0.16em] text-slate-600">
-                    {product.price}
+                  <p className="mt-3 text-sm leading-6 text-slate-600">
+                    {product.description ||
+                      "Contact our sales team for full specifications, compatible use cases, and ordering support."}
+                  </p>
+
+                  <div className="mt-5 flex flex-wrap gap-3 text-sm text-slate-600">
+                    <span className="font-semibold uppercase tracking-[0.16em] text-slate-800">
+                      {product.price}
+                    </span>
+                    {product.brand ? <span>Brand: {product.brand}</span> : null}
+                    {product.sku ? <span>SKU: {product.sku}</span> : null}
+                    {product.unit ? <span>Unit: {product.unit}</span> : null}
+                  </div>
+
+                  <p className="mt-auto pt-6 text-sm font-semibold text-slate-600">
+                    {product.stockStatus || "Call for availability"}
                   </p>
                 </div>
               </article>

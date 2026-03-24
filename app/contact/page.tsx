@@ -9,6 +9,7 @@ const navLinks = [
   { name: "INDUSTRIAL", href: "/" },//industrial
   { name: "DEPARTMENTS", href: "/departments" },
   { name: "CONTACT US", href: "/contact" },
+  { name: "ADMIN LOGIN", href: "/admin" },
 ];
 
 export default function ContactPage() {
@@ -54,7 +55,9 @@ export default function ContactPage() {
                   href={link.href}
                   className={`inline-block px-6 py-4 text-sm font-bold tracking-tight transition-colors hover:bg-zinc-50 
                     ${
-                      link.name === "CONTACT US"
+                      link.name === "ADMIN LOGIN"
+                        ? "bg-red-600 text-white hover:bg-red-700 hover:text-white"
+                        : link.name === "CONTACT US"
                         ? "text-red-600"
                         : "text-zinc-700 hover:text-red-600"
                     }`}

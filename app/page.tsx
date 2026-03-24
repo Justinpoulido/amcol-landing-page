@@ -19,6 +19,7 @@ const navLinks = [
   { name: "INDUSTRIAL", href: "/industrial" },
   { name: "DEPARTMENTS", href: "/departments" },
   { name: "CONTACT US", href: "/contact" },
+  { name: "ADMIN LOGIN", href: "/admin" },
 ];
 
 const tickerItems = [
@@ -84,12 +85,13 @@ export default function Home() {
             <nav className="flex flex-wrap items-center justify-center gap-x-3 gap-y-3 text-[11px] font-bold uppercase tracking-[0.2em] sm:gap-x-4">
               {navLinks.map((link) => {
                 const isActive = link.name === "INDUSTRIAL";
+                const isAdminLink = link.name === "ADMIN LOGIN";
 
                 return (
                   <a
                     key={link.name}
                     href={link.href}
-                    className={`hero-nav-link rounded-sm border px-4 py-3 ${isActive ? "border-[#39d9cd]/70 bg-[#0d2238] text-[#39d9cd]" : "border-slate-200 bg-white text-slate-700 hover:border-[#39d9cd]/45 hover:text-[#0d2238]"}`}
+                    className={`hero-nav-link rounded-sm border px-4 py-3 ${isAdminLink ? "border-red-500 bg-red-600 text-white hover:border-red-600 hover:bg-red-700" : isActive ? "border-[#39d9cd]/70 bg-[#0d2238] text-[#39d9cd]" : "border-slate-200 bg-white text-slate-700 hover:border-[#39d9cd]/45 hover:text-[#0d2238]"}`}
                   >
                     {link.name}
                   </a>
@@ -100,6 +102,46 @@ export default function Home() {
           </div>
         </div>
       </header>
+
+      <div className="relative left-1/2 z-10 w-screen -translate-x-1/2 px-0">
+        <div className="overflow-hidden border-y border-red-200/70 bg-[linear-gradient(135deg,rgba(127,29,29,0.92)_0%,rgba(185,28,28,0.76)_45%,rgba(239,68,68,0.5)_100%)] p-[1px_0] shadow-[0_22px_50px_-28px_rgba(127,29,29,0.6)]">
+          <div className="relative overflow-hidden border-y border-white/12 bg-[linear-gradient(135deg,rgba(255,255,255,0.18),rgba(255,255,255,0.06))] px-4 py-4 backdrop-blur-2xl sm:px-6">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.28),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(254,202,202,0.18),transparent_28%)]" />
+            <div className="pointer-events-none absolute inset-y-3 left-8 w-24 rounded-full bg-white/10 blur-2xl" />
+            <div className="relative mx-auto flex max-w-[1800px] items-center gap-4 px-4 sm:px-6 lg:px-8">
+              <div className="hidden shrink-0 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-red-50 sm:inline-flex">
+                Store Updates
+              </div>
+              <div className="relative overflow-hidden">
+                <style>{`
+                  @keyframes liquidGlassTicker {
+                    0% { transform: translateX(0); }
+                    100% { transform: translateX(-50%); }
+                  }
+                  .liquid-glass-ticker {
+                    animation: liquidGlassTicker 26s linear infinite;
+                  }
+                `}</style>
+                <div className="liquid-glass-ticker flex w-max min-w-full items-center">
+                  {[0, 1].map((loop) => (
+                    <div key={loop} className="flex shrink-0 items-center gap-3 pr-3">
+                      {tickerItems.map((item) => (
+                        <div
+                          key={`${loop}-${item}`}
+                          className="inline-flex items-center gap-3 rounded-full border border-white/16 bg-white/12 px-4 py-2 text-sm font-medium text-red-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
+                        >
+                          <span className="inline-flex h-2.5 w-2.5 rounded-full bg-red-200 shadow-[0_0_16px_rgba(254,202,202,0.85)]" />
+                          <span className="whitespace-nowrap">{item}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Hero Section */}
       <section className="relative flex min-h-[60vh] items-center overflow-hidden bg-transparent pt-24 pb-24 sm:pt-28 sm:pb-32 lg:pt-36 lg:pb-40">
@@ -181,46 +223,6 @@ export default function Home() {
                 placeholder="Search..."
                 name="searchbar"
               />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="relative left-1/2 z-10 mt-2 w-screen -translate-x-1/2 px-0 sm:mt-4">
-        <div className="overflow-hidden border-y border-red-200/70 bg-[linear-gradient(135deg,rgba(127,29,29,0.92)_0%,rgba(185,28,28,0.76)_45%,rgba(239,68,68,0.5)_100%)] p-[1px_0] shadow-[0_22px_50px_-28px_rgba(127,29,29,0.6)]">
-          <div className="relative overflow-hidden border-y border-white/12 bg-[linear-gradient(135deg,rgba(255,255,255,0.18),rgba(255,255,255,0.06))] px-4 py-4 backdrop-blur-2xl sm:px-6">
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.28),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(254,202,202,0.18),transparent_28%)]" />
-            <div className="pointer-events-none absolute inset-y-3 left-8 w-24 rounded-full bg-white/10 blur-2xl" />
-            <div className="relative mx-auto flex max-w-[1800px] items-center gap-4 px-4 sm:px-6 lg:px-8">
-              <div className="hidden shrink-0 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-red-50 sm:inline-flex">
-                Store Updates
-              </div>
-              <div className="relative overflow-hidden">
-                <style>{`
-                  @keyframes liquidGlassTicker {
-                    0% { transform: translateX(0); }
-                    100% { transform: translateX(-50%); }
-                  }
-                  .liquid-glass-ticker {
-                    animation: liquidGlassTicker 26s linear infinite;
-                  }
-                `}</style>
-                <div className="liquid-glass-ticker flex w-max min-w-full items-center">
-                  {[0, 1].map((loop) => (
-                    <div key={loop} className="flex shrink-0 items-center gap-3 pr-3">
-                      {tickerItems.map((item) => (
-                        <div
-                          key={`${loop}-${item}`}
-                          className="inline-flex items-center gap-3 rounded-full border border-white/16 bg-white/12 px-4 py-2 text-sm font-medium text-red-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
-                        >
-                          <span className="inline-flex h-2.5 w-2.5 rounded-full bg-red-200 shadow-[0_0_16px_rgba(254,202,202,0.85)]" />
-                          <span className="whitespace-nowrap">{item}</span>
-                        </div>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
         </div>
