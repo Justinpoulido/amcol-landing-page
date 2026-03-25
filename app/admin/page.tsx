@@ -257,10 +257,10 @@ export default function AdminDashboardPage() {
             </div>
             <div className="rounded-[1.5rem] border border-white/10 bg-white/10 px-5 py-5 backdrop-blur">
               <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-300">
-                Storage path
+                Storage target
               </p>
               <p className="mt-3 text-sm font-medium text-cyan-100">
-                `/public/uploads/products`
+                `Supabase Storage / product-images`
               </p>
             </div>
           </div>
@@ -279,7 +279,7 @@ export default function AdminDashboardPage() {
               </h2>
               <p className="text-sm leading-6 text-slate-600 sm:text-base">
                 Fill out the fields below and upload a product image. New entries are
-                saved locally and can be shown immediately on the website catalog.
+                saved to Supabase and can be shown immediately on the website catalog.
               </p>
             </div>
 

@@ -1,11 +1,17 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { Buffer } from "node:buffer";
 import path from "node:path";
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import {
   createAdminProduct,
   getAdminProducts,
   getCategoryOptions,
 } from "@/lib/catalog-store";
+import {
+  hasSupabaseAdminConfig,
+  PRODUCT_IMAGES_BUCKET,
+} from "@/lib/supabase/config";
+import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
@@ -27,6 +33,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  let uploadedImagePath: string | null = null;
+
   try {
     const formData = await request.formData();
 
@@ -57,20 +65,36 @@ export async function POST(request: Request) {
       );
     }
 
-    const uploadsDirectory = path.join(
-      process.cwd(),
-      "public",
-      "uploads",
-      "products",
-    );
-    await mkdir(uploadsDirectory, { recursive: true });
+    if (!hasSupabaseAdminConfig()) {
+      return NextResponse.json(
+        {
+          error:
+            "Supabase admin access is not configured. Add SUPABASE_SERVICE_ROLE_KEY before saving products.",
+        },
+        { status: 500 },
+      );
+    }
+
+    const supabase = createSupabaseAdminClient();
 
     const extension = path.extname(imageFile.name) || ".png";
-    const fileName = `${Date.now()}-${sanitizeSegment(name)}${extension}`;
-    const filePath = path.join(uploadsDirectory, fileName);
+    const fileName = `${Date.now()}-${sanitizeSegment(name)}${extension.toLowerCase()}`;
+    uploadedImagePath = `products/${fileName}`;
     const bytes = await imageFile.arrayBuffer();
+    const { error: uploadError } = await supabase.storage
+      .from(PRODUCT_IMAGES_BUCKET)
+      .upload(uploadedImagePath, Buffer.from(bytes), {
+        contentType: imageFile.type || undefined,
+        upsert: false,
+      });
 
-    await writeFile(filePath, Buffer.from(bytes));
+    if (uploadError) {
+      throw new Error(`Unable to upload product image: ${uploadError.message}`);
+    }
+
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from(PRODUCT_IMAGES_BUCKET).getPublicUrl(uploadedImagePath);
 
     const savedProduct = await createAdminProduct({
       name,
@@ -82,13 +106,21 @@ export async function POST(request: Request) {
       sku,
       unit,
       stockStatus,
-      image: `/uploads/products/${fileName}`,
+      image: publicUrl,
       imageAlt,
       featured: featuredValue === "true",
     });
 
+    revalidatePath("/products");
+    revalidatePath(`/products/${categorySlug}`);
+
     return NextResponse.json({ product: savedProduct }, { status: 201 });
   } catch (error) {
+    if (uploadedImagePath && hasSupabaseAdminConfig()) {
+      const supabase = createSupabaseAdminClient();
+      await supabase.storage.from(PRODUCT_IMAGES_BUCKET).remove([uploadedImagePath]);
+    }
+
     const message =
       error instanceof Error ? error.message : "Unable to save product.";
 
