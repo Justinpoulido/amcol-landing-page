@@ -3,7 +3,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { landingCategoryRows } from "@/lib/product-categories";
+import {
+  landingCategoryRows,
+  type ProductCategoryPageData,
+} from "@/lib/product-categories";
 
 const heroImages = [
   "/images/Heritage Industry.jpg",
@@ -16,7 +19,7 @@ const navLinks = [
   { name: "HOME", href: "https://www.amcolhardwarett.com/index.php" },
   { name: "PRODUCTS", href: "/products" },
   { name: "CONSTRUCTION", href: "https://www.amcolhardwarett.com/construction.php" },
-  { name: "INDUSTRIAL", href: "/industrial" },
+  { name: "INDUSTRIAL", href: "/" },
   { name: "DEPARTMENTS", href: "/departments" },
   { name: "CONTACT US", href: "/contact" },
   { name: "ADMIN LOGIN", href: "/admin" },
@@ -30,14 +33,58 @@ const tickerItems = [
   "Call ahead for product availability and category support",
 ];
 
+const fallbackLandingCategories = landingCategoryRows.flat();
+
+function chunkCategories(categories: ProductCategoryPageData[], size: number) {
+  const rows: ProductCategoryPageData[][] = [];
+
+  for (let index = 0; index < categories.length; index += size) {
+    rows.push(categories.slice(index, index + size));
+  }
+
+  return rows;
+}
+
 export default function Home() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [landingCategories, setLandingCategories] = useState<ProductCategoryPageData[]>(
+    fallbackLandingCategories,
+  );
 
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImageIndex((prevIndex) => (prevIndex + 1) % heroImages.length);
     }, 5000);
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadLandingCategories = async () => {
+      try {
+        const response = await fetch("/api/catalog/categories");
+        const data = (await response.json()) as {
+          categories?: ProductCategoryPageData[];
+        };
+
+        if (!response.ok || !Array.isArray(data.categories) || data.categories.length === 0) {
+          return;
+        }
+
+        if (isMounted) {
+          setLandingCategories(data.categories);
+        }
+      } catch {
+        // Keep the seeded fallback cards if dynamic categories cannot be loaded.
+      }
+    };
+
+    loadLandingCategories();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const nextImage = () => {
@@ -244,15 +291,17 @@ export default function Home() {
             </div>
 
             <div className="mt-14 space-y-8 sm:space-y-10 xl:space-y-12">
-            {landingCategoryRows.map((row, rowIndex) => (
+            {chunkCategories(landingCategories, 4).map((row, rowIndex) => (
               <div
                 key={rowIndex}
                 className={`grid gap-5 sm:grid-cols-2 md:grid-cols-3 lg:gap-6 xl:gap-7 ${
-                  row.length === 4
+                  row.length >= 4
                     ? "xl:grid-cols-4"
-                    : row.length === 5
-                      ? "xl:grid-cols-5"
-                      : "xl:grid-cols-6"
+                    : row.length === 3
+                      ? "xl:grid-cols-3"
+                      : row.length === 2
+                        ? "xl:grid-cols-2"
+                        : "xl:grid-cols-1"
                 }`}
               >
                 {row.map((tile) => (
