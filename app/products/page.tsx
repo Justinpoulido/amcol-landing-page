@@ -153,28 +153,26 @@ export default async function ProductsPage() {
 
           <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
             {products.map((product) => (
-              <article
+              <Link
                 key={product.id}
+                href={`/products/${product.slug}`}
                 className="group relative flex min-h-[420px] flex-col overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.55)] transition-all duration-300 hover:-translate-y-1 hover:border-cyan-300 hover:shadow-[0_24px_50px_-26px_rgba(8,47,73,0.35)] sm:p-6"
               >
-                <div className="relative flex h-56 w-full items-center justify-center overflow-hidden rounded-[1.4rem] border border-slate-100 bg-[linear-gradient(180deg,#f8fbfd_0%,#eef6fb_100%)] px-4">
+                <div className="relative flex h-72 w-full items-center justify-center overflow-hidden rounded-[1.4rem] border border-slate-100 bg-[linear-gradient(180deg,#f8fbfd_0%,#eef6fb_100%)] sm:h-80">
                   <Image
                     src={product.image}
                     alt={product.imageAlt || product.name}
                     fill
                     sizes="(min-width: 1280px) 24vw, (min-width: 640px) 50vw, 100vw"
-                    className="object-cover transition-transform duration-300 group-hover:scale-[1.05]"
+                    className="object-contain p-4 transition-transform duration-300 group-hover:scale-[1.05]"
                   />
                 </div>
 
                 <div className="relative flex flex-1 flex-col pt-5">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Link
-                      href={`/products/${product.categorySlug}`}
-                      className="rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-cyan-800 transition hover:border-cyan-300 hover:bg-cyan-100"
-                    >
+                    <span className="rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-cyan-800">
                       {product.category}
-                    </Link>
+                    </span>
                     {product.featured ? (
                       <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-amber-700">
                         Featured
@@ -201,16 +199,13 @@ export default async function ProductsPage() {
                     <span className="text-sm font-medium text-slate-500">
                       {product.stockStatus || "Call for availability"}
                     </span>
-                    <Link
-                      href={`/products/${product.categorySlug}`}
-                      className="inline-flex items-center gap-2 text-sm font-semibold text-slate-900 transition hover:text-cyan-800"
-                    >
-                      View category
+                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-900 transition group-hover:text-cyan-800">
+                      View details
                       <span aria-hidden="true">→</span>
-                    </Link>
+                    </span>
                   </div>
                 </div>
-              </article>
+              </Link>
             ))}
           </div>
         </div>

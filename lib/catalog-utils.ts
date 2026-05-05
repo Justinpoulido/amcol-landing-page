@@ -5,3 +5,7 @@ export function createCategorySlug(value: string) {
     .replace(/^-+|-+$/g, "")
     .slice(0, 80);
 }
+
+export function createProductSlug(value: string) {
+  return createCategorySlug(value);
+}

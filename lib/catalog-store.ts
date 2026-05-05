@@ -12,7 +12,7 @@ import {
   createSupabaseAdminClient,
   createSupabaseReadClient,
 } from "@/lib/supabase/server";
-import { createCategorySlug } from "@/lib/catalog-utils";
+import { createCategorySlug, createProductSlug } from "@/lib/catalog-utils";
 
 export type CategoryOption = {
   slug: string;
@@ -187,7 +187,14 @@ export async function getAdminProducts(): Promise<AdminProductRecord[]> {
   noStore();
 
   if (hasSupabaseReadConfig()) {
-    return getSupabaseAdminProducts();
+    try {
+      return await getSupabaseAdminProducts();
+    } catch (error) {
+      console.warn(
+        "Falling back to local admin products because Supabase read failed.",
+        error,
+      );
+    }
   }
 
   return getFileAdminProducts();
@@ -197,7 +204,14 @@ export async function getAdminCategories(): Promise<AdminCategoryRecord[]> {
   noStore();
 
   if (hasSupabaseReadConfig()) {
-    return getSupabaseAdminCategories();
+    try {
+      return await getSupabaseAdminCategories();
+    } catch (error) {
+      console.warn(
+        "Falling back to local admin categories because Supabase read failed.",
+        error,
+      );
+    }
   }
 
   return getFileAdminCategories();
@@ -219,7 +233,14 @@ export async function getAdminProductById(
   noStore();
 
   if (hasSupabaseReadConfig()) {
-    return getSupabaseAdminProductById(id);
+    try {
+      return await getSupabaseAdminProductById(id);
+    } catch (error) {
+      console.warn(
+        "Falling back to local admin product lookup because Supabase read failed.",
+        error,
+      );
+    }
   }
 
   return getFileAdminProductById(id);
@@ -573,7 +594,7 @@ async function createSupabaseAdminCategory(
     description: normalizeCategoryDescription(input.description, input.name),
   };
 
-  let { data, error } = await supabase
+  const categoryInsertResult = await supabase
     .from("product_categories")
     .insert({
       ...baseCategoryInput,
@@ -582,6 +603,9 @@ async function createSupabaseAdminCategory(
     .select(categorySelectQuery)
     .single();
 
+  let data = categoryInsertResult.data as ProductCategoryRow | null;
+  let error = categoryInsertResult.error;
+
   if (error && isMissingCategoryImageColumnError(error)) {
     const fallbackResult = await supabase
       .from("product_categories")
@@ -589,11 +613,11 @@ async function createSupabaseAdminCategory(
       .select(legacyCategorySelectQuery)
       .single();
 
-    data = fallbackResult.data;
+    data = fallbackResult.data as ProductCategoryRow | null;
     error = fallbackResult.error;
   }
 
-  const category = data as ProductCategoryRow | null;
+  const category = data;
 
   if (error || !category) {
     const message =
@@ -891,6 +915,25 @@ export async function getMergedCategoryData(): Promise<
     ]),
   ) as Record<string, ProductCategoryPageData>;
 
+  const productsWithSlugs = addProductSlugs(
+    Object.values(mergedCategories).flatMap((category) =>
+      category.products.map((product) => ({
+        ...product,
+        categorySlug:
+          "categorySlug" in product && typeof product.categorySlug === "string"
+            ? product.categorySlug
+            : category.slug,
+        categoryName: category.name,
+      })),
+    ),
+  );
+
+  for (const category of Object.values(mergedCategories)) {
+    category.products = productsWithSlugs.filter(
+      (product) => product.categorySlug === category.slug,
+    );
+  }
+
   return mergedCategories;
 }
 
@@ -902,7 +945,7 @@ export async function getCategoryBySlug(slug: string) {
 export async function getAllProducts() {
   const categories = await getMergedCategoryData();
 
-  return Object.values(categories).flatMap((category) =>
+  const products = Object.values(categories).flatMap((category) =>
     category.products.map((product) => ({
       ...product,
       categorySlug:
@@ -912,4 +955,35 @@ export async function getAllProducts() {
       categoryName: category.name,
     })),
   );
+
+  return addProductSlugs(products);
+}
+
+export async function getProductBySlug(slug: string) {
+  const products = await getAllProducts();
+  return products.find((product) => product.slug === slug) ?? null;
+}
+
+function addProductSlugs<
+  TProduct extends ProductItem & { categorySlug: string; categoryName: string },
+>(products: TProduct[]) {
+  const slugCounts = new Map<string, number>();
+
+  for (const product of products) {
+    const baseSlug = product.slug?.trim() || createProductSlug(product.name);
+    slugCounts.set(baseSlug, (slugCounts.get(baseSlug) ?? 0) + 1);
+  }
+
+  return products.map((product) => {
+    const baseSlug = product.slug?.trim() || createProductSlug(product.name);
+    const slug =
+      (slugCounts.get(baseSlug) ?? 0) > 1
+        ? `${baseSlug}-${product.categorySlug}`
+        : baseSlug;
+
+    return {
+      ...product,
+      slug,
+    };
+  });
 }

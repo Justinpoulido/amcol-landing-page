@@ -1,10 +1,13 @@
 export type ProductItem = {
   id: number | string;
+  slug?: string;
   name: string;
   price: string;
   image: string;
   category: string;
   description?: string;
+  specifications?: string[];
+  useCases?: string[];
   brand?: string;
   sku?: string;
   unit?: string;
