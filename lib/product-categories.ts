@@ -14,6 +14,7 @@ export type ProductItem = {
   unit?: string;
   stockStatus?: string;
   imageAlt?: string;
+  galleryImages?: string[];
   featured?: boolean;
   createdAt?: string;
   source?: "seed" | "admin";

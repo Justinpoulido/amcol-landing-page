@@ -1,9 +1,10 @@
-import { Buffer } from "node:buffer";
 import path from "node:path";
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
+import { del, put } from "@vercel/blob";
 import {
   createAdminProduct,
+  deleteAdminProduct,
   getAdminProductById,
   getAdminProducts,
   getCategoryOptions,
@@ -29,15 +30,19 @@ function sanitizeSegment(value: string) {
 type ProductFormValues = {
   id: string;
   name: string;
+  slug: string;
   categorySlug: string;
   category: string;
   price: string;
+  summary: string;
   description: string;
   brand: string;
   sku: string;
   unit: string;
   stockStatus: string;
   imageAlt: string;
+  galleryImages: string[];
+  specifications: string[];
   featured: boolean;
 };
 
@@ -45,15 +50,25 @@ function parseProductFormData(formData: FormData): ProductFormValues {
   return {
     id: String(formData.get("id") ?? "").trim(),
     name: String(formData.get("name") ?? "").trim(),
+    slug: String(formData.get("slug") ?? "").trim(),
     categorySlug: String(formData.get("categorySlug") ?? "").trim(),
     category: String(formData.get("category") ?? "").trim(),
     price: String(formData.get("price") ?? "").trim(),
+    summary: String(formData.get("summary") ?? "").trim(),
     description: String(formData.get("description") ?? "").trim(),
     brand: String(formData.get("brand") ?? "").trim(),
     sku: String(formData.get("sku") ?? "").trim(),
     unit: String(formData.get("unit") ?? "").trim(),
     stockStatus: String(formData.get("stockStatus") ?? "").trim(),
     imageAlt: String(formData.get("imageAlt") ?? "").trim(),
+    galleryImages: String(formData.get("galleryImages") ?? "")
+      .split(/\r?\n|,/)
+      .map((value) => value.trim())
+      .filter(Boolean),
+    specifications: String(formData.get("specifications") ?? "")
+      .split(/\r?\n/)
+      .map((value) => value.trim())
+      .filter(Boolean),
     featured: String(formData.get("featured") ?? "").trim() === "true",
   };
 }
@@ -62,35 +77,23 @@ async function uploadProductImage(
   imageFile: File,
   name: string,
 ): Promise<{ publicUrl: string; path: string }> {
-  if (!hasSupabaseAdminConfig()) {
+  if (!process.env.BLOB_READ_WRITE_TOKEN) {
     throw new Error(
-      "Supabase admin access is not configured. Add SUPABASE_SERVICE_ROLE_KEY before saving products.",
+      "Vercel Blob is not configured. Add BLOB_READ_WRITE_TOKEN before saving product images.",
     );
   }
 
-  const supabase = createSupabaseAdminClient();
   const extension = path.extname(imageFile.name) || ".png";
   const fileName = `${Date.now()}-${sanitizeSegment(name)}${extension.toLowerCase()}`;
   const uploadedPath = `products/${fileName}`;
-  const bytes = await imageFile.arrayBuffer();
-  const { error: uploadError } = await supabase.storage
-    .from(PRODUCT_IMAGES_BUCKET)
-    .upload(uploadedPath, Buffer.from(bytes), {
-      contentType: imageFile.type || undefined,
-      upsert: false,
-    });
-
-  if (uploadError) {
-    throw new Error(`Unable to upload product image: ${uploadError.message}`);
-  }
-
-  const {
-    data: { publicUrl },
-  } = supabase.storage.from(PRODUCT_IMAGES_BUCKET).getPublicUrl(uploadedPath);
+  const blob = await put(uploadedPath, imageFile, {
+    access: "public",
+    contentType: imageFile.type || undefined,
+  });
 
   return {
-    publicUrl,
-    path: uploadedPath,
+    publicUrl: blob.url,
+    path: blob.url,
   };
 }
 
@@ -122,6 +125,11 @@ function getStoragePathFromPublicUrl(publicUrl: string): string | null {
 }
 
 async function removeStoredImage(publicUrl: string) {
+  if (publicUrl.includes(".public.blob.vercel-storage.com")) {
+    await del(publicUrl);
+    return;
+  }
+
   const storagePath = getStoragePathFromPublicUrl(publicUrl);
 
   if (!storagePath || !hasSupabaseAdminConfig()) {
@@ -132,9 +140,28 @@ async function removeStoredImage(publicUrl: string) {
   await supabase.storage.from(PRODUCT_IMAGES_BUCKET).remove([storagePath]);
 }
 
+async function removeStoredImages(publicUrls: string[]) {
+  await Promise.all(publicUrls.map((publicUrl) => removeStoredImage(publicUrl)));
+}
+
+async function uploadGalleryImages(formData: FormData, name: string) {
+  const galleryFiles = formData
+    .getAll("galleryImageFiles")
+    .filter(
+      (file): file is File => file instanceof File && file.size > 0,
+    );
+  const uploads: { publicUrl: string; path: string }[] = [];
+
+  for (const file of galleryFiles) {
+    uploads.push(await uploadProductImage(file, `${name}-gallery`));
+  }
+
+  return uploads;
+}
+
 function validateRequiredFields(values: ProductFormValues) {
-  if (!values.name || !values.categorySlug || !values.price || !values.description) {
-    return "Name, category, price, and description are required.";
+  if (!values.name || !values.slug || !values.categorySlug || !values.price) {
+    return "Product name, slug, category, and price are required.";
   }
 
   return null;
@@ -158,7 +185,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  let uploadedImagePath: string | null = null;
+  const uploadedImageUrls: string[] = [];
 
   try {
     const formData = await request.formData();
@@ -182,13 +209,21 @@ export async function POST(request: Request) {
     }
 
     const upload = await uploadProductImage(imageFile, values.name);
-    uploadedImagePath = upload.path;
+    uploadedImageUrls.push(upload.path);
+    const galleryUploads = await uploadGalleryImages(formData, values.name);
+    uploadedImageUrls.push(...galleryUploads.map((item) => item.path));
+    const galleryImages = [
+      ...values.galleryImages,
+      ...galleryUploads.map((item) => item.publicUrl),
+    ];
 
     const savedProduct = await createAdminProduct({
       name: values.name,
+      slug: values.slug,
       categorySlug: values.categorySlug,
       category: values.category,
       price: values.price,
+      summary: values.summary,
       description: values.description,
       brand: values.brand,
       sku: values.sku,
@@ -196,6 +231,8 @@ export async function POST(request: Request) {
       stockStatus: values.stockStatus,
       image: upload.publicUrl,
       imageAlt: values.imageAlt,
+      galleryImages,
+      specifications: values.specifications,
       featured: values.featured,
     });
 
@@ -203,9 +240,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ product: savedProduct }, { status: 201 });
   } catch (error) {
-    if (uploadedImagePath && hasSupabaseAdminConfig()) {
-      const supabase = createSupabaseAdminClient();
-      await supabase.storage.from(PRODUCT_IMAGES_BUCKET).remove([uploadedImagePath]);
+    if (uploadedImageUrls.length > 0) {
+      await removeStoredImages(uploadedImageUrls);
     }
 
     const message =
@@ -216,7 +252,7 @@ export async function POST(request: Request) {
 }
 
 export async function PUT(request: Request) {
-  let uploadedImagePath: string | null = null;
+  const uploadedImageUrls: string[] = [];
 
   try {
     const formData = await request.formData();
@@ -253,7 +289,7 @@ export async function PUT(request: Request) {
 
     if (imageFile instanceof File && imageFile.size > 0) {
       const upload = await uploadProductImage(imageFile, values.name);
-      uploadedImagePath = upload.path;
+      uploadedImageUrls.push(upload.path);
       imageUrl = upload.publicUrl;
       shouldRemovePreviousImage = imageUrl !== existingProduct.image;
     }
@@ -265,12 +301,21 @@ export async function PUT(request: Request) {
       );
     }
 
+    const galleryUploads = await uploadGalleryImages(formData, values.name);
+    uploadedImageUrls.push(...galleryUploads.map((item) => item.path));
+    const galleryImages = [
+      ...values.galleryImages,
+      ...galleryUploads.map((item) => item.publicUrl),
+    ];
+
     const updatedProduct = await updateAdminProduct({
       id: values.id,
       name: values.name,
+      slug: values.slug,
       categorySlug: values.categorySlug,
       category: values.category,
       price: values.price,
+      summary: values.summary,
       description: values.description,
       brand: values.brand,
       sku: values.sku,
@@ -278,12 +323,19 @@ export async function PUT(request: Request) {
       stockStatus: values.stockStatus,
       image: imageUrl,
       imageAlt: values.imageAlt,
+      galleryImages,
+      specifications: values.specifications,
       featured: values.featured,
     });
 
     if (shouldRemovePreviousImage) {
       await removeStoredImage(existingProduct.image);
     }
+
+    const removedGalleryImages = (existingProduct.galleryImages ?? []).filter(
+      (image) => !galleryImages.includes(image),
+    );
+    await removeStoredImages(removedGalleryImages);
 
     revalidateCatalogPaths([
       existingProduct.categorySlug,
@@ -292,13 +344,37 @@ export async function PUT(request: Request) {
 
     return NextResponse.json({ product: updatedProduct });
   } catch (error) {
-    if (uploadedImagePath && hasSupabaseAdminConfig()) {
-      const supabase = createSupabaseAdminClient();
-      await supabase.storage.from(PRODUCT_IMAGES_BUCKET).remove([uploadedImagePath]);
+    if (uploadedImageUrls.length > 0) {
+      await removeStoredImages(uploadedImageUrls);
     }
 
     const message =
       error instanceof Error ? error.message : "Unable to update product.";
+
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const { id } = (await request.json()) as { id?: string };
+
+    if (!id) {
+      return NextResponse.json(
+        { error: "A product id is required to delete a product." },
+        { status: 400 },
+      );
+    }
+
+    const deletedProduct = await deleteAdminProduct(id);
+    await removeStoredImage(deletedProduct.image);
+    await removeStoredImages(deletedProduct.galleryImages ?? []);
+    revalidateCatalogPaths([deletedProduct.categorySlug]);
+
+    return NextResponse.json({ product: deletedProduct });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Unable to delete product.";
 
     return NextResponse.json({ error: message }, { status: 500 });
   }

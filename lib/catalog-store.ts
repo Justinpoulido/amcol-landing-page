@@ -50,9 +50,11 @@ export type AdminProductRecord = ProductItem & {
 
 export type AdminProductInput = {
   name: string;
+  slug?: string;
   categorySlug: string;
   category: string;
   price: string;
+  summary?: string;
   description: string;
   brand?: string;
   sku?: string;
@@ -60,6 +62,8 @@ export type AdminProductInput = {
   stockStatus?: string;
   image: string;
   imageAlt?: string;
+  galleryImages?: string[];
+  specifications?: string[];
   featured?: boolean;
   createdBy?: string | null;
 };
@@ -80,7 +84,9 @@ type ProductCategoryRow = {
 type ProductRow = {
   id: string;
   name: string;
+  slug: string | null;
   price: string;
+  summary: string | null;
   description: string;
   brand: string | null;
   sku: string | null;
@@ -88,15 +94,50 @@ type ProductRow = {
   stock_status: string;
   image_url: string;
   image_alt: string | null;
+  gallery_images: string[] | string | null;
+  specifications: string[] | string | null;
   featured: boolean;
   created_at: string;
   product_categories: ProductCategoryRow | ProductCategoryRow[] | null;
 };
 
+function normalizeStringList(value: string[] | string | null | undefined) {
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item).trim()).filter(Boolean);
+  }
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+
+    if (!trimmed) {
+      return [];
+    }
+
+    try {
+      const parsed = JSON.parse(trimmed);
+
+      if (Array.isArray(parsed)) {
+        return parsed.map((item) => String(item).trim()).filter(Boolean);
+      }
+    } catch {
+      // Fall back to splitting legacy comma/newline data.
+    }
+
+    return trimmed
+      .split(/\r?\n|,/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  return [];
+}
+
 const productSelectQuery = `
   id,
   name,
+  slug,
   price,
+  summary,
   description,
   brand,
   sku,
@@ -104,6 +145,8 @@ const productSelectQuery = `
   stock_status,
   image_url,
   image_alt,
+  gallery_images,
+  specifications,
   featured,
   created_at,
   product_categories!inner (
@@ -248,6 +291,14 @@ export async function getAdminProductById(
   return getFileAdminProductById(id);
 }
 
+export async function deleteAdminProduct(id: string): Promise<AdminProductRecord> {
+  if (hasSupabaseAdminConfig()) {
+    return deleteSupabaseAdminProduct(id);
+  }
+
+  return deleteFileAdminProduct(id);
+}
+
 async function getFileAdminProducts(): Promise<AdminProductRecord[]> {
   await ensureDataFile();
 
@@ -329,9 +380,11 @@ function mapSupabaseProduct(row: ProductRow): AdminProductRecord {
   return {
     id: row.id,
     name: row.name,
+    slug: row.slug ?? undefined,
     categorySlug: categoryRecord?.slug ?? "",
     category: categoryRecord?.name ?? "Uncategorized",
     price: row.price,
+    summary: row.summary ?? undefined,
     description: row.description,
     brand: row.brand ?? undefined,
     sku: row.sku ?? undefined,
@@ -339,6 +392,8 @@ function mapSupabaseProduct(row: ProductRow): AdminProductRecord {
     stockStatus: row.stock_status,
     image: row.image_url,
     imageAlt: row.image_alt ?? row.name,
+    galleryImages: normalizeStringList(row.gallery_images),
+    specifications: normalizeStringList(row.specifications),
     featured: row.featured,
     createdAt: row.created_at,
     source: "admin",
@@ -415,6 +470,45 @@ async function deleteFileAdminCategory(
   return { category };
 }
 
+async function deleteFileAdminProduct(id: string): Promise<AdminProductRecord> {
+  const existingProducts = await getFileAdminProducts();
+  const productIndex = existingProducts.findIndex((product) => product.id === id);
+
+  if (productIndex === -1) {
+    throw new Error("Unable to find the selected product.");
+  }
+
+  const [deletedProduct] = existingProducts.splice(productIndex, 1);
+
+  await writeFile(
+    adminProductsFile,
+    JSON.stringify(existingProducts, null, 2),
+    "utf8",
+  );
+
+  return deletedProduct;
+}
+
+async function deleteSupabaseAdminProduct(id: string): Promise<AdminProductRecord> {
+  const existingProduct = await getSupabaseAdminProductById(id);
+
+  if (!existingProduct) {
+    throw new Error("Unable to find the selected product.");
+  }
+
+  const supabase = createSupabaseAdminClient();
+  const { error } = await supabase
+    .from("products")
+    .update({ is_active: false })
+    .eq("id", id);
+
+  if (error) {
+    throw new Error(`Unable to delete product: ${error.message}`);
+  }
+
+  return existingProduct;
+}
+
 async function deleteSupabaseAdminCategory(
   id: string,
 ): Promise<DeleteAdminCategoryResult> {
@@ -472,7 +566,8 @@ export async function updateAdminProduct(
 async function createFileAdminProduct(
   input: AdminProductInput,
 ): Promise<AdminProductRecord> {
-  const category = productCategoryData[input.categorySlug];
+  const categories = await getBaseCategoryData();
+  const category = categories[input.categorySlug];
 
   if (!category) {
     throw new Error("Please select a valid product category.");
@@ -481,9 +576,11 @@ async function createFileAdminProduct(
   const nextProduct: AdminProductRecord = {
     id: `admin-${Date.now()}`,
     name: input.name.trim(),
+    slug: createProductSlug(input.slug?.trim() || input.name),
     categorySlug: category.slug,
     category: input.category.trim() || category.name,
     price: input.price.trim(),
+    summary: input.summary?.trim() || undefined,
     description: input.description.trim(),
     brand: input.brand?.trim() || undefined,
     sku: input.sku?.trim() || undefined,
@@ -491,6 +588,8 @@ async function createFileAdminProduct(
     stockStatus: input.stockStatus?.trim() || "In stock",
     image: input.image,
     imageAlt: input.imageAlt?.trim() || input.name.trim(),
+    galleryImages: input.galleryImages?.filter(Boolean),
+    specifications: input.specifications?.filter(Boolean),
     featured: Boolean(input.featured),
     createdAt: new Date().toISOString(),
     source: "admin",
@@ -522,7 +621,9 @@ async function createSupabaseAdminProduct(
     .insert({
       category_id: category.id,
       name: input.name.trim(),
+      slug: createProductSlug(input.slug?.trim() || input.name),
       price: input.price.trim(),
+      summary: input.summary?.trim() || null,
       description: input.description.trim(),
       brand: input.brand?.trim() || null,
       sku: input.sku?.trim() || null,
@@ -530,6 +631,8 @@ async function createSupabaseAdminProduct(
       stock_status: input.stockStatus?.trim() || "In stock",
       image_url: input.image,
       image_alt: input.imageAlt?.trim() || input.name.trim(),
+      gallery_images: input.galleryImages?.filter(Boolean) ?? [],
+      specifications: input.specifications?.filter(Boolean) ?? [],
       featured: Boolean(input.featured),
       created_by: input.createdBy ?? null,
     })
@@ -636,7 +739,8 @@ async function createSupabaseAdminCategory(
 async function updateFileAdminProduct(
   input: AdminProductUpdateInput,
 ): Promise<AdminProductRecord> {
-  const category = productCategoryData[input.categorySlug];
+  const categories = await getBaseCategoryData();
+  const category = categories[input.categorySlug];
 
   if (!category) {
     throw new Error("Please select a valid product category.");
@@ -655,9 +759,11 @@ async function updateFileAdminProduct(
   const updatedProduct: AdminProductRecord = {
     ...currentProduct,
     name: input.name.trim(),
+    slug: createProductSlug(input.slug?.trim() || input.name),
     categorySlug: category.slug,
     category: input.category.trim() || category.name,
     price: input.price.trim(),
+    summary: input.summary?.trim() || undefined,
     description: input.description.trim(),
     brand: input.brand?.trim() || undefined,
     sku: input.sku?.trim() || undefined,
@@ -665,6 +771,8 @@ async function updateFileAdminProduct(
     stockStatus: input.stockStatus?.trim() || "In stock",
     image: input.image,
     imageAlt: input.imageAlt?.trim() || input.name.trim(),
+    galleryImages: input.galleryImages?.filter(Boolean),
+    specifications: input.specifications?.filter(Boolean),
     featured: Boolean(input.featured),
   };
 
@@ -694,7 +802,9 @@ async function updateSupabaseAdminProduct(
     .update({
       category_id: category.id,
       name: input.name.trim(),
+      slug: createProductSlug(input.slug?.trim() || input.name),
       price: input.price.trim(),
+      summary: input.summary?.trim() || null,
       description: input.description.trim(),
       brand: input.brand?.trim() || null,
       sku: input.sku?.trim() || null,
@@ -702,6 +812,8 @@ async function updateSupabaseAdminProduct(
       stock_status: input.stockStatus?.trim() || "In stock",
       image_url: input.image,
       image_alt: input.imageAlt?.trim() || input.name.trim(),
+      gallery_images: input.galleryImages?.filter(Boolean) ?? [],
+      specifications: input.specifications?.filter(Boolean) ?? [],
       featured: Boolean(input.featured),
     })
     .eq("id", input.id)

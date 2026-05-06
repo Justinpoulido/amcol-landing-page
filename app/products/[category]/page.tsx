@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { getCategoryBySlug, getProductBySlug } from "@/lib/catalog-store";
+import { ProductImageCarousel } from "./ProductImageCarousel";
 
 const navLinks = [
   { name: "HOME", href: "https://www.amcolhardwarett.com/index.php" },
@@ -32,6 +33,9 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       product.unit ? `Unit: ${product.unit}` : null,
       product.stockStatus ? `Availability: ${product.stockStatus}` : null,
     ].filter((item): item is string => Boolean(item));
+    const galleryImages = Array.isArray(product.galleryImages)
+      ? product.galleryImages.filter(Boolean)
+      : [];
 
     const useCases =
       product.useCases && product.useCases.length > 0
@@ -105,19 +109,12 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         <main className="bg-[linear-gradient(180deg,#f8fbff_0%,#eef5fb_48%,#ffffff_100%)]">
           <section className="border-t border-slate-200 px-6 py-16 sm:px-8 sm:py-24 lg:px-10">
             <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:items-start">
-              <div className="relative overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.55)] sm:p-6">
-                <div className="absolute inset-x-0 top-0 h-28 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.20),transparent_68%)] opacity-90" />
-                <div className="relative flex min-h-[360px] items-center justify-center overflow-hidden rounded-[1.4rem] border border-slate-100 bg-[linear-gradient(180deg,#f8fbfd_0%,#eef6fb_100%)] sm:min-h-[460px]">
-                  <Image
-                    src={product.image}
-                    alt={product.imageAlt || product.name}
-                    fill
-                    priority
-                    sizes="(min-width: 1024px) 45vw, 100vw"
-                    className="object-contain p-6"
-                  />
-                </div>
-              </div>
+              <ProductImageCarousel
+                productName={product.name}
+                mainImage={product.image}
+                imageAlt={product.imageAlt}
+                galleryImages={galleryImages}
+              />
 
               <div className="flex flex-col">
                 <div className="flex flex-wrap items-center gap-3">

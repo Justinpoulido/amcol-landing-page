@@ -6,15 +6,21 @@ const supabaseStorageHostname = process.env.NEXT_PUBLIC_SUPABASE_URL
 
 const nextConfig: NextConfig = {
   images: {
-    remotePatterns: supabaseStorageHostname
-      ? [
-          {
-            protocol: "https",
-            hostname: supabaseStorageHostname,
-            pathname: "/storage/v1/object/public/**",
-          },
-        ]
-      : [],
+    remotePatterns: [
+      ...(supabaseStorageHostname
+        ? [
+            {
+              protocol: "https" as const,
+              hostname: supabaseStorageHostname,
+              pathname: "/storage/v1/object/public/**",
+            },
+          ]
+        : []),
+      {
+        protocol: "https",
+        hostname: "*.public.blob.vercel-storage.com",
+      },
+    ],
   },
 };
 
