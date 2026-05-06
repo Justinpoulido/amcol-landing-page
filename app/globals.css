@@ -25,6 +25,15 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+.product-card-summary {
+  display: -webkit-box;
+  line-clamp: 3;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  max-height: calc(1.5rem * 3);
+  overflow: hidden;
+}
+
 .hero-mainnav {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 247, 250, 0.96)),

@@ -391,9 +391,8 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                   <h3 className="mt-3 text-xl font-semibold leading-7 text-slate-900">
                     {product.name}
                   </h3>
-                  <p className="mt-3 text-sm leading-6 text-slate-600">
-                    {product.description ||
-                      "Contact our sales team for full specifications, compatible use cases, and ordering support."}
+                  <p className="product-card-summary mt-3 text-sm leading-6 text-slate-600">
+                    {product.summary}
                   </p>
 
                   <div className="mt-5 flex flex-wrap gap-3 text-sm text-slate-600">
@@ -405,9 +404,15 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                     {product.unit ? <span>Unit: {product.unit}</span> : null}
                   </div>
 
-                  <p className="mt-auto pt-6 text-sm font-semibold text-slate-600">
-                    {product.stockStatus || "Call for availability"}
-                  </p>
+                  <div className="mt-auto flex items-center justify-between gap-4 pt-6">
+                    <p className="text-sm font-semibold text-slate-600">
+                      {product.stockStatus || "Call for availability"}
+                    </p>
+                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-900 transition group-hover:text-cyan-800">
+                      View details
+                      <span aria-hidden="true">-&gt;</span>
+                    </span>
+                  </div>
                 </div>
               </Link>
             ))}

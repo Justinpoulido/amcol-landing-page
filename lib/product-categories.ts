@@ -5,6 +5,7 @@ export type ProductItem = {
   price: string;
   image: string;
   category: string;
+  summary?: string;
   description?: string;
   specifications?: string[];
   useCases?: string[];

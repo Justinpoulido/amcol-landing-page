@@ -132,6 +132,8 @@ const legacyCategorySelectQuery = `
 
 const defaultCategoryImage = "/images/Heritage Industry.jpg";
 const defaultCategoryBanner = "/images/Proman_industrial.png";
+const defaultProductSummary =
+  "Product details are available through our sales team for this category.";
 
 const dataDirectory = path.join(process.cwd(), "data");
 const adminProductsFile = path.join(dataDirectory, "admin-products.json");
@@ -864,6 +866,44 @@ function buildDynamicCategoryPageData(
   };
 }
 
+function summarizeText(value: string) {
+  const normalized = value.replace(/\s+/g, " ").trim();
+
+  if (!normalized) {
+    return "";
+  }
+
+  const sentenceMatch = normalized.match(/^.+?[.!?](?=\s|$)/);
+  const firstSentence = sentenceMatch?.[0] ?? normalized;
+
+  if (firstSentence.length <= 180) {
+    return firstSentence;
+  }
+
+  const truncated = firstSentence.slice(0, 177);
+  const lastSpace = truncated.lastIndexOf(" ");
+
+  return `${truncated.slice(0, lastSpace > 120 ? lastSpace : 177).trim()}...`;
+}
+
+function getProductSummary(product: ProductItem) {
+  const providedSummary = product.summary?.trim();
+
+  if (providedSummary) {
+    return providedSummary;
+  }
+
+  const descriptionSummary = product.description
+    ? summarizeText(product.description)
+    : "";
+
+  if (descriptionSummary) {
+    return descriptionSummary;
+  }
+
+  return defaultProductSummary;
+}
+
 async function getBaseCategoryData(): Promise<Record<string, ProductCategoryPageData>> {
   const baseCategories = Object.fromEntries(
     Object.entries(productCategoryData).map(([slug, category]) => [
@@ -984,6 +1024,7 @@ function addProductSlugs<
     return {
       ...product,
       slug,
+      summary: getProductSummary(product),
     };
   });
 }

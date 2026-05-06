@@ -183,9 +183,8 @@ export default async function ProductsPage() {
                   <h3 className="mt-3 text-xl font-semibold leading-7 text-slate-900">
                     {product.name}
                   </h3>
-                  <p className="mt-3 text-sm leading-6 text-slate-600">
-                    {product.description ||
-                      "Product details are available through our sales team for this category."}
+                  <p className="product-card-summary mt-3 text-sm leading-6 text-slate-600">
+                    {product.summary}
                   </p>
 
                   <div className="mt-5 flex flex-wrap gap-3 text-sm text-slate-600">
