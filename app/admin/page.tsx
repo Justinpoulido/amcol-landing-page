@@ -128,6 +128,22 @@ function splitGalleryImages(value: string) {
     .filter(Boolean);
 }
 
+async function readJsonResponse<T>(response: Response, fallbackMessage: string) {
+  const contentType = response.headers.get("content-type") ?? "";
+
+  if (contentType.includes("application/json")) {
+    return (await response.json()) as T;
+  }
+
+  const text = await response.text();
+  const htmlTitle = text.match(/<title>(.*?)<\/title>/i)?.[1];
+  const detail = htmlTitle || text.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+
+  throw new Error(
+    detail ? `${fallbackMessage} Server returned: ${detail}` : fallbackMessage,
+  );
+}
+
 export default function AdminDashboardPage() {
   const [activeSection, setActiveSection] = useState<AdminSection>("products");
   const [categories, setCategories] = useState<CategoryOption[]>(fallbackCategories);
@@ -167,12 +183,31 @@ export default function AdminDashboardPage() {
           fetch("/api/admin/products"),
           fetch("/api/admin/categories"),
         ]);
-        const productData = (await productsResponse.json()) as DashboardResponse;
-        const categoryData = (await categoriesResponse.json()) as CategoriesResponse;
 
-        if (!productsResponse.ok || !categoriesResponse.ok) {
-          throw new Error("Unable to load admin data.");
+        if (!productsResponse.ok) {
+          await readJsonResponse<{ error?: string }>(
+            productsResponse,
+            "Unable to load products.",
+          );
+          throw new Error("Unable to load products.");
         }
+
+        if (!categoriesResponse.ok) {
+          await readJsonResponse<{ error?: string }>(
+            categoriesResponse,
+            "Unable to load categories.",
+          );
+          throw new Error("Unable to load categories.");
+        }
+
+        const productData = await readJsonResponse<DashboardResponse>(
+          productsResponse,
+          "Unable to load products.",
+        );
+        const categoryData = await readJsonResponse<CategoriesResponse>(
+          categoriesResponse,
+          "Unable to load categories.",
+        );
 
         if (!isMounted) {
           return;
@@ -544,7 +579,10 @@ export default function AdminDashboardPage() {
         body: payload,
       });
 
-      const data = (await response.json()) as ProductResponse;
+      const data = await readJsonResponse<ProductResponse>(
+        response,
+        isEditMode ? "Unable to update product." : "Unable to save product.",
+      );
 
       if (!response.ok || !("product" in data)) {
         throw new Error(
@@ -594,7 +632,10 @@ export default function AdminDashboardPage() {
         body: JSON.stringify({ id: product.id }),
       });
 
-      const data = (await response.json()) as ProductResponse;
+      const data = await readJsonResponse<ProductResponse>(
+        response,
+        "Unable to delete product.",
+      );
 
       if (!response.ok || !("product" in data)) {
         throw new Error("error" in data ? data.error : "Unable to delete product.");
@@ -637,7 +678,10 @@ export default function AdminDashboardPage() {
         body: payload,
       });
 
-      const data = (await response.json()) as CategoryResponse;
+      const data = await readJsonResponse<CategoryResponse>(
+        response,
+        "Unable to create category.",
+      );
 
       if (!response.ok || !("category" in data)) {
         throw new Error("error" in data ? data.error : "Unable to create category.");
@@ -676,7 +720,10 @@ export default function AdminDashboardPage() {
         body: JSON.stringify({ id: category.id }),
       });
 
-      const data = (await response.json()) as CategoryResponse;
+      const data = await readJsonResponse<CategoryResponse>(
+        response,
+        "Unable to delete category.",
+      );
 
       if (!response.ok || !("category" in data)) {
         throw new Error("error" in data ? data.error : "Unable to delete category.");

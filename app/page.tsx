@@ -294,15 +294,7 @@ export default function Home() {
             {chunkCategories(landingCategories, 4).map((row, rowIndex) => (
               <div
                 key={rowIndex}
-                className={`grid gap-5 sm:grid-cols-2 md:grid-cols-3 lg:gap-6 xl:gap-7 ${
-                  row.length >= 4
-                    ? "xl:grid-cols-4"
-                    : row.length === 3
-                      ? "xl:grid-cols-3"
-                      : row.length === 2
-                        ? "xl:grid-cols-2"
-                        : "xl:grid-cols-1"
-                }`}
+                className="grid gap-5 sm:grid-cols-2 md:grid-cols-3 lg:gap-6 xl:grid-cols-4 xl:gap-7"
               >
                 {row.map((tile) => (
                   <Link
