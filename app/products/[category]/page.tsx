@@ -17,10 +17,33 @@ type CategoryPageProps = {
   params: Promise<{
     category: string;
   }>;
+  searchParams?: Promise<CategorySearchParams>;
 };
 
-export default async function CategoryPage({ params }: CategoryPageProps) {
-  const { category } = await params;
+type CategorySearchParams = {
+  brand?: string | string[];
+};
+
+const pipeValveFittingBrands = ["Valve", "Flange", "Pipe"] as const;
+
+function getSelectedBrand(value: string | string[] | undefined) {
+  const selectedValue = Array.isArray(value) ? value[0] : value;
+
+  return pipeValveFittingBrands.find(
+    (brand) => brand.toLowerCase() === selectedValue?.toLowerCase(),
+  );
+}
+
+function matchesBrand(productBrand: string | undefined, brand: string) {
+  return productBrand?.toLowerCase() === brand.toLowerCase();
+}
+
+export default async function CategoryPage({ params, searchParams }: CategoryPageProps) {
+  const emptySearchParams: CategorySearchParams = {};
+  const [{ category }, query] = await Promise.all([
+    params,
+    searchParams ?? Promise.resolve(emptySearchParams),
+  ]);
   const slug = category.toLowerCase();
   const data = await getCategoryBySlug(slug);
   const product = data ? null : await getProductBySlug(slug);
@@ -237,6 +260,17 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     );
   }
 
+  const isPipeValveFittingCategory =
+    data.name.toLowerCase().includes("pipe") &&
+    data.name.toLowerCase().includes("valve") &&
+    data.name.toLowerCase().includes("fitting");
+  const selectedBrand = isPipeValveFittingCategory
+    ? getSelectedBrand(query.brand)
+    : undefined;
+  const visibleProducts = selectedBrand
+    ? data.products.filter((product) => matchesBrand(product.brand, selectedBrand))
+    : data.products;
+
   return (
     <div className="min-h-screen bg-white font-sans text-zinc-900">
       <header className="hero-mainnav relative z-40">
@@ -356,8 +390,76 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
             </p>
           </div>
 
+          {isPipeValveFittingCategory ? (
+            <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-3">
+              {pipeValveFittingBrands.map((brand) => {
+                const brandProducts = data.products.filter((product) =>
+                  matchesBrand(product.brand, brand),
+                );
+                const previewProduct = brandProducts[0];
+                const isActive = selectedBrand === brand;
+
+                return (
+                  <Link
+                    key={brand}
+                    href={
+                      isActive
+                        ? `/products/${data.slug}`
+                        : `/products/${data.slug}?brand=${encodeURIComponent(brand)}`
+                    }
+                    className={`group relative flex min-h-40 overflow-hidden rounded-[1.4rem] border bg-white p-5 text-left shadow-[0_16px_34px_-28px_rgba(15,23,42,0.55)] transition-all duration-300 hover:-translate-y-1 hover:border-cyan-300 hover:shadow-[0_24px_46px_-28px_rgba(8,47,73,0.32)] ${
+                      isActive
+                        ? "border-cyan-400 ring-2 ring-cyan-200"
+                        : "border-slate-200"
+                    }`}
+                    aria-current={isActive ? "true" : undefined}
+                  >
+                    <div className="flex min-w-0 flex-1 flex-col justify-between">
+                      <div>
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-cyan-700">
+                          Brand Filter
+                        </p>
+                        <h3 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950">
+                          {brand}
+                        </h3>
+                      </div>
+                      <p className="mt-5 text-sm font-semibold text-slate-600">
+                        {brandProducts.length} {brandProducts.length === 1 ? "item" : "items"}
+                      </p>
+                    </div>
+
+                    <div className="relative ml-4 h-28 w-28 shrink-0 overflow-hidden rounded-2xl border border-slate-100 bg-[linear-gradient(180deg,#f8fbfd_0%,#eef6fb_100%)]">
+                      <Image
+                        src={previewProduct?.image || data.image}
+                        alt={previewProduct?.imageAlt || `${brand} products`}
+                        fill
+                        sizes="112px"
+                        className="object-contain p-3 transition-transform duration-300 group-hover:scale-105"
+                      />
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          ) : null}
+
+          {selectedBrand ? (
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-4 text-sm text-slate-600">
+              <p>
+                Showing {visibleProducts.length} {selectedBrand.toLowerCase()}{" "}
+                {visibleProducts.length === 1 ? "product" : "products"}.
+              </p>
+              <Link
+                href={`/products/${data.slug}`}
+                className="font-semibold uppercase tracking-[0.16em] text-cyan-800 transition hover:text-cyan-950"
+              >
+                Clear filter
+              </Link>
+            </div>
+          ) : null}
+
           <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
-            {data.products.map((product) => (
+            {visibleProducts.map((product) => (
               <Link
                 key={product.id}
                 href={`/products/${product.slug || product.id}`}

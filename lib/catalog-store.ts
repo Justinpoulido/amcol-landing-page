@@ -177,6 +177,9 @@ const defaultCategoryImage = "/images/Heritage Industry.jpg";
 const defaultCategoryBanner = "/images/Proman_industrial.png";
 const defaultProductSummary =
   "Product details are available through our sales team for this category.";
+const categoryImageOverrides: Record<string, string> = {
+  "pipe-valves-and-fittings": "/images/pipes-valves-fittings.png",
+};
 
 const dataDirectory = path.join(process.cwd(), "data");
 const adminProductsFile = path.join(dataDirectory, "admin-products.json");
@@ -969,7 +972,7 @@ function buildDynamicCategoryPageData(
     slug: category.slug,
     name: category.name,
     href: `/products/${category.slug}`,
-    image: category.image || defaultCategoryImage,
+    image: categoryImageOverrides[category.slug] || category.image || defaultCategoryImage,
     banner: defaultCategoryBanner,
     title: category.name,
     subtitle: buildCategorySubtitle(category.name),
@@ -1033,7 +1036,10 @@ async function getBaseCategoryData(): Promise<Record<string, ProductCategoryPage
       baseCategories[category.slug] = {
         ...seededCategory,
         name: category.name,
-        image: category.image || seededCategory.image,
+        image:
+          categoryImageOverrides[category.slug] ||
+          category.image ||
+          seededCategory.image,
         title: category.name,
         description: category.description || seededCategory.description,
       };
