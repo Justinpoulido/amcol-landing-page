@@ -27,6 +27,11 @@ type CategorySearchParams = {
 
 const pipeValveFittingBrands = ["Valve", "Flange", "Pipe"] as const;
 const sprayersPumpsSlug = "sprayers-pumps";
+const pipeValveFittingBrandImages: Partial<
+  Record<(typeof pipeValveFittingBrands)[number], string>
+> = {
+  Pipe: "/images/IPVF-PIPE.png",
+};
 
 function getSelectedBrand(value: string | string[] | undefined) {
   const selectedValue = Array.isArray(value) ? value[0] : value;
@@ -437,6 +442,8 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
                   matchesBrand(product.brand, brand),
                 );
                 const previewProduct = brandProducts[0];
+                const previewImage =
+                  pipeValveFittingBrandImages[brand] || previewProduct?.image || data.image;
                 const isActive = selectedBrand === brand;
 
                 return (
@@ -467,7 +474,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
 
                     <div className="relative mt-7 h-44 w-full shrink-0 overflow-hidden rounded-[1.25rem] border border-slate-100 bg-[linear-gradient(180deg,#f8fbfd_0%,#eef6fb_100%)]">
                       <Image
-                        src={previewProduct?.image || data.image}
+                        src={previewImage}
                         alt={previewProduct?.imageAlt || `${brand} products`}
                         fill
                         sizes="(min-width: 640px) 28vw, 100vw"
