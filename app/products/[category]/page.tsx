@@ -22,9 +22,11 @@ type CategoryPageProps = {
 
 type CategorySearchParams = {
   brand?: string | string[];
+  pumpType?: string | string[];
 };
 
 const pipeValveFittingBrands = ["Valve", "Flange", "Pipe"] as const;
+const sprayersPumpsSlug = "sprayers-pumps";
 
 function getSelectedBrand(value: string | string[] | undefined) {
   const selectedValue = Array.isArray(value) ? value[0] : value;
@@ -36,6 +38,31 @@ function getSelectedBrand(value: string | string[] | undefined) {
 
 function matchesBrand(productBrand: string | undefined, brand: string) {
   return productBrand?.toLowerCase() === brand.toLowerCase();
+}
+
+function getQueryValue(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function getProductTypes(products: { category: string }[]) {
+  return Array.from(
+    new Set(products.map((product) => product.category).filter(Boolean)),
+  );
+}
+
+function getSelectedProductType(
+  value: string | string[] | undefined,
+  productTypes: string[],
+) {
+  const selectedValue = getQueryValue(value);
+
+  return productTypes.find(
+    (productType) => productType.toLowerCase() === selectedValue?.toLowerCase(),
+  );
+}
+
+function matchesProductType(productType: string, selectedType: string) {
+  return productType.toLowerCase() === selectedType.toLowerCase();
 }
 
 export default async function CategoryPage({ params, searchParams }: CategoryPageProps) {
@@ -267,8 +294,21 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   const selectedBrand = isPipeValveFittingCategory
     ? getSelectedBrand(query.brand)
     : undefined;
+  const isSprayersPumpsCategory = data.slug === sprayersPumpsSlug;
+  const productTypes = isSprayersPumpsCategory ? getProductTypes(data.products) : [];
+  const selectedProductType = isSprayersPumpsCategory
+    ? getSelectedProductType(query.pumpType, productTypes)
+    : undefined;
+  const hasProductFilterCards = isPipeValveFittingCategory || isSprayersPumpsCategory;
+  const hasSelectedProductFilter = Boolean(selectedBrand || selectedProductType);
   const visibleProducts = selectedBrand
     ? data.products.filter((product) => matchesBrand(product.brand, selectedBrand))
+    : selectedProductType
+    ? data.products.filter((product) =>
+        matchesProductType(product.category, selectedProductType),
+      )
+    : hasProductFilterCards
+    ? []
     : data.products;
 
   return (
@@ -391,7 +431,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
           </div>
 
           {isPipeValveFittingCategory ? (
-            <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-3">
               {pipeValveFittingBrands.map((brand) => {
                 const brandProducts = data.products.filter((product) =>
                   matchesBrand(product.brand, brand),
@@ -407,48 +447,111 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
                         ? `/products/${data.slug}`
                         : `/products/${data.slug}?brand=${encodeURIComponent(brand)}`
                     }
-                    className={`group relative flex min-h-40 overflow-hidden rounded-[1.4rem] border bg-white p-5 text-left shadow-[0_16px_34px_-28px_rgba(15,23,42,0.55)] transition-all duration-300 hover:-translate-y-1 hover:border-cyan-300 hover:shadow-[0_24px_46px_-28px_rgba(8,47,73,0.32)] ${
+                    className={`group relative flex min-h-[320px] flex-col overflow-hidden rounded-[1.6rem] border bg-white p-7 text-left shadow-[0_18px_42px_-28px_rgba(15,23,42,0.58)] transition-all duration-300 hover:-translate-y-1 hover:border-cyan-300 hover:shadow-[0_28px_56px_-30px_rgba(8,47,73,0.36)] ${
                       isActive
                         ? "border-cyan-400 ring-2 ring-cyan-200"
                         : "border-slate-200"
                     }`}
                     aria-current={isActive ? "true" : undefined}
                   >
-                    <div className="flex min-w-0 flex-1 flex-col justify-between">
+                    <div className="flex min-w-0 flex-1 flex-col">
                       <div>
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-cyan-700">
-                          Brand Filter
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-cyan-700">
+                          Select Category
                         </p>
-                        <h3 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950">
+                        <h3 className="mt-4 break-words text-3xl font-semibold tracking-tight text-slate-950">
                           {brand}
                         </h3>
                       </div>
-                      <p className="mt-5 text-sm font-semibold text-slate-600">
-                        {brandProducts.length} {brandProducts.length === 1 ? "item" : "items"}
-                      </p>
                     </div>
 
-                    <div className="relative ml-4 h-28 w-28 shrink-0 overflow-hidden rounded-2xl border border-slate-100 bg-[linear-gradient(180deg,#f8fbfd_0%,#eef6fb_100%)]">
+                    <div className="relative mt-7 h-44 w-full shrink-0 overflow-hidden rounded-[1.25rem] border border-slate-100 bg-[linear-gradient(180deg,#f8fbfd_0%,#eef6fb_100%)]">
                       <Image
                         src={previewProduct?.image || data.image}
                         alt={previewProduct?.imageAlt || `${brand} products`}
                         fill
-                        sizes="112px"
-                        className="object-contain p-3 transition-transform duration-300 group-hover:scale-105"
+                        sizes="(min-width: 640px) 28vw, 100vw"
+                        className="object-contain p-5 transition-transform duration-300 group-hover:scale-105"
                       />
                     </div>
+
+                    <p className="mt-5 text-base font-semibold text-slate-600">
+                      {brandProducts.length} {brandProducts.length === 1 ? "item" : "items"}
+                    </p>
                   </Link>
                 );
               })}
             </div>
           ) : null}
 
-          {selectedBrand ? (
+          {isSprayersPumpsCategory ? (
+            <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-3">
+              {productTypes.map((productType) => {
+                const typeProducts = data.products.filter((product) =>
+                  matchesProductType(product.category, productType),
+                );
+                const previewProduct = typeProducts[0];
+                const isActive = selectedProductType === productType;
+
+                return (
+                  <Link
+                    key={productType}
+                    href={
+                      isActive
+                        ? `/products/${data.slug}`
+                        : `/products/${data.slug}?pumpType=${encodeURIComponent(productType)}`
+                    }
+                    className={`group relative flex min-h-[320px] flex-col overflow-hidden rounded-[1.6rem] border bg-white p-7 text-left shadow-[0_18px_42px_-28px_rgba(15,23,42,0.58)] transition-all duration-300 hover:-translate-y-1 hover:border-cyan-300 hover:shadow-[0_28px_56px_-30px_rgba(8,47,73,0.36)] ${
+                      isActive
+                        ? "border-cyan-400 ring-2 ring-cyan-200"
+                        : "border-slate-200"
+                    }`}
+                    aria-current={isActive ? "true" : undefined}
+                  >
+                    <div className="flex min-w-0 flex-1 flex-col">
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-cyan-700">
+                          Select Category
+                        </p>
+                        <h3 className="mt-4 break-words text-3xl font-semibold tracking-tight text-slate-950">
+                          {productType}
+                        </h3>
+                      </div>
+                    </div>
+
+                    <div className="relative mt-7 h-44 w-full shrink-0 overflow-hidden rounded-[1.25rem] border border-slate-100 bg-[linear-gradient(180deg,#f8fbfd_0%,#eef6fb_100%)]">
+                      <Image
+                        src={previewProduct?.image || data.image}
+                        alt={previewProduct?.imageAlt || `${productType} products`}
+                        fill
+                        sizes="(min-width: 640px) 28vw, 100vw"
+                        className="object-contain p-5 transition-transform duration-300 group-hover:scale-105"
+                      />
+                    </div>
+
+                    <p className="mt-5 text-base font-semibold text-slate-600">
+                      {typeProducts.length} {typeProducts.length === 1 ? "item" : "items"}
+                    </p>
+                  </Link>
+                );
+              })}
+            </div>
+          ) : null}
+
+          {hasSelectedProductFilter ? (
             <div className="mt-8 flex flex-wrap items-center justify-center gap-4 text-sm text-slate-600">
-              <p>
-                Showing {visibleProducts.length} {selectedBrand.toLowerCase()}{" "}
-                {visibleProducts.length === 1 ? "product" : "products"}.
-              </p>
+              {selectedBrand ? (
+                <p>
+                  Showing {visibleProducts.length} {selectedBrand.toLowerCase()}{" "}
+                  {visibleProducts.length === 1 ? "product" : "products"}.
+                </p>
+              ) : null}
+              {selectedProductType ? (
+                <p>
+                  Showing {visibleProducts.length} {selectedProductType.toLowerCase()}{" "}
+                  {visibleProducts.length === 1 ? "product" : "products"}.
+                </p>
+              ) : null}
               <Link
                 href={`/products/${data.slug}`}
                 className="font-semibold uppercase tracking-[0.16em] text-cyan-800 transition hover:text-cyan-950"
@@ -458,64 +561,66 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
             </div>
           ) : null}
 
-          <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
-            {visibleProducts.map((product) => (
-              <Link
-                key={product.id}
-                href={`/products/${product.slug || product.id}`}
-                className="group relative flex min-h-[390px] flex-col overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.55)] transition-all duration-300 hover:-translate-y-1 hover:border-cyan-300 hover:shadow-[0_24px_50px_-26px_rgba(8,47,73,0.35)] sm:p-6"
-              >
-                <div className="absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.20),transparent_68%)] opacity-80 transition-opacity duration-300 group-hover:opacity-100" />
-                <div className="relative flex h-72 w-full items-center justify-center overflow-hidden rounded-[1.4rem] border border-slate-100 bg-[linear-gradient(180deg,#f8fbfd_0%,#eef6fb_100%)] sm:h-80">
-                  <Image
-                    src={product.image}
-                    alt={product.imageAlt || product.name}
-                    fill
-                    sizes="(min-width: 1280px) 24vw, (min-width: 640px) 50vw, 100vw"
-                    className="object-contain p-4 transition-transform duration-300 group-hover:scale-[1.05]"
-                  />
-                </div>
+          {visibleProducts.length > 0 ? (
+            <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+              {visibleProducts.map((product) => (
+                <Link
+                  key={product.id}
+                  href={`/products/${product.slug || product.id}`}
+                  className="group relative flex min-h-[390px] flex-col overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.55)] transition-all duration-300 hover:-translate-y-1 hover:border-cyan-300 hover:shadow-[0_24px_50px_-26px_rgba(8,47,73,0.35)] sm:p-6"
+                >
+                  <div className="absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.20),transparent_68%)] opacity-80 transition-opacity duration-300 group-hover:opacity-100" />
+                  <div className="relative flex h-72 w-full items-center justify-center overflow-hidden rounded-[1.4rem] border border-slate-100 bg-[linear-gradient(180deg,#f8fbfd_0%,#eef6fb_100%)] sm:h-80">
+                    <Image
+                      src={product.image}
+                      alt={product.imageAlt || product.name}
+                      fill
+                      sizes="(min-width: 1280px) 24vw, (min-width: 640px) 50vw, 100vw"
+                      className="object-contain p-4 transition-transform duration-300 group-hover:scale-[1.05]"
+                    />
+                  </div>
 
-                <div className="relative flex flex-1 flex-col pt-5">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-cyan-700">
-                      {product.category}
-                    </span>
-                    {product.featured ? (
-                      <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-amber-700">
-                        Featured
+                  <div className="relative flex flex-1 flex-col pt-5">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-cyan-700">
+                        {product.category}
                       </span>
-                    ) : null}
-                  </div>
-                  <h3 className="mt-3 text-xl font-semibold leading-7 text-slate-900">
-                    {product.name}
-                  </h3>
-                  <p className="product-card-summary mt-3 text-sm leading-6 text-slate-600">
-                    {product.summary}
-                  </p>
-
-                  <div className="mt-5 flex flex-wrap gap-3 text-sm text-slate-600">
-                    <span className="font-semibold uppercase tracking-[0.16em] text-slate-800">
-                      {product.price}
-                    </span>
-                    {product.brand ? <span>Brand: {product.brand}</span> : null}
-                    {product.sku ? <span>SKU: {product.sku}</span> : null}
-                    {product.unit ? <span>Unit: {product.unit}</span> : null}
-                  </div>
-
-                  <div className="mt-auto flex items-center justify-between gap-4 pt-6">
-                    <p className="text-sm font-semibold text-slate-600">
-                      {product.stockStatus || "Call for availability"}
+                      {product.featured ? (
+                        <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-amber-700">
+                          Featured
+                        </span>
+                      ) : null}
+                    </div>
+                    <h3 className="mt-3 text-xl font-semibold leading-7 text-slate-900">
+                      {product.name}
+                    </h3>
+                    <p className="product-card-summary mt-3 text-sm leading-6 text-slate-600">
+                      {product.summary}
                     </p>
-                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-900 transition group-hover:text-cyan-800">
-                      View details
-                      <span aria-hidden="true">-&gt;</span>
-                    </span>
+
+                    <div className="mt-5 flex flex-wrap gap-3 text-sm text-slate-600">
+                      <span className="font-semibold uppercase tracking-[0.16em] text-slate-800">
+                        {product.price}
+                      </span>
+                      {product.brand ? <span>Brand: {product.brand}</span> : null}
+                      {product.sku ? <span>SKU: {product.sku}</span> : null}
+                      {product.unit ? <span>Unit: {product.unit}</span> : null}
+                    </div>
+
+                    <div className="mt-auto flex items-center justify-between gap-4 pt-6">
+                      <p className="text-sm font-semibold text-slate-600">
+                        {product.stockStatus || "Call for availability"}
+                      </p>
+                      <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-900 transition group-hover:text-cyan-800">
+                        View details
+                        <span aria-hidden="true">-&gt;</span>
+                      </span>
+                    </div>
                   </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+                </Link>
+              ))}
+            </div>
+          ) : null}
         </div>
       </section>
     </div>
