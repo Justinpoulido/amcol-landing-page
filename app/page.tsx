@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import type { FormEvent } from "react";
 import { useState, useEffect } from "react";
 import {
   landingCategoryRows,
@@ -46,7 +48,9 @@ function chunkCategories(categories: ProductCategoryPageData[], size: number) {
 }
 
 export default function Home() {
+  const router = useRouter();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
   const [landingCategories, setLandingCategories] = useState<ProductCategoryPageData[]>(
     fallbackLandingCategories,
   );
@@ -93,6 +97,13 @@ export default function Home() {
 
   const prevImage = () => {
     setCurrentImageIndex((prev) => (prev === 0 ? heroImages.length - 1 : prev - 1));
+  };
+
+  const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const query = searchQuery.trim();
+    router.push(query ? `/products?search=${encodeURIComponent(query)}` : "/products");
   };
 
   return (
@@ -252,7 +263,10 @@ export default function Home() {
 
       <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-12">
         <div className="mx-auto max-w-3xl text-center">
-          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <form
+            onSubmit={handleSearchSubmit}
+            className="flex flex-col items-center justify-center gap-4 sm:flex-row"
+          >
             <div className="relative flex items-center w-full max-w-md leading-[28px]">
               <svg
                 viewBox="0 0 24 24"
@@ -269,9 +283,11 @@ export default function Home() {
                 type="search"
                 placeholder="Search..."
                 name="searchbar"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
               />
             </div>
-          </div>
+          </form>
         </div>
       </div>
 
