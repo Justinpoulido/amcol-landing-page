@@ -43,11 +43,7 @@ export const productCategoryData: Record<string, ProductCategoryPageData> = {
     subtitle: "Heavy-duty cleaning for demanding worksites",
     description:
       "Cut through grease, oil, carbon buildup, and shop-floor grime with industrial cleaning solutions designed for maintenance teams, plant shutdowns, and routine equipment care.",
-    products: [
-      { id: 1, name: "WD-40 Specialist Degreaser", price: "$12.99", image: "/images/wd40 degreaser.png", category: "Degreaser" },
-      { id: 2, name: "Simple Green Industrial Cleaner", price: "$15.50", image: "/images/Simple Green Safer Choice Banner.png", category: "All-Purpose Cleaner" },
-      { id: 3, name: "Surface Prep Cleaning Spray", price: "Inquire", image: "/images/Surface Cleaner.png", category: "Surface Prep" },
-    ],
+    products: [],
   },
   "surface-disinfectants-deodorizers": {
     slug: "surface-disinfectants-deodorizers",

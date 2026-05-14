@@ -25,12 +25,13 @@ type CategorySearchParams = {
   pumpType?: string | string[];
 };
 
-const pipeValveFittingBrands = ["Valve", "Flange", "Pipe"] as const;
+const pipeValveFittingBrands = ["Valve", "Flange", "Pipe", "Fittings"] as const;
 const sprayersPumpsSlug = "sprayers-pumps";
 const pipeValveFittingBrandImages: Partial<
   Record<(typeof pipeValveFittingBrands)[number], string>
 > = {
   Pipe: "/images/IPVF-PIPE.png",
+  Fittings: "/images/carbon-steel-industrial-pipe-fittings-thumbnail.png",
 };
 
 function getSelectedBrand(value: string | string[] | undefined) {
@@ -436,7 +437,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
           </div>
 
           {isPipeValveFittingCategory ? (
-            <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-3">
+            <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {pipeValveFittingBrands.map((brand) => {
                 const brandProducts = data.products.filter((product) =>
                   matchesBrand(product.brand, brand),
