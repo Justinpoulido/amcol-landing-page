@@ -24,6 +24,9 @@ export default function ContactPage() {
     urgency: "",
     message: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState("");
+  const [submitError, setSubmitError] = useState("");
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -34,11 +37,45 @@ export default function ContactPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission logic here
-    console.log("Form submitted:", formData);
-    alert("Thank you for your inquiry. A representative will contact you shortly.");
+    setSubmitMessage("");
+    setSubmitError("");
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      const data = (await response.json()) as { ok?: boolean; error?: string };
+
+      if (!response.ok || !data.ok) {
+        throw new Error(data.error || "Unable to submit your request.");
+      }
+
+      setFormData({
+        name: "",
+        email: "",
+        company: "",
+        phone: "",
+        projectType: "",
+        urgency: "",
+        message: "",
+      });
+      setSubmitMessage(
+        "Thank you for your inquiry. A representative will contact you shortly.",
+      );
+    } catch (error) {
+      setSubmitError(
+        error instanceof Error
+          ? error.message
+          : "Unable to submit your request.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -278,11 +315,30 @@ export default function ContactPage() {
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  className="rounded-md bg-[#1A1A1B] px-8 py-3 text-sm font-semibold text-white shadow-sm hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 transition-all"
+                  disabled={isSubmitting}
+                  className="rounded-md bg-[#1A1A1B] px-8 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 disabled:cursor-not-allowed disabled:bg-zinc-400"
                 >
-                  Submit Request
+                  {isSubmitting ? "Submitting..." : "Submit Request"}
                 </button>
               </div>
+
+              {submitMessage ? (
+                <div
+                  role="status"
+                  className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800"
+                >
+                  {submitMessage}
+                </div>
+              ) : null}
+
+              {submitError ? (
+                <div
+                  role="alert"
+                  className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
+                >
+                  {submitError}
+                </div>
+              ) : null}
             </form>
           </div>
 
@@ -299,7 +355,7 @@ export default function ContactPage() {
                   <p className="text-xs text-zinc-400 uppercase tracking-wider">
                     Head of Industrial Sales
                   </p>
-                  <p className="font-semibold text-lg">John Doe</p>
+                  <p className="font-semibold text-lg">Steffi Persad</p>
                 </div>
                 <div className="flex items-center gap-3 text-zinc-300">
                   <svg
