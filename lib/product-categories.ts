@@ -129,16 +129,16 @@ export const productCategoryData: Record<string, ProductCategoryPageData> = {
     slug: "locks-security",
     name: "Locks & Security",
     href: "/products/locks-security",
-    image: "/images/FenceLock_product-.jpg",
+    image: "/images/locks-security-deadbolts.png",
     banner: "/images/Port Authority.png",
     title: "Locks & Security",
     subtitle: "Secure access control for facilities and assets",
     description:
       "Protect gates, storage areas, tools, and perimeter assets with robust locking hardware and security accessories built for industrial and commercial settings.",
     products: [
-      { id: 1, name: "Heavy-Duty Fence Lock", price: "Inquire", image: "/images/FenceLock_product-.jpg", category: "Padlocks" },
-      { id: 2, name: "Security Hasp and Staple Set", price: "Call for Quote", image: "/images/FenceLock_product-.jpg", category: "Hardware" },
-      { id: 3, name: "Commercial Locking Assembly", price: "Inquire", image: "/images/FenceLock_product-.jpg", category: "Access Control" },
+      { id: 1, name: "Heavy-Duty Fence Lock", price: "Inquire", image: "/images/locks-security-deadbolts.png", category: "Padlocks" },
+      { id: 2, name: "Security Hasp and Staple Set", price: "Call for Quote", image: "/images/locks-security-deadbolts.png", category: "Hardware" },
+      { id: 3, name: "Commercial Locking Assembly", price: "Inquire", image: "/images/locks-security-deadbolts.png", category: "Access Control" },
     ],
   },
   lubricants: {
