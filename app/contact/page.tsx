@@ -139,23 +139,24 @@ export default function ContactPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-[#1A1A1B] py-24 sm:py-32">
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#0d2238] to-[#1a3a52] py-24 sm:py-32">
         {/* Background Image with Overlay */}
         <div className="absolute inset-0 z-0">
           <div
-            className="absolute inset-0 bg-cover bg-center opacity-60 grayscale mix-blend-overlay"
+            className="absolute inset-0 bg-cover bg-center opacity-40 grayscale mix-blend-overlay"
             style={{ backgroundImage: "url('/images/Heritage Industry.jpg')" }}
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#1A1A1B]/80 via-[#1A1A1B]/70 to-[#1A1A1B]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0d2238]/85 via-[#1a3a52]/80 to-[#0d2238]/90" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(57,217,205,0.15),transparent_50%)]" />
         </div>
 
         <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8 text-center">
-        <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl">
-  Supplying <span className="text-red-600">Excellence</span>.
-  <br />
-  <span className="text-zinc-400">Built for Industry.</span>
-</h1>
-          <p className="mt-6 text-lg leading-8 text-gray-300 max-w-2xl mx-auto">
+          <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl">
+            Direct Procurement Support
+            <br />
+            <span className="text-cyan-300">Built for Industry Leaders</span>
+          </h1>
+          <p className="mt-6 text-lg leading-8 text-gray-200 max-w-2xl mx-auto">
             Streamlined procurement for enterprise projects. Connect directly
             with our specialized teams for structural supply, fleet maintenance,
             and bulk orders.

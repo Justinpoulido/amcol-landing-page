@@ -162,12 +162,12 @@ export default function Home() {
       </header>
 
       <div className="relative left-1/2 z-10 w-screen -translate-x-1/2 px-0">
-        <div className="overflow-hidden border-y border-red-200/70 bg-[linear-gradient(135deg,rgba(127,29,29,0.92)_0%,rgba(185,28,28,0.76)_45%,rgba(239,68,68,0.5)_100%)] p-[1px_0] shadow-[0_22px_50px_-28px_rgba(127,29,29,0.6)]">
-          <div className="relative overflow-hidden border-y border-white/12 bg-[linear-gradient(135deg,rgba(255,255,255,0.18),rgba(255,255,255,0.06))] px-4 py-4 backdrop-blur-2xl sm:px-6">
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.28),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(254,202,202,0.18),transparent_28%)]" />
-            <div className="pointer-events-none absolute inset-y-3 left-8 w-24 rounded-full bg-white/10 blur-2xl" />
+        <div className="overflow-hidden border-y border-cyan-400/30 bg-[linear-gradient(135deg,rgba(13,34,56,0.95)_0%,rgba(15,55,100,0.90)_45%,rgba(6,182,212,0.25)_100%)] p-[1px_0] shadow-[0_22px_50px_-28px_rgba(6,182,212,0.4)]">
+          <div className="relative overflow-hidden border-y border-cyan-400/20 bg-[linear-gradient(135deg,rgba(255,255,255,0.12),rgba(255,255,255,0.04))] px-4 py-4 backdrop-blur-2xl sm:px-6">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.25),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(6,182,212,0.15),transparent_28%)]" />
+            <div className="pointer-events-none absolute inset-y-3 left-8 w-24 rounded-full bg-cyan-400/20 blur-2xl" />
             <div className="relative mx-auto flex max-w-[1800px] items-center gap-4 px-4 sm:px-6 lg:px-8">
-              <div className="hidden shrink-0 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-red-50 sm:inline-flex">
+              <div className="hidden shrink-0 rounded-full border border-cyan-400/40 bg-cyan-400/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-100 sm:inline-flex">
                 Store Updates
               </div>
               <div className="relative overflow-hidden">
@@ -186,9 +186,9 @@ export default function Home() {
                       {tickerItems.map((item) => (
                         <div
                           key={`${loop}-${item}`}
-                          className="inline-flex items-center gap-3 rounded-full border border-white/16 bg-white/12 px-4 py-2 text-sm font-medium text-red-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
+                          className="inline-flex items-center gap-3 rounded-full border border-cyan-400/25 bg-cyan-400/8 px-4 py-2 text-sm font-medium text-cyan-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]"
                         >
-                          <span className="inline-flex h-2.5 w-2.5 rounded-full bg-red-200 shadow-[0_0_16px_rgba(254,202,202,0.85)]" />
+                          <span className="inline-flex h-2.5 w-2.5 rounded-full bg-cyan-300 shadow-[0_0_16px_rgba(34,211,238,0.75)]" />
                           <span className="whitespace-nowrap">{item}</span>
                         </div>
                       ))}
@@ -202,7 +202,7 @@ export default function Home() {
       </div>
 
       {/* Hero Section */}
-      <section className="relative flex min-h-[60vh] items-center overflow-hidden bg-transparent pt-24 pb-24 sm:pt-28 sm:pb-32 lg:pt-36 lg:pb-40">
+      <section className="relative flex min-h-[70vh] items-center justify-center overflow-hidden bg-transparent pt-24 pb-24 sm:pt-28 sm:pb-32 lg:pt-36 lg:pb-40">
         {/* Background Slideshow */}
         <div className="absolute inset-0 z-0">
           {heroImages.map((image, index) => (
@@ -223,13 +223,45 @@ export default function Home() {
               />
             </div>
           ))}
-          <div className="absolute inset-0 bg-black/30" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/50 to-black/60" />
+        </div>
+
+        {/* Hero Content Overlay */}
+        <div className="relative z-10 mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 text-center">
+          <div className="mb-6 inline-flex rounded-full border border-cyan-300/30 bg-cyan-950/40 backdrop-blur-sm px-4 py-2">
+            <span className="text-xs font-semibold uppercase tracking-widest text-cyan-200">
+              Industrial Supply Excellence
+            </span>
+          </div>
+          <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
+            Your Trusted Industrial Supply Partner
+          </h1>
+          <p className="mt-6 text-lg leading-8 text-gray-100 sm:text-xl">
+            Reliable products for maintenance, safety, facility operations, and industrial procurement. Serving industries across Trinidad & Tobago with quality brands you know and trust.
+          </p>
+          <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:justify-center">
+            <Link
+              href="/products"
+              className="inline-flex items-center justify-center rounded-lg bg-cyan-500 px-8 py-3 text-base font-semibold text-white shadow-lg hover:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-black transition-all"
+            >
+              Browse Categories
+              <svg className="ml-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </Link>
+            <Link
+              href="/contact"
+              className="inline-flex items-center justify-center rounded-lg border-2 border-white px-8 py-3 text-base font-semibold text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-black transition-all"
+            >
+              Request a Quote
+            </Link>
+          </div>
         </div>
 
         {/* Carousel Controls */}
         <button
           onClick={prevImage}
-          className="absolute left-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/50 p-3 text-zinc-900 backdrop-blur-sm transition-colors hover:bg-white/80 focus:outline-none focus:ring-2 focus:ring-zinc-500 hidden sm:block"
+          className="absolute left-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/40 p-3 text-white backdrop-blur-sm transition-all hover:bg-white/60 focus:outline-none focus:ring-2 focus:ring-cyan-400 hidden sm:block"
           aria-label="Previous slide"
         >
           <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -238,7 +270,7 @@ export default function Home() {
         </button>
         <button
           onClick={nextImage}
-          className="absolute right-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/50 p-3 text-zinc-900 backdrop-blur-sm transition-colors hover:bg-white/80 focus:outline-none focus:ring-2 focus:ring-zinc-500 hidden sm:block"
+          className="absolute right-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/40 p-3 text-white backdrop-blur-sm transition-all hover:bg-white/60 focus:outline-none focus:ring-2 focus:ring-cyan-400 hidden sm:block"
           aria-label="Next slide"
         >
           <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -253,7 +285,7 @@ export default function Home() {
               key={index}
               onClick={() => setCurrentImageIndex(index)}
               className={`h-2.5 rounded-full transition-all duration-300 ${
-                index === currentImageIndex ? "w-8 bg-zinc-900" : "w-2.5 bg-zinc-400 hover:bg-zinc-600"
+                index === currentImageIndex ? "w-8 bg-cyan-400" : "w-2.5 bg-white/50 hover:bg-white/70"
               }`}
               aria-label={`Go to slide ${index + 1}`}
             />
@@ -261,27 +293,28 @@ export default function Home() {
         </div>
       </section>
 
-      <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-12">
-        <div className="mx-auto max-w-3xl text-center">
+      <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div className="mx-auto max-w-3xl">
           <form
             onSubmit={handleSearchSubmit}
-            className="flex flex-col items-center justify-center gap-4 sm:flex-row"
+            className="flex flex-col items-center justify-center gap-3"
           >
+            <p className="text-sm font-semibold text-slate-600">Quick Search</p>
             <div className="relative flex items-center w-full max-w-md leading-[28px]">
               <svg
                 viewBox="0 0 24 24"
                 aria-hidden="true"
-                className="absolute left-4 h-4 w-4 fill-[#bdbecb] pointer-events-none z-10"
+                className="absolute left-4 h-4 w-4 fill-slate-400 pointer-events-none z-10"
               >
                 <g>
-                  <path d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-3.365-7.5-7.5z"></path>
+                  <path d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-3.365-7.5-7.5-7.5z"></path>
                 </g>
               </svg>
               <input
                 id="query"
-                className="w-full h-[45px] pl-10 text-[#bdbecb] bg-[#16171d] border-0 rounded-[12px] shadow-[0_0_0_1.5px_#2b2c37,0_0_25px_-17px_#000] outline-none transition-all duration-250 ease-[cubic-bezier(0.19,1,0.22,1)] cursor-text z-0 placeholder:text-[#bdbecb] hover:shadow-[0_0_0_2.5px_#2f303d,0px_0px_25px_-15px_#000] focus:shadow-[0_0_0_2.5px_#2f303d] active:scale-95 font-['Montserrat',sans-serif]"
+                className="w-full h-[44px] pl-10 text-slate-700 bg-white border border-slate-300 rounded-lg shadow-sm outline-none transition-all duration-200 z-0 placeholder:text-slate-400 hover:border-cyan-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200 font-sans"
                 type="search"
-                placeholder="Search..."
+                placeholder="Search products..."
                 name="searchbar"
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
