@@ -100,7 +100,7 @@ export function SiteHeader({ activeLink }: SiteHeaderProps) {
               </>
             );
 
-            return item.href ? (
+            return "href" in item ? (
               <a
                 key={item.label}
                 href={item.href}
