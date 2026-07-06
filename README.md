@@ -18,6 +18,19 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
+## Admin Portal Access
+
+The `/admin` dashboard and `/api/admin/*` routes are protected with HTTP Basic Auth.
+
+Set these environment variables locally and in Vercel:
+
+```bash
+ADMIN_USERNAME=your-admin-username
+ADMIN_PASSWORD=your-secure-password
+```
+
+If either value is missing, the admin portal returns a configuration error instead of exposing admin access.
+
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
 ## Learn More
