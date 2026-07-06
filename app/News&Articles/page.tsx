@@ -1,104 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
-
-type IndustrialArticle = {
-  id: number;
-  title: string;
-  slug: string;
-  sector: "Energy" | "Welding" | "Marine" | "Safety";
-  location: string;
-  completedOn: string;
-  summary: string;
-  image: string;
-  tags: string[];
-};
-
-const navLinks = [
-  { name: "HOME", href: "https://www.amcolhardwarett.com/index.php" },
-  { name: "PRODUCTS", href: "/products" },
-  { name: "CONSTRUCTION", href: "https://www.amcolhardwarett.com/construction.php" },
-  { name: "INDUSTRIAL", href: "/" },
-  { name: "DEPARTMENTS", href: "/departments" },
-  { name: "CONTACT US", href: "/contact" },
-  { name: "ADMIN LOGIN", href: "/admin" },
-];
-
-const industrialArticles: IndustrialArticle[] = [
-  {
-    id: 1,
-    title: "Offshore Platform Retrofit Support Program",
-    slug: "offshore-platform-retrofit-support-program",
-    sector: "Marine",
-    location: "Galeota Point",
-    completedOn: "2025-11-18",
-    summary:
-      "AMCOL supplied corrosion-resistant fasteners, marine-grade sealants, and maintenance chemicals for a multi-stage retrofit initiative.",
-    image: "/images/RIG.jpg",
-    tags: ["retrofit", "offshore", "marine maintenance"],
-  },
-  {
-    id: 2,
-    title: "Utility-Scale Solar Mounting Hardware Delivery",
-    slug: "utility-scale-solar-mounting-hardware-delivery",
-    sector: "Energy",
-    location: "Central Trinidad",
-    completedOn: "2025-09-30",
-    summary:
-      "Delivered anchors, panel mounting supports, and consumables for a grid-tied solar installation with phased procurement support.",
-    image: "/images/Solar  light.png",
-    tags: ["solar", "procurement", "bulk supply"],
-  },
-  {
-    id: 3,
-    title: "Fabrication Yard Welding Consumables Rollout",
-    slug: "fabrication-yard-welding-consumables-rollout",
-    sector: "Welding",
-    location: "La Brea",
-    completedOn: "2025-07-14",
-    summary:
-      "Coordinated recurring supply for welding electrodes, abrasives, and PPE across fabrication crews working on structural assemblies.",
-    image: "/images/Heritage-tank with crane.png",
-    tags: ["fabrication", "consumables", "site support"],
-  },
-  {
-    id: 4,
-    title: "Plant-Wide Safety Compliance Restocking",
-    slug: "plant-wide-safety-compliance-restocking",
-    sector: "Safety",
-    location: "Point Lisas",
-    completedOn: "2025-04-22",
-    summary:
-      "Implemented staged delivery of PPE kits, signage, and inspection-ready safety inventory for operations and maintenance teams.",
-    image: "/images/Road-Work.png",
-    tags: ["ppe", "compliance", "industrial plant"],
-  },
-  {
-    id: 5,
-    title: "Turnaround Lubrication and MRO Supply Support",
-    slug: "turnaround-lubrication-mro-supply-support",
-    sector: "Energy",
-    location: "South Oropouche",
-    completedOn: "2024-12-05",
-    summary:
-      "Supplied maintenance, repair, and operations inventory including specialty lubricants and cleaners for turnaround execution.",
-    image: "/images/3 WD-40 Cans Banner.png",
-    tags: ["mro", "turnaround", "maintenance"],
-  },
-  {
-    id: 6,
-    title: "Workshop Tooling and Preventive Maintenance Upgrade",
-    slug: "workshop-tooling-and-preventive-maintenance-upgrade",
-    sector: "Welding",
-    location: "San Fernando",
-    completedOn: "2024-08-16",
-    summary:
-      "Delivered portable power tools, grinder kits, and service accessories to modernize workshop readiness and uptime.",
-    image: "/images/Dewalt Kit.jpg",
-    tags: ["tooling", "maintenance", "workshop"],
-  },
-];
+import { SiteHeader } from "@/app/components/SiteHeader";
+import { SiteFooter } from "@/app/components/SiteFooter";
+import { industrialArticles } from "@/lib/articles";
 
 const sectorFilters = ["All", "Energy", "Welding", "Marine", "Safety"] as const;
 
@@ -128,43 +33,13 @@ export default function NewsAndArticlesPage() {
 
   return (
     <div className="min-h-screen bg-white font-sans text-zinc-900">
-      <header className="fixed top-0 left-0 right-0 z-50 border-b border-zinc-200/80 bg-white/80 backdrop-blur-md">
-        <nav className="w-full border-t-2 border-red-600 bg-white shadow-sm flex items-center justify-between px-4 sm:px-6 lg:px-8">
-          <ul className="flex flex-1 flex-wrap items-center justify-center overflow-x-auto">
-            {navLinks.map((link) => (
-              <li key={link.name} className="border-l border-zinc-200 last:border-r">
-                <a
-                  href={link.href}
-                  className={`inline-block px-6 py-4 text-sm font-bold tracking-tight transition-colors hover:bg-zinc-50 ${
-                    link.name === "ADMIN LOGIN"
-                      ? "bg-red-600 text-white hover:bg-red-700 hover:text-white"
-                      : link.name === "INDUSTRIAL"
-                        ? "text-red-600"
-                        : "text-zinc-700 hover:text-red-600"
-                  }`}
-                >
-                  {link.name}
-                </a>
-              </li>
-            ))}
-          </ul>
-          <div className="px-6">
-            <Link href="/" aria-label="Go to homepage">
-              <img
-                src="/images/AMCOL_Logo.png"
-                alt="AMCOL Logo"
-                className="h-24 w-auto transition-transform duration-300 hover:scale-105 drop-shadow-md"
-              />
-            </Link>
-          </div>
-        </nav>
-      </header>
+      <SiteHeader />
 
-      <section className="relative bg-[#1A1A1B] pt-48 pb-20 sm:pt-56 sm:pb-28 overflow-hidden">
+      <section className="relative bg-[#1A1A1B] pt-20 pb-20 sm:pt-24 sm:pb-28 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <div
             className="absolute inset-0 bg-cover bg-center opacity-40 grayscale mix-blend-overlay"
-            style={{ backgroundImage: "url('/images/Heritage Industry.jpg')" }}
+            style={{ backgroundImage: "url('/images/Heritage Industry.webp')" }}
           />
           <div className="absolute inset-0 bg-gradient-to-b from-[#1A1A1B]/80 via-[#1A1A1B]/70 to-[#1A1A1B]" />
         </div>
@@ -314,6 +189,7 @@ export default function NewsAndArticlesPage() {
           </div>
         </div>
       </section>
+      <SiteFooter />
     </div>
   );
 }

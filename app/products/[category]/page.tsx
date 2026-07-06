@@ -2,16 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { getCategoryBySlug, getProductBySlug } from "@/lib/catalog-store";
 import { ProductImageCarousel } from "./ProductImageCarousel";
-
-const navLinks = [
-  { name: "HOME", href: "https://www.amcolhardwarett.com/index.php" },
-  { name: "PRODUCTS", href: "/products" },
-  { name: "CONSTRUCTION", href: "https://www.amcolhardwarett.com/construction.php" },
-  { name: "INDUSTRIAL", href: "/" },
-  { name: "DEPARTMENTS", href: "/departments" },
-  { name: "CONTACT US", href: "/contact" },
-  { name: "ADMIN LOGIN", href: "/admin" },
-];
+import { SiteHeader } from "@/app/components/SiteHeader";
+import { SiteFooter } from "@/app/components/SiteFooter";
+import { Breadcrumbs } from "@/app/components/Breadcrumbs";
 
 type CategoryPageProps = {
   params: Promise<{
@@ -30,8 +23,8 @@ const sprayersPumpsSlug = "sprayers-pumps";
 const pipeValveFittingBrandImages: Partial<
   Record<(typeof pipeValveFittingBrands)[number], string>
 > = {
-  Pipe: "/images/IPVF-PIPE.png",
-  Fittings: "/images/carbon-steel-industrial-pipe-fittings-thumbnail.png",
+  Pipe: "/images/IPVF-PIPE.webp",
+  Fittings: "/images/carbon-steel-industrial-pipe-fittings-thumbnail.webp",
 };
 
 function getSelectedBrand(value: string | string[] | undefined) {
@@ -104,67 +97,21 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
 
     return (
       <div className="min-h-screen bg-white font-sans text-zinc-900">
-        <header className="hero-mainnav relative z-40">
-          <div className="flex w-full flex-col overflow-hidden md:flex-row md:items-stretch">
-            <div className="hero-brand-panel flex items-center justify-center px-6 py-5 sm:px-8 md:w-[38%] md:min-w-[380px] md:justify-start lg:px-10">
-              <div className="hero-brand-content relative z-10 flex w-full max-w-[520px] items-center gap-4 sm:gap-5">
-                <Link className="hero-brand-logo-wrap shrink-0" href="/" aria-label="AMCOL Home">
-                  <Image
-                    src="/images/AMCOL_Logo.png"
-                    alt="AMCOL Logo"
-                    width={420}
-                    height={104}
-                    priority
-                    className="hero-brand-logo h-20 w-auto max-w-[320px] sm:h-24 md:h-[6.1rem]"
-                  />
-                </Link>
-
-                <div className="hero-brand-copy hidden min-w-0 flex-1 md:block">
-                  <p className="hero-brand-eyebrow text-[10px] font-semibold uppercase tracking-[0.34em] text-cyan-200/90">
-                    Industrial Supply Partner
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-slate-200/90">
-                    Reliable products for maintenance, safety, facility operations, and industrial procurement.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="hero-links-panel flex flex-1 items-center justify-center px-4 py-4 sm:px-6 lg:px-10">
-              <div className="flex w-full flex-col items-center justify-center gap-3 lg:flex-row lg:justify-between">
-                <div className="hidden rounded-full border border-slate-200 bg-white/75 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500 shadow-[0_10px_24px_-18px_rgba(15,23,42,0.45)] lg:inline-flex">
-                  AMCOL Industrial Catalog
-                </div>
-                <nav className="flex flex-wrap items-center justify-center gap-x-3 gap-y-3 text-[11px] font-bold uppercase tracking-[0.2em] sm:gap-x-4">
-                  {navLinks.map((link) => {
-                    const isActive = link.name === "PRODUCTS";
-                    const isAdminLink = link.name === "ADMIN LOGIN";
-
-                    return (
-                      <a
-                        key={link.name}
-                        href={link.href}
-                        className={`hero-nav-link rounded-sm border px-4 py-3 ${
-                          isAdminLink
-                            ? "border-red-500 bg-red-600 text-white hover:border-red-600 hover:bg-red-700"
-                            : isActive
-                            ? "border-[#39d9cd]/70 bg-[#0d2238] text-[#39d9cd]"
-                            : "border-slate-200 bg-white text-slate-700 hover:border-[#39d9cd]/45 hover:text-[#0d2238]"
-                        }`}
-                      >
-                        {link.name}
-                      </a>
-                    );
-                  })}
-                </nav>
-              </div>
-            </div>
-          </div>
-        </header>
+        <SiteHeader activeLink="PRODUCTS" />
 
         <main className="bg-[linear-gradient(180deg,#f8fbff_0%,#eef5fb_48%,#ffffff_100%)]">
           <section className="border-t border-slate-200 px-6 py-16 sm:px-8 sm:py-24 lg:px-10">
-            <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:items-start">
+            <div className="mx-auto max-w-7xl">
+              <Breadcrumbs
+                items={[
+                  { label: "Home", href: "/" },
+                  { label: "Products", href: "/products" },
+                  { label: product.categoryName, href: `/products/${product.categorySlug}` },
+                  { label: product.name },
+                ]}
+              />
+            </div>
+            <div className="mx-auto mt-8 grid max-w-7xl gap-10 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:items-start">
               <ProductImageCarousel
                 productName={product.name}
                 mainImage={product.image}
@@ -246,6 +193,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
             </div>
           </section>
         </main>
+        <SiteFooter />
       </div>
     );
   }
@@ -253,24 +201,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   if (!data) {
     return (
       <div className="min-h-screen bg-white font-sans text-zinc-900">
-        <header className="hero-mainnav relative z-40">
-          <div className="flex w-full flex-col overflow-hidden md:flex-row md:items-stretch">
-            <div className="hero-brand-panel flex items-center justify-center px-6 py-5 sm:px-8 md:w-[38%] md:min-w-[380px] md:justify-start lg:px-10">
-              <div className="hero-brand-content relative z-10 flex w-full max-w-[520px] items-center gap-4 sm:gap-5">
-                <Link className="hero-brand-logo-wrap shrink-0" href="/" aria-label="AMCOL Home">
-                  <Image
-                    src="/images/AMCOL_Logo.png"
-                    alt="AMCOL Logo"
-                    width={420}
-                    height={104}
-                    priority
-                    className="hero-brand-logo h-20 w-auto max-w-[320px] sm:h-24 md:h-[6.1rem]"
-                  />
-                </Link>
-              </div>
-            </div>
-          </div>
-        </header>
+        <SiteHeader />
 
         <main className="flex min-h-[70vh] flex-col items-center justify-center px-6 text-center">
           <p className="rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-amber-700">
@@ -289,6 +220,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
             Return to Products
           </Link>
         </main>
+        <SiteFooter />
       </div>
     );
   }
@@ -319,63 +251,17 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
 
   return (
     <div className="min-h-screen bg-white font-sans text-zinc-900">
-      <header className="hero-mainnav relative z-40">
-        <div className="flex w-full flex-col overflow-hidden md:flex-row md:items-stretch">
-          <div className="hero-brand-panel flex items-center justify-center px-6 py-5 sm:px-8 md:w-[38%] md:min-w-[380px] md:justify-start lg:px-10">
-            <div className="hero-brand-content relative z-10 flex w-full max-w-[520px] items-center gap-4 sm:gap-5">
-              <Link className="hero-brand-logo-wrap shrink-0" href="/" aria-label="AMCOL Home">
-                <Image
-                  src="/images/AMCOL_Logo.png"
-                  alt="AMCOL Logo"
-                  width={420}
-                  height={104}
-                  priority
-                  className="hero-brand-logo h-20 w-auto max-w-[320px] sm:h-24 md:h-[6.1rem]"
-                />
-              </Link>
+      <SiteHeader activeLink="PRODUCTS" />
 
-              <div className="hero-brand-copy hidden min-w-0 flex-1 md:block">
-                <p className="hero-brand-eyebrow text-[10px] font-semibold uppercase tracking-[0.34em] text-cyan-200/90">
-                  Industrial Supply Partner
-                </p>
-                <p className="mt-2 text-sm leading-6 text-slate-200/90">
-                  Reliable products for maintenance, safety, facility operations, and industrial procurement.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="hero-links-panel flex flex-1 items-center justify-center px-4 py-4 sm:px-6 lg:px-10">
-            <div className="flex w-full flex-col items-center justify-center gap-3 lg:flex-row lg:justify-between">
-              <div className="hidden rounded-full border border-slate-200 bg-white/75 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500 shadow-[0_10px_24px_-18px_rgba(15,23,42,0.45)] lg:inline-flex">
-                AMCOL Industrial Catalog
-              </div>
-              <nav className="flex flex-wrap items-center justify-center gap-x-3 gap-y-3 text-[11px] font-bold uppercase tracking-[0.2em] sm:gap-x-4">
-                {navLinks.map((link) => {
-                  const isActive = link.name === "PRODUCTS";
-                  const isAdminLink = link.name === "ADMIN LOGIN";
-
-                  return (
-                    <a
-                      key={link.name}
-                      href={link.href}
-                      className={`hero-nav-link rounded-sm border px-4 py-3 ${
-                        isAdminLink
-                          ? "border-red-500 bg-red-600 text-white hover:border-red-600 hover:bg-red-700"
-                          : isActive
-                          ? "border-[#39d9cd]/70 bg-[#0d2238] text-[#39d9cd]"
-                          : "border-slate-200 bg-white text-slate-700 hover:border-[#39d9cd]/45 hover:text-[#0d2238]"
-                      }`}
-                    >
-                      {link.name}
-                    </a>
-                  );
-                })}
-              </nav>
-            </div>
-          </div>
-        </div>
-      </header>
+      <div className="mx-auto max-w-7xl px-6 pt-6 lg:px-10">
+        <Breadcrumbs
+          items={[
+            { label: "Home", href: "/" },
+            { label: "Products", href: "/products" },
+            { label: data.name },
+          ]}
+        />
+      </div>
 
       <section className="relative overflow-hidden bg-[#091624] px-6 py-20 sm:px-8 sm:py-24 lg:px-10">
         <div
@@ -631,6 +517,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
           ) : null}
         </div>
       </section>
+      <SiteFooter />
     </div>
   );
 }

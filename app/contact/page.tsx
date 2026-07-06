@@ -1,18 +1,8 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
 import React, { useState } from "react";
-
-const navLinks = [
-  { name: "HOME", href: "https://www.amcolhardwarett.com/index.php" },
-  { name: "PRODUCTS", href: "/products" },
-  { name: "CONSTRUCTION", href: "https://www.amcolhardwarett.com/construction.php" },
-  { name: "INDUSTRIAL", href: "/" },
-  { name: "DEPARTMENTS", href: "/departments" },
-  { name: "CONTACT US", href: "/contact" },
-  { name: "ADMIN LOGIN", href: "/admin" },
-];
+import { SiteHeader } from "@/app/components/SiteHeader";
+import { SiteFooter } from "@/app/components/SiteFooter";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -80,63 +70,7 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen bg-white font-sans text-zinc-900">
-      <header className="hero-mainnav relative z-40">
-        <div className="flex w-full flex-col overflow-hidden md:flex-row md:items-stretch">
-          <div className="hero-brand-panel flex items-center justify-center px-6 py-5 sm:px-8 md:w-[38%] md:min-w-[380px] md:justify-start lg:px-10">
-            <div className="hero-brand-content relative z-10 flex w-full max-w-[520px] items-center gap-4 sm:gap-5">
-              <Link className="hero-brand-logo-wrap shrink-0" href="/" aria-label="AMCOL Home">
-                <Image
-                  src="/images/AMCOL_Logo.png"
-                  alt="AMCOL Logo"
-                  width={420}
-                  height={104}
-                  priority
-                  className="hero-brand-logo h-20 w-auto max-w-[320px] sm:h-24 md:h-[6.1rem]"
-                />
-              </Link>
-
-              <div className="hero-brand-copy hidden min-w-0 flex-1 md:block">
-                <p className="hero-brand-eyebrow text-[10px] font-semibold uppercase tracking-[0.34em] text-cyan-200/90">
-                  Industrial Supply Partner
-                </p>
-                <p className="mt-2 text-sm leading-6 text-slate-200/90">
-                  Reliable products for maintenance, safety, facility operations, and industrial procurement.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="hero-links-panel flex flex-1 items-center justify-center px-4 py-4 sm:px-6 lg:px-10">
-            <div className="flex w-full flex-col items-center justify-center gap-3 lg:flex-row lg:justify-between">
-              <div className="hidden rounded-full border border-slate-200 bg-white/75 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500 shadow-[0_10px_24px_-18px_rgba(15,23,42,0.45)] lg:inline-flex">
-                AMCOL Industrial Catalog
-              </div>
-              <nav className="flex flex-wrap items-center justify-center gap-x-3 gap-y-3 text-[11px] font-bold uppercase tracking-[0.2em] sm:gap-x-4">
-                {navLinks.map((link) => {
-                  const isActive = link.name === "CONTACT US";
-                  const isAdminLink = link.name === "ADMIN LOGIN";
-
-                  return (
-                    <a
-                      key={link.name}
-                      href={link.href}
-                      className={`hero-nav-link rounded-sm border px-4 py-3 ${
-                        isAdminLink
-                          ? "border-red-500 bg-red-600 text-white hover:border-red-600 hover:bg-red-700"
-                          : isActive
-                          ? "border-[#39d9cd]/70 bg-[#0d2238] text-[#39d9cd]"
-                          : "border-slate-200 bg-white text-slate-700 hover:border-[#39d9cd]/45 hover:text-[#0d2238]"
-                      }`}
-                    >
-                      {link.name}
-                    </a>
-                  );
-                })}
-              </nav>
-            </div>
-          </div>
-        </div>
-      </header>
+      <SiteHeader activeLink="CONTACT US" />
 
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-b from-[#0d2238] to-[#1a3a52] py-24 sm:py-32">
@@ -144,7 +78,7 @@ export default function ContactPage() {
         <div className="absolute inset-0 z-0">
           <div
             className="absolute inset-0 bg-cover bg-center opacity-40 grayscale mix-blend-overlay"
-            style={{ backgroundImage: "url('/images/Heritage Industry.jpg')" }}
+            style={{ backgroundImage: "url('/images/Heritage Industry.webp')" }}
           />
           <div className="absolute inset-0 bg-gradient-to-b from-[#0d2238]/85 via-[#1a3a52]/80 to-[#0d2238]/90" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(57,217,205,0.15),transparent_50%)]" />
@@ -372,11 +306,12 @@ export default function ContactPage() {
                       d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
                     />
                   </svg>
+                  {/* TODO(contact-info): Replace with Steffi Persad's verified direct line. */}
                   <a
-                    href="tel:+18685550123"
+                    href="#"
                     className="hover:text-white transition-colors"
                   >
-                    +1 (868) 555-0123 ext. 104
+                    [Add direct phone number]
                   </a>
                 </div>
                 <div className="flex items-center gap-3 text-zinc-300">
@@ -393,11 +328,12 @@ export default function ContactPage() {
                       d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                     />
                   </svg>
+                  {/* TODO(contact-info): Unify on one verified email domain across the site. */}
                   <a
-                    href="mailto:sales@amcol.com"
+                    href="mailto:sales@amcolindustrial.com"
                     className="hover:text-white transition-colors"
                   >
-                    Sales1@amcolgroup.com
+                    sales@amcolindustrial.com
                   </a>
                 </div>
               </div>
@@ -431,11 +367,12 @@ export default function ContactPage() {
                       d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
                     />
                   </svg>
+                  {/* TODO(contact-info): Replace with Sarah Chen's verified direct line. */}
                   <a
-                    href="tel:+18685550124"
+                    href="#"
                     className="hover:text-[#1A1A1B] transition-colors"
                   >
-                    +1 (868) 555-0124 ext. 202
+                    [Add direct phone number]
                   </a>
                 </div>
                 <div className="flex items-center gap-3 text-zinc-600">
@@ -459,10 +396,10 @@ export default function ContactPage() {
                     />
                   </svg>
                   <a
-                    href="mailto:support@amcol.com"
+                    href="mailto:support@amcolindustrial.com"
                     className="hover:text-[#1A1A1B] transition-colors"
                   >
-                    support@amcol.com
+                    support@amcolindustrial.com
                   </a>
                 </div>
               </div>
@@ -489,34 +426,7 @@ export default function ContactPage() {
           </div>
         </div>
       </section>
-      {/* Footer */}
-      <footer className="border-t border-zinc-200 py-12 bg-white">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
-            <span className="text-sm font-medium text-zinc-500">AMCOL</span>
-            <div className="flex gap-8">
-              <a
-                href="#"
-                className="text-sm text-zinc-500 transition-colors hover:text-zinc-900"
-              >
-                Privacy
-              </a>
-              <a
-                href="#"
-                className="text-sm text-zinc-500 transition-colors hover:text-zinc-900"
-              >
-                Terms
-              </a>
-              <a
-                href="#"
-                className="text-sm text-zinc-500 transition-colors hover:text-zinc-900"
-              >
-                Contact
-              </a>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

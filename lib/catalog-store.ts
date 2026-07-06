@@ -173,12 +173,12 @@ const legacyCategorySelectQuery = `
   created_at
 `;
 
-const defaultCategoryImage = "/images/Heritage Industry.jpg";
-const defaultCategoryBanner = "/images/Proman_industrial.png";
+const defaultCategoryImage = "/images/Heritage Industry.webp";
+const defaultCategoryBanner = "/images/Proman_industrial.webp";
 const defaultProductSummary =
   "Product details are available through our sales team for this category.";
 const categoryImageOverrides: Record<string, string> = {
-  "pipe-valves-and-fittings": "/images/pipes-valves-fittings.png",
+  "pipe-valves-and-fittings": "/images/pipes-valves-fittings.webp",
 };
 
 const dataDirectory = path.join(process.cwd(), "data");

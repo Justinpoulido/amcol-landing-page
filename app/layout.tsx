@@ -13,8 +13,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AMCOL",
-  description: "AMCOL Landing Page",
+  title: {
+    default: "AMCOL Industrial | Industrial, Marine & Safety Supply",
+    template: "%s | AMCOL Industrial",
+  },
+  description:
+    "AMCOL Industrial supplies industrial, marine, safety, and maintenance products across Trinidad & Tobago, with dedicated procurement support for facility operators and enterprise projects.",
 };
 
 export default function RootLayout({

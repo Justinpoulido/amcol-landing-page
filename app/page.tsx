@@ -2,37 +2,109 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import type { FormEvent } from "react";
 import { useState, useEffect } from "react";
 import {
   landingCategoryRows,
   type ProductCategoryPageData,
 } from "@/lib/product-categories";
+import { industrialArticles } from "@/lib/articles";
+import { SiteHeader } from "@/app/components/SiteHeader";
+import { SiteFooter } from "@/app/components/SiteFooter";
 
 const heroImages = [
-  "/images/Heritage Industry.jpg",
-  "/images/TGU.jpg",
-  "/images/Proman_industrial.png",
-  "/images/Port Authority.png",
+  "/images/Heritage Industry.webp",
+  "/images/TGU.webp",
+  "/images/Proman_industrial.webp",
+  "/images/Port Authority.webp",
 ];
 
-const navLinks = [
-  { name: "HOME", href: "https://www.amcolhardwarett.com/index.php" },
-  { name: "PRODUCTS", href: "/products" },
-  { name: "CONSTRUCTION", href: "https://www.amcolhardwarett.com/construction.php" },
-  { name: "INDUSTRIAL", href: "/" },
-  { name: "DEPARTMENTS", href: "/departments" },
-  { name: "CONTACT US", href: "/contact" },
-  { name: "ADMIN LOGIN", href: "/admin" },
+const latestArticles = [...industrialArticles]
+  .sort((a, b) => new Date(b.completedOn).getTime() - new Date(a.completedOn).getTime())
+  .slice(0, 3);
+
+const quickCategoryShortcuts = [
+  { name: "Safety", href: "/products/safety" },
+  { name: "Abrasives", href: "/products/abrasives" },
+  { name: "Lubricants", href: "/products/lubricants" },
+  { name: "Sealants", href: "/products/adhesives-sealants-tape" },
+  { name: "Fire Protection", href: "/products/fire-protection" },
+  { name: "HVAC Chemicals", href: "/products/hvac-chemicals" },
 ];
 
-const tickerItems = [
-  "Location: #22 Ramjohn Trace, Penal",
-  "Opening Hours: 7am - 5pm",
-  "Industrial, marine, safety, and maintenance supplies available",
-  "Bulk orders and business inquiries welcome",
-  "Call ahead for product availability and category support",
+const industriesServed = [
+  {
+    name: "Energy & Petrochemical",
+    description: "Shutdown, maintenance, coating, safety, and cleaning supply support for demanding plant environments.",
+    image: "/images/Proman_industrial.webp",
+    href: "/products",
+    categories: "Safety, coatings, cleaners",
+  },
+  {
+    name: "Marine & Port Operations",
+    description: "Reliable maintenance, security, and corrosion-control products for yards, ports, vessels, and logistics teams.",
+    image: "/images/Port Authority.webp",
+    href: "/products/locks-security",
+    categories: "Security, lubricants, sealants",
+  },
+  {
+    name: "Construction & Contractors",
+    description: "Jobsite essentials for crews that need durable tools, ladders, abrasives, PPE, and consumables.",
+    image: "/images/Road-Work.webp",
+    href: "/products/abrasives",
+    categories: "Abrasives, ladders, PPE",
+  },
+  {
+    name: "Facilities & Maintenance",
+    description: "Everyday industrial supply for facility managers handling cleaning, HVAC, repairs, and safety readiness.",
+    image: "/images/Heritage Industry.webp",
+    href: "/products/cleaners-degreasers",
+    categories: "Cleaners, HVAC, fire protection",
+  },
+];
+
+const featuredIndustrialBrands = [
+  {
+    name: "RIDGID",
+    image: "/images/Ridgid_pipe_dies.webp",
+    href: "/products/pipes-valves-fittings",
+    description: "Pipe dies and threading accessories for mechanical, fabrication, and maintenance teams.",
+  },
+  {
+    name: "Geko",
+    image: "/images/Geko_repair_clamp.webp",
+    href: "/products/pipes-valves-fittings",
+    description: "Pipe repair clamps for fast, secure repairs across industrial water and utility systems.",
+  },
+  {
+    name: "BAND-IT",
+    image: "/images/Band-IT_Band.webp",
+    href: "/products/pipes-valves-fittings",
+    description: "Stainless steel banding and fastening products for pipework, signage, and industrial installs.",
+  },
+  {
+    name: "DuPont Tyvek",
+    image: "/images/Tyvek_Dupont_Disposable_Coveralls.webp",
+    href: "/products/safety",
+    description: "Disposable protective coveralls for safety, maintenance, and controlled work environments.",
+  },
+  {
+    name: "Loctite",
+    image: "/images/Loctite_threading_compound_anti-sieze.webp",
+    href: "/products/lubricants",
+    description: "Heavy-duty anti-seize and thread compounds for metal parts exposed to demanding conditions.",
+  },
+  {
+    name: "Salisbury ElectriFlex",
+    image: "/images/Salisbury ElectriFlex Insulating Rubber Gloves.webp",
+    href: "/products/safety",
+    description: "Insulating rubber gloves for electrical safety, maintenance crews, and utility work.",
+  },
+  {
+    name: "RIDGID Pipe Wrench",
+    image: "/images/Ridgid_Straight_Pipe_Wrenches.webp",
+    href: "/products/pipes-valves-fittings",
+    description: "Straight pipe wrenches for mechanical crews, pipefitters, maintenance, and repair work.",
+  },
 ];
 
 const fallbackLandingCategories = landingCategoryRows.flat();
@@ -48,9 +120,7 @@ function chunkCategories(categories: ProductCategoryPageData[], size: number) {
 }
 
 export default function Home() {
-  const router = useRouter();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [searchQuery, setSearchQuery] = useState("");
   const [landingCategories, setLandingCategories] = useState<ProductCategoryPageData[]>(
     fallbackLandingCategories,
   );
@@ -91,111 +161,54 @@ export default function Home() {
     };
   }, []);
 
-  const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % heroImages.length);
-  };
-
-  const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev === 0 ? heroImages.length - 1 : prev - 1));
-  };
-
-  const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    const query = searchQuery.trim();
-    router.push(query ? `/products?search=${encodeURIComponent(query)}` : "/products");
-  };
-
   return (
     <div className="min-h-screen bg-white">
-      {/* Navigation */}
-      <header className="hero-mainnav relative z-40">
-        <div className="flex w-full flex-col overflow-hidden md:flex-row md:items-stretch">
-          <div className="hero-brand-panel flex items-center justify-center px-6 py-5 sm:px-8 md:w-[38%] md:min-w-[380px] md:justify-start lg:px-10">
-            <div className="hero-brand-content relative z-10 flex w-full max-w-[520px] items-center gap-4 sm:gap-5">
-              <Link className="hero-brand-logo-wrap shrink-0" href="/" aria-label="AMCOL Home">
-                <Image
-                  src="/images/AMCOL_Logo.png"
-                  alt="AMCOL Logo"
-                  width={420}
-                  height={104}
-                  priority
-                  className="hero-brand-logo h-20 w-auto max-w-[320px] sm:h-24 md:h-[6.1rem]"
-                />
-              </Link>
-
-              <div className="hero-brand-copy hidden min-w-0 flex-1 md:block">
-                <p className="hero-brand-eyebrow text-[10px] font-semibold uppercase tracking-[0.34em] text-cyan-200/90">
-                  Industrial Supply Partner
-                </p>
-                <p className="mt-2 text-sm leading-6 text-slate-200/90">
-                  Reliable products for maintenance, safety, facility operations, and industrial procurement.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="hero-links-panel flex flex-1 items-center justify-center px-4 py-4 sm:px-6 lg:px-10">
-            <div className="flex w-full flex-col items-center justify-center gap-3 lg:flex-row lg:justify-between">
-              <div className="hidden rounded-full border border-slate-200 bg-white/75 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500 shadow-[0_10px_24px_-18px_rgba(15,23,42,0.45)] lg:inline-flex">
-                AMCOL Industrial Catalog
-              </div>
-            <nav className="flex flex-wrap items-center justify-center gap-x-3 gap-y-3 text-[11px] font-bold uppercase tracking-[0.2em] sm:gap-x-4">
-              {navLinks.map((link) => {
-                const isActive = link.name === "INDUSTRIAL";
-                const isAdminLink = link.name === "ADMIN LOGIN";
-
-                return (
-                  <a
-                    key={link.name}
-                    href={link.href}
-                    className={`hero-nav-link rounded-sm border px-4 py-3 ${isAdminLink ? "border-red-500 bg-red-600 text-white hover:border-red-600 hover:bg-red-700" : isActive ? "border-[#39d9cd]/70 bg-[#0d2238] text-[#39d9cd]" : "border-slate-200 bg-white text-slate-700 hover:border-[#39d9cd]/45 hover:text-[#0d2238]"}`}
-                  >
-                    {link.name}
-                  </a>
-                );
-              })}
-            </nav>
-            </div>
-          </div>
-        </div>
-      </header>
+      <SiteHeader />
 
       <div className="relative left-1/2 z-10 w-screen -translate-x-1/2 px-0">
-        <div className="overflow-hidden border-y border-cyan-400/30 bg-[linear-gradient(135deg,rgba(13,34,56,0.95)_0%,rgba(15,55,100,0.90)_45%,rgba(6,182,212,0.25)_100%)] p-[1px_0] shadow-[0_22px_50px_-28px_rgba(6,182,212,0.4)]">
-          <div className="relative overflow-hidden border-y border-cyan-400/20 bg-[linear-gradient(135deg,rgba(255,255,255,0.12),rgba(255,255,255,0.04))] px-4 py-4 backdrop-blur-2xl sm:px-6">
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.25),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(6,182,212,0.15),transparent_28%)]" />
-            <div className="pointer-events-none absolute inset-y-3 left-8 w-24 rounded-full bg-cyan-400/20 blur-2xl" />
-            <div className="relative mx-auto flex max-w-[1800px] items-center gap-4 px-4 sm:px-6 lg:px-8">
-              <div className="hidden shrink-0 rounded-full border border-cyan-400/40 bg-cyan-400/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-100 sm:inline-flex">
-                Store Updates
+        <div className="overflow-hidden border-y border-cyan-400/30 bg-[linear-gradient(135deg,rgba(13,34,56,0.96)_0%,rgba(15,55,100,0.92)_48%,rgba(6,182,212,0.28)_100%)] shadow-[0_22px_50px_-28px_rgba(6,182,212,0.4)]">
+          <div className="relative overflow-hidden px-4 py-3 sm:px-6">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.18),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(6,182,212,0.13),transparent_28%)]" />
+            <div className="relative flex w-full flex-col gap-3 lg:flex-row lg:items-center lg:gap-4">
+              <div className="hidden w-[260px] shrink-0 flex-col gap-1 md:flex">
+                <p className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.28em] text-cyan-200">
+                  Quick Product Shortcuts
+                </p>
+                <p className="truncate text-xs text-cyan-50/75">
+                  Browse categories or send us a supply list.
+                </p>
               </div>
-              <div className="relative overflow-hidden">
+
+              <div className="relative min-w-0 flex-1 overflow-hidden lg:mr-auto">
                 <style>{`
-                  @keyframes liquidGlassTicker {
+                  @keyframes quickCategoryMarquee {
                     0% { transform: translateX(0); }
                     100% { transform: translateX(-50%); }
                   }
-                  .liquid-glass-ticker {
-                    animation: liquidGlassTicker 26s linear infinite;
+                  .quick-category-marquee {
+                    animation: quickCategoryMarquee 24s linear infinite;
+                  }
+                  .quick-category-marquee:hover {
+                    animation-play-state: paused;
                   }
                 `}</style>
-                <div className="liquid-glass-ticker flex w-max min-w-full items-center">
+                <div className="quick-category-marquee flex w-max items-center gap-2 pr-2">
                   {[0, 1].map((loop) => (
-                    <div key={loop} className="flex shrink-0 items-center gap-3 pr-3">
-                      {tickerItems.map((item) => (
-                        <div
-                          key={`${loop}-${item}`}
-                          className="inline-flex items-center gap-3 rounded-full border border-cyan-400/25 bg-cyan-400/8 px-4 py-2 text-sm font-medium text-cyan-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]"
+                    <div key={loop} className="flex shrink-0 items-center gap-2 pr-2">
+                      {quickCategoryShortcuts.map((category) => (
+                        <Link
+                          key={`${loop}-${category.name}`}
+                          href={category.href}
+                          className="inline-flex min-h-9 items-center justify-center rounded-full border border-cyan-300/30 bg-cyan-300/10 px-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-cyan-50 transition hover:border-cyan-200 hover:bg-cyan-300/18 focus-visible:bg-cyan-300/18"
                         >
-                          <span className="inline-flex h-2.5 w-2.5 rounded-full bg-cyan-300 shadow-[0_0_16px_rgba(34,211,238,0.75)]" />
-                          <span className="whitespace-nowrap">{item}</span>
-                        </div>
+                          {category.name}
+                        </Link>
                       ))}
                     </div>
                   ))}
                 </div>
               </div>
+
             </div>
           </div>
         </div>
@@ -223,14 +236,14 @@ export default function Home() {
               />
             </div>
           ))}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/50 to-black/60" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0f1b2d]/70 via-[#0f1b2d]/65 to-[#0f1b2d]/85" />
         </div>
 
         {/* Hero Content Overlay */}
         <div className="relative z-10 mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 text-center">
-          <div className="mb-6 inline-flex rounded-full border border-cyan-300/30 bg-cyan-950/40 backdrop-blur-sm px-4 py-2">
-            <span className="text-xs font-semibold uppercase tracking-widest text-cyan-200">
-              Industrial Supply Excellence
+          <div className="mb-6 inline-flex rounded-full border border-brand-copper/40 bg-[#0f1b2d]/60 backdrop-blur-sm px-4 py-2">
+            <span className="text-xs font-semibold uppercase tracking-widest text-brand-copper">
+              Industrial Supply, Delivered Right
             </span>
           </div>
           <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
@@ -242,41 +255,21 @@ export default function Home() {
           <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:justify-center">
             <Link
               href="/products"
-              className="inline-flex items-center justify-center rounded-lg bg-cyan-500 px-8 py-3 text-base font-semibold text-white shadow-lg hover:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-black transition-all"
+              className="btn-copper inline-flex items-center justify-center rounded-lg px-8 py-3 text-base shadow-lg focus:outline-none focus:ring-2 focus:ring-brand-copper focus:ring-offset-2 focus:ring-offset-black transition-all"
             >
-              Browse Categories
+              Browse Catalog
               <svg className="ml-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
             </Link>
             <Link
               href="/contact"
-              className="inline-flex items-center justify-center rounded-lg border-2 border-white px-8 py-3 text-base font-semibold text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-black transition-all"
+              className="inline-flex items-center justify-center rounded-lg border-2 border-white px-8 py-3 text-base font-semibold text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-brand-copper focus:ring-offset-2 focus:ring-offset-black transition-all"
             >
               Request a Quote
             </Link>
           </div>
         </div>
-
-        {/* Carousel Controls */}
-        <button
-          onClick={prevImage}
-          className="absolute left-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/40 p-3 text-white backdrop-blur-sm transition-all hover:bg-white/60 focus:outline-none focus:ring-2 focus:ring-cyan-400 hidden sm:block"
-          aria-label="Previous slide"
-        >
-          <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-        <button
-          onClick={nextImage}
-          className="absolute right-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/40 p-3 text-white backdrop-blur-sm transition-all hover:bg-white/60 focus:outline-none focus:ring-2 focus:ring-cyan-400 hidden sm:block"
-          aria-label="Next slide"
-        >
-          <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
 
         {/* Carousel Indicators */}
         <div className="absolute bottom-8 left-0 right-0 z-20 flex justify-center gap-3">
@@ -293,34 +286,21 @@ export default function Home() {
         </div>
       </section>
 
-      <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        <div className="mx-auto max-w-3xl">
-          <form
-            onSubmit={handleSearchSubmit}
-            className="flex flex-col items-center justify-center gap-3"
-          >
-            <p className="text-sm font-semibold text-slate-600">Quick Search</p>
-            <div className="relative flex items-center w-full max-w-md leading-[28px]">
-              <svg
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-                className="absolute left-4 h-4 w-4 fill-slate-400 pointer-events-none z-10"
-              >
-                <g>
-                  <path d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-3.365-7.5-7.5-7.5z"></path>
-                </g>
-              </svg>
-              <input
-                id="query"
-                className="w-full h-[44px] pl-10 text-slate-700 bg-white border border-slate-300 rounded-lg shadow-sm outline-none transition-all duration-200 z-0 placeholder:text-slate-400 hover:border-cyan-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200 font-sans"
-                type="search"
-                placeholder="Search products..."
-                name="searchbar"
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-              />
-            </div>
-          </form>
+      {/* Trust Strip */}
+      <div className="bg-brand-charcoal py-5">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-10 gap-y-3 px-4 text-center sm:px-6 lg:px-8">
+          {[
+            "Industrial, marine, safety & maintenance supply",
+            "Direct procurement support for enterprise projects",
+            "One supplier for structural, facility & fleet needs",
+          ].map((item) => (
+            <span
+              key={item}
+              className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-300"
+            >
+              {item}
+            </span>
+          ))}
         </div>
       </div>
 
@@ -365,12 +345,12 @@ export default function Home() {
                       <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-cyan-700">
                         Industrial Supply
                       </span>
-                      <span className="mt-3 text-base font-semibold leading-6 text-slate-900 transition-colors duration-300 group-hover:text-cyan-900 sm:text-[17px]">
+                      <span className="mt-3 text-base font-semibold leading-6 text-slate-900 transition-colors duration-300 group-hover:text-[#0f1b2d] sm:text-[17px]">
                         {tile.name}
                       </span>
                       <span className="mt-auto inline-flex items-center gap-3 pt-6 text-sm font-medium text-slate-600 transition-colors duration-300 group-hover:text-slate-900">
                         Browse products
-                        <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-base text-slate-700 transition-all duration-300 group-hover:border-cyan-300 group-hover:bg-cyan-50 group-hover:text-cyan-800">
+                        <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-base text-slate-700 transition-all duration-300 group-hover:border-brand-copper/60 group-hover:bg-amber-50 group-hover:text-brand-copper">
                           →
                         </span>
                       </span>
@@ -383,140 +363,184 @@ export default function Home() {
           </div>
         </div>
       </section>
-      {/* Features Grid */}
-      <section
-        id="features"
-        className="border-t border-zinc-200 bg-zinc-50/50 py-24 sm:py-32"
-      >
-        <div className="mx-auto w-full px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl">
-            Industries We Serve
-            
-            </h2>
-            <p className="mt-4 text-lg text-zinc-600">
-            We carry some of the top industrial brands across a number of sectors. Click the relevant option below to see more details on our brands and how they can work for you!
-            </p>
+      <section id="industries" className="border-t border-zinc-200 bg-[#f5f8fb] py-20 sm:py-28">
+        <div className="mx-auto max-w-[1440px] px-6 sm:px-8 lg:px-10">
+          <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-end">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-700">
+                Industries We Serve
+              </p>
+              <h2 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl lg:text-[2.7rem]">
+                Supply support for Trinidad & Tobago worksites
+              </h2>
+              <p className="mt-5 max-w-xl text-base leading-7 text-slate-600 sm:text-lg">
+                AMCOL helps operations teams source the maintenance, safety, repair, and facility products they need across heavy industry, construction, ports, and commercial facilities.
+              </p>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-3">
+              {["Industrial procurement", "Bulk order support", "Category guidance"].map((item) => (
+                <div
+                  key={item}
+                  className="border border-slate-200 bg-white px-4 py-5 text-center shadow-[0_18px_40px_-32px_rgba(15,23,42,0.45)]"
+                >
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-700">
+                    {item}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
-            <div className="mt-12 w-full overflow-hidden">
-              <style>{`
-                @keyframes scroll {
-                  0% { transform: translateX(0); }
-                  100% { transform: translateX(-50%); }
-                }
-                .animate-scroll {
-                  animation: scroll 20s linear infinite;
-                }
-              `}</style>
-              <div className="flex w-[200%] animate-scroll">
-                {[0, 1].map((i) => (
-                  <div key={i} className="flex w-1/2 justify-around">
-                    {["WD-40","Simple Green","Red Devil", "DEWALT"].map((brand) => (
-                      <div key={brand} className="flex items-center justify-center rounded-lg bg-zinc-100 px-10 py-6">
-                        <span className="text-xl font-bold text-zinc-400">{brand}</span>
+
+          <div className="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+            {industriesServed.map((industry) => (
+              <Link
+                key={industry.name}
+                href={industry.href}
+                className="group overflow-hidden rounded-[1.25rem] border border-slate-200 bg-white text-left shadow-[0_22px_50px_-36px_rgba(15,23,42,0.55)] transition hover:-translate-y-1 hover:border-cyan-300 hover:shadow-[0_24px_55px_-30px_rgba(8,47,73,0.35)]"
+              >
+                <div className="relative h-48 overflow-hidden bg-slate-900">
+                  <Image
+                    src={industry.image}
+                    alt={industry.name}
+                    fill
+                    sizes="(min-width: 1280px) 25vw, (min-width: 768px) 50vw, 100vw"
+                    className="object-cover transition duration-500 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/74 via-slate-950/18 to-transparent" />
+                  <span className="absolute bottom-4 left-4 rounded-full border border-cyan-300/35 bg-cyan-300/12 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-cyan-50">
+                    {industry.categories}
+                  </span>
+                </div>
+                <div className="p-5">
+                  <h3 className="text-lg font-semibold text-slate-950">{industry.name}</h3>
+                  <p className="mt-3 text-sm leading-6 text-slate-600">{industry.description}</p>
+                  <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-cyan-800">
+                    View relevant products
+                    <span aria-hidden="true">→</span>
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="features" className="border-t border-zinc-200 bg-white py-20 sm:py-28">
+        <div className="mx-auto max-w-[1440px] px-6 sm:px-8 lg:px-10">
+          <div className="flex flex-col gap-4 text-center sm:flex-row sm:items-end sm:justify-between sm:text-left">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-700">
+                Featured Industrial Brands
+              </p>
+              <h2 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
+                Trusted names for everyday industrial supply
+              </h2>
+            </div>
+          </div>
+
+          <div className="relative mt-12 overflow-hidden">
+            <style>{`
+              @keyframes featuredBrandCardsMarquee {
+                0% { transform: translateX(0); }
+                100% { transform: translateX(-50%); }
+              }
+              .featured-brand-cards-marquee {
+                animation: featuredBrandCardsMarquee 34s linear infinite;
+              }
+              .featured-brand-cards-marquee:hover {
+                animation-play-state: paused;
+              }
+            `}</style>
+            <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-white to-transparent" />
+            <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-white to-transparent" />
+            <div className="featured-brand-cards-marquee flex w-max items-stretch gap-5 pr-5">
+              {[0, 1].map((loop) => (
+                <div key={loop} className="flex shrink-0 items-stretch gap-5 pr-5">
+                  {featuredIndustrialBrands.map((brand) => (
+                    <Link
+                      key={`${loop}-${brand.name}`}
+                      href={brand.href}
+                      className="group flex w-[280px] shrink-0 flex-col overflow-hidden rounded-[1.25rem] border border-slate-200 bg-white shadow-[0_18px_44px_-34px_rgba(15,23,42,0.55)] transition hover:-translate-y-1 hover:border-cyan-300 sm:w-[320px]"
+                    >
+                      <div className="relative flex h-56 items-center justify-center overflow-hidden bg-slate-50">
+                        <Image
+                          src={brand.image}
+                          alt={`${brand.name} products`}
+                          fill
+                          sizes="320px"
+                          className="object-contain p-6 transition duration-500 group-hover:scale-105"
+                        />
                       </div>
-                    ))}
-                  </div>
-                ))}
-              </div>
+                      <div className="flex flex-1 flex-col p-5">
+                        <h3 className="text-xl font-semibold text-slate-950">{brand.name}</h3>
+                        <p className="mt-3 text-sm leading-6 text-slate-600">{brand.description}</p>
+                        <span className="mt-auto inline-flex items-center gap-2 pt-5 text-sm font-semibold text-cyan-800">
+                          Browse brand category
+                          <span aria-hidden="true">→</span>
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ))}
             </div>
-            <div className="mt-12 w-full overflow-hidden">
-              <div className="flex w-[200%] animate-scroll">
-                {[0, 1].map((i) => (
-                  <div key={i} className="flex w-1/2 items-center">
-                    <div className="flex-1 px-4">
-                      <img
-                        src="/images/3 WD-40 Cans Banner.png"
-                        alt="WD-40 Banner"
-                        className="w-full h-64 object-cover rounded-2xl"
-                      />
-                    </div>
-                    <div className="flex-1 px-4">
-                      <img
-                        src="/images/Simple Green Safer Choice Banner.png"
-                        alt="Simple Green Safer Choice Banner"
-                        className="w-full h-64 object-cover rounded-2xl"
-                      />
-                    </div>
-                    <div className="flex-1 px-4">
-                      <img
-                        src="/images/Reddevel-poster.png"
-                        alt="Silicone Tube with Red Devil Background"
-                        className="w-full h-64 object-cover rounded-2xl"
-                      />
-                    </div>
-                    <div className="flex-1 px-4">
-                      <img
-                        src="/images/Dewalt Kit.jpg"
-                        alt="Dewalt Kit"
-                        className="w-full h-64 object-cover rounded-2xl"
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+          </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-24 sm:py-32">
+      {/* News & Events */}
+      <section className="border-t border-zinc-200 bg-brand-charcoal py-24 sm:py-32">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="relative overflow-hidden rounded-3xl bg-zinc-900 px-8 py-24 text-center sm:px-16 sm:py-32">
-            <div
-              className="absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: "url('/images/Proman.png')" }}
-            />
-            <div className="absolute inset-0 bg-zinc-900/65" />
+          <div className="flex flex-col gap-3 text-center sm:flex-row sm:items-end sm:justify-between sm:text-left">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-brand-copper">
+                News & Events
+              </p>
+              <h2 className="mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                Recent project highlights
+              </h2>
+            </div>
+            <Link
+              href="/News&Articles"
+              className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.16em] text-brand-copper transition hover:text-amber-300"
+            >
+              View all news
+              <span aria-hidden="true">→</span>
+            </Link>
+          </div>
 
-            <div className="relative z-10">
-              <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              News & Events
-            </h2>
-            <p className="mx-auto mt-6 max-w-2xl text-lg text-zinc-400">
-              A collection of articles on various industrial sectors, business tips and the latest happenings from in and around Americas Marketing Company. Stay informed with our latest updates and industry insights designed to help your business grow.
-            </p>
-            <div className="mt-10 flex items-center justify-center gap-x-6">
-              <a
+          <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
+            {latestArticles.map((article) => (
+              <Link
+                key={article.id}
                 href="/News&Articles"
-                className="rounded-md bg-white px-3.5 py-2.5 text-sm font-semibold text-zinc-900 shadow-sm hover:bg-zinc-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                className="group overflow-hidden rounded-2xl border border-white/10 bg-white/5 transition hover:-translate-y-1 hover:border-brand-copper/40"
               >
-                Read Latest News
-              </a>
-            </div>
-            </div>
+                <div
+                  className="h-44 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+                  style={{ backgroundImage: `url('${article.image}')` }}
+                />
+                <div className="p-6">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-brand-copper">
+                    {article.sector}
+                  </p>
+                  <h3 className="mt-2 text-lg font-bold text-white">{article.title}</h3>
+                  <p className="mt-2 text-sm text-slate-400">
+                    {article.location} ·{" "}
+                    {new Date(article.completedOn).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </p>
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-zinc-200 py-12">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
-            <span className="text-sm font-medium text-zinc-500">AMCOL</span>
-            <div className="flex gap-8">
-              <a
-                href="#"
-                className="text-sm text-zinc-500 transition-colors hover:text-zinc-900"
-              >
-                Privacy
-              </a>
-              <a
-                href="#"
-                className="text-sm text-zinc-500 transition-colors hover:text-zinc-900"
-              >
-                Terms
-              </a>
-              <a
-                href="#"
-                className="text-sm text-zinc-500 transition-colors hover:text-zinc-900"
-              >
-                Contact
-              </a>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

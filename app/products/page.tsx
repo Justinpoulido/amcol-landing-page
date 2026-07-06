@@ -1,16 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { getAllProducts, getFeaturedCategories } from "@/lib/catalog-store";
+import { SiteHeader } from "@/app/components/SiteHeader";
+import { SiteFooter } from "@/app/components/SiteFooter";
+import { Breadcrumbs } from "@/app/components/Breadcrumbs";
 
-const navLinks = [
-  { name: "HOME", href: "https://www.amcolhardwarett.com/index.php" },
-  { name: "PRODUCTS", href: "/products" },
-  { name: "CONSTRUCTION", href: "https://www.amcolhardwarett.com/construction.php" },
-  { name: "INDUSTRIAL", href: "/" },
-  { name: "DEPARTMENTS", href: "/departments" },
-  { name: "CONTACT US", href: "/contact" },
-  { name: "ADMIN LOGIN", href: "/admin" },
-];
+export const metadata: Metadata = {
+  title: "Product Catalog",
+  description:
+    "Browse AMCOL Industrial's catalog of industrial, marine, safety, and maintenance supplies across every product category.",
+};
 
 type ProductsPageProps = {
   searchParams?: Promise<{
@@ -59,88 +59,24 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
   return (
     <div className="min-h-screen bg-white font-sans text-zinc-900">
-      <header className="hero-mainnav relative z-40">
-        <div className="flex w-full flex-col overflow-hidden md:flex-row md:items-stretch">
-          <div className="hero-brand-panel flex items-center justify-center px-6 py-5 sm:px-8 md:w-[38%] md:min-w-[380px] md:justify-start lg:px-10">
-            <div className="hero-brand-content relative z-10 flex w-full max-w-[520px] items-center gap-4 sm:gap-5">
-              <Link className="hero-brand-logo-wrap shrink-0" href="/" aria-label="AMCOL Home">
-                <Image
-                  src="/images/AMCOL_Logo.png"
-                  alt="AMCOL Logo"
-                  width={420}
-                  height={104}
-                  priority
-                  className="hero-brand-logo h-20 w-auto max-w-[320px] sm:h-24 md:h-[6.1rem]"
-                />
-              </Link>
+      <SiteHeader activeLink="PRODUCTS" />
 
-              <div className="hero-brand-copy hidden min-w-0 flex-1 md:block">
-                <p className="hero-brand-eyebrow text-[10px] font-semibold uppercase tracking-[0.34em] text-cyan-200/90">
-                  Industrial Supply Partner
-                </p>
-                <p className="mt-2 text-sm leading-6 text-slate-200/90">
-                  Reliable products for maintenance, safety, facility operations, and industrial procurement.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="hero-links-panel flex flex-1 items-center justify-center px-4 py-4 sm:px-6 lg:px-10">
-            <div className="flex w-full flex-col items-center justify-center gap-3 lg:flex-row lg:justify-between">
-              <div className="hidden rounded-full border border-slate-200 bg-white/75 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500 shadow-[0_10px_24px_-18px_rgba(15,23,42,0.45)] lg:inline-flex">
-                AMCOL Industrial Catalog
-              </div>
-              <nav className="flex flex-wrap items-center justify-center gap-x-3 gap-y-3 text-[11px] font-bold uppercase tracking-[0.2em] sm:gap-x-4">
-                {navLinks.map((link) => {
-                  const isActive = link.name === "PRODUCTS";
-                  const isAdminLink = link.name === "ADMIN LOGIN";
-
-                  return (
-                    <a
-                      key={link.name}
-                      href={link.href}
-                      className={`hero-nav-link rounded-sm border px-4 py-3 ${
-                        isAdminLink
-                          ? "border-red-500 bg-red-600 text-white hover:border-red-600 hover:bg-red-700"
-                          : isActive
-                          ? "border-[#39d9cd]/70 bg-[#0d2238] text-[#39d9cd]"
-                          : "border-slate-200 bg-white text-slate-700 hover:border-[#39d9cd]/45 hover:text-[#0d2238]"
-                      }`}
-                    >
-                      {link.name}
-                    </a>
-                  );
-                })}
-              </nav>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <section className="relative overflow-hidden bg-[#1A1A1B] pt-32 pb-24 sm:pt-40 sm:pb-32">
+      <section className="relative overflow-hidden bg-brand-charcoal pt-32 pb-24 sm:pt-40 sm:pb-32">
         <div className="absolute inset-0 z-0">
           <div
             className="absolute inset-0 bg-cover bg-center opacity-50 grayscale mix-blend-overlay"
-            style={{ backgroundImage: "url('/images/Heritage Industry.jpg')" }}
+            style={{ backgroundImage: "url('/images/Heritage Industry.webp')" }}
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#1A1A1B]/80 via-[#1A1A1B]/60 to-[#1A1A1B]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0f1b2d]/80 via-[#0f1b2d]/60 to-[#0f1b2d]" />
         </div>
 
         <div className="relative z-10 mx-auto max-w-7xl px-6 text-center lg:px-8">
           <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl">
-            World-Class <span className="text-red-600">Products</span>
+            World-Class <span className="text-brand-copper">Products</span>
           </h1>
           <p className="mt-6 mx-auto max-w-2xl text-lg leading-8 text-gray-300">
             Explore our comprehensive catalog of industrial, construction, and marine supplies designed for performance and durability.
           </p>
-          <div className="mt-8 flex justify-center">
-            <Link
-              href="/admin"
-              className="inline-flex rounded-full border border-white/20 bg-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/15"
-            >
-              Open product admin
-            </Link>
-          </div>
         </div>
       </section>
 
@@ -176,7 +112,8 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
       <section className="bg-zinc-50 py-16 sm:py-24">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Products" }]} />
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-700">
                 Product Catalog
@@ -287,33 +224,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
         </div>
       </section>
 
-      <footer className="border-t border-zinc-200 bg-white py-12">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
-            <span className="text-sm font-medium text-zinc-500">AMCOL</span>
-            <div className="flex gap-8">
-              <a
-                href="#"
-                className="text-sm text-zinc-500 transition-colors hover:text-zinc-900"
-              >
-                Privacy
-              </a>
-              <a
-                href="#"
-                className="text-sm text-zinc-500 transition-colors hover:text-zinc-900"
-              >
-                Terms
-              </a>
-              <a
-                href="#"
-                className="text-sm text-zinc-500 transition-colors hover:text-zinc-900"
-              >
-                Contact
-              </a>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }
