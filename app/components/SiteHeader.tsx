@@ -9,7 +9,6 @@ const navLinks = [
   { name: "HOME", href: "https://www.amcolhardwarett.com/index.php", external: true },
   { name: "PRODUCTS", href: "/products", external: false },
   { name: "CONSTRUCTION", href: "https://www.amcolhardwarett.com/construction.php", external: true },
-  { name: "DEPARTMENTS", href: "/departments", external: false },
   { name: "CONTACT US", href: "/contact", external: false },
 ] as const;
 
