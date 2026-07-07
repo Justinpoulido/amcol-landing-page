@@ -496,7 +496,7 @@ export default function Home() {
               </h2>
             </div>
             <Link
-              href="/News&Articles"
+              href="/news"
               className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.16em] text-brand-copper transition hover:text-amber-300"
             >
               View all news
@@ -508,7 +508,7 @@ export default function Home() {
             {latestArticles.map((article) => (
               <Link
                 key={article.id}
-                href="/News&Articles"
+                href="/news"
                 className="group overflow-hidden rounded-2xl border border-white/10 bg-white/5 transition hover:-translate-y-1 hover:border-brand-copper/40"
               >
                 <div

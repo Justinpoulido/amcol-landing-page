@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description:
     "Read AMCOL Industrial project highlights, delivery milestones, and field support stories across energy, marine, welding, and safety operations.",
   alternates: {
-    canonical: "/News&Articles",
+    canonical: "/news",
   },
   openGraph: {
     type: "website",
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     title: "Industrial News & Project Articles",
     description:
       "AMCOL Industrial project stories and field support updates from Trinidad & Tobago industrial sectors.",
-    url: absoluteUrl("/News&Articles"),
+    url: absoluteUrl("/news"),
     images: openGraphImage(
       "/images/Heritage Industry.webp",
       "Industrial project site in Trinidad and Tobago",

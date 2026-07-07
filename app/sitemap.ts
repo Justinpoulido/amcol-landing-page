@@ -33,7 +33,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     toSitemapEntry("/", { changeFrequency: "weekly", priority: 1 }),
     toSitemapEntry("/products", { changeFrequency: "daily", priority: 0.95 }),
     toSitemapEntry("/contact", { changeFrequency: "monthly", priority: 0.8 }),
-    toSitemapEntry("/News&Articles", { changeFrequency: "monthly", priority: 0.6 }),
+    toSitemapEntry("/news", { changeFrequency: "monthly", priority: 0.6 }),
     toSitemapEntry("/privacy", { changeFrequency: "yearly", priority: 0.2 }),
     toSitemapEntry("/terms", { changeFrequency: "yearly", priority: 0.2 }),
   ];
