@@ -157,6 +157,9 @@ export async function generateMetadata({
     title: "Product Not Found",
     description:
       "The requested AMCOL Industrial product or category could not be found.",
+    alternates: {
+      canonical: "/products",
+    },
     robots: {
       index: false,
       follow: false,
