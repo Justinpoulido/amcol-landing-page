@@ -1,6 +1,10 @@
 const defaultSiteUrl = "https://amcolindustrial.com";
 
 export const siteName = "AMCOL Industrial";
+export const defaultOpenGraphImage = {
+  url: "/images/AMCOL Banner.webp",
+  alt: "AMCOL Industrial supply and procurement support",
+};
 
 export function getSiteUrl() {
   const configuredUrl =
@@ -23,4 +27,16 @@ export function createMetaDescription(value: string, maxLength = 155) {
   }
 
   return `${normalized.slice(0, maxLength - 1).trimEnd()}…`;
+}
+
+export function openGraphImage(
+  url = defaultOpenGraphImage.url,
+  alt = defaultOpenGraphImage.alt,
+) {
+  return [
+    {
+      url,
+      alt,
+    },
+  ];
 }

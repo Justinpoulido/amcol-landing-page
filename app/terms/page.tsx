@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { SiteFooter } from "@/app/components/SiteFooter";
-import { absoluteUrl } from "@/lib/seo";
+import { absoluteUrl, openGraphImage, siteName } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
@@ -10,10 +10,21 @@ export const metadata: Metadata = {
     canonical: "/terms",
   },
   openGraph: {
+    type: "website",
+    siteName,
+    locale: "en_TT",
     title: "Terms of Service",
     description:
       "Terms governing the use of the AMCOL Industrial website and quote requests.",
     url: absoluteUrl("/terms"),
+    images: openGraphImage(),
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Terms of Service",
+    description:
+      "Terms governing the use of the AMCOL Industrial website and quote requests.",
+    images: ["/images/AMCOL Banner.webp"],
   },
 };
 

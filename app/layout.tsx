@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { absoluteUrl, getSiteUrl, siteName } from "@/lib/seo";
+import { absoluteUrl, getSiteUrl, openGraphImage, siteName } from "@/lib/seo";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -22,26 +22,25 @@ export const metadata: Metadata = {
   },
   description:
     "AMCOL Industrial supplies industrial, marine, safety, and maintenance products across Trinidad & Tobago, with dedicated procurement support for facility operators and enterprise projects.",
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     type: "website",
     siteName,
+    locale: "en_TT",
     title: "AMCOL Industrial | Industrial, Marine & Safety Supply",
     description:
       "Industrial, marine, safety, and maintenance products for procurement teams across Trinidad & Tobago.",
     url: absoluteUrl("/"),
-    images: [
-      {
-        url: "/images/AMCOL_Logo.webp",
-        alt: "AMCOL Industrial logo",
-      },
-    ],
+    images: openGraphImage(),
   },
   twitter: {
     card: "summary_large_image",
     title: "AMCOL Industrial | Industrial, Marine & Safety Supply",
     description:
       "Industrial, marine, safety, and maintenance products for procurement teams across Trinidad & Tobago.",
-    images: ["/images/AMCOL_Logo.webp"],
+    images: ["/images/AMCOL Banner.webp"],
   },
 };
 

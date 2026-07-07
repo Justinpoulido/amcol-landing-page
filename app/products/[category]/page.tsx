@@ -6,7 +6,7 @@ import { ProductImageCarousel } from "./ProductImageCarousel";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { SiteFooter } from "@/app/components/SiteFooter";
 import { Breadcrumbs } from "@/app/components/Breadcrumbs";
-import { absoluteUrl, createMetaDescription } from "@/lib/seo";
+import { absoluteUrl, createMetaDescription, openGraphImage, siteName } from "@/lib/seo";
 
 type CategoryPageProps = {
   params: Promise<{
@@ -104,15 +104,13 @@ export async function generateMetadata({
         canonical: canonicalPath,
       },
       openGraph: {
+        type: "website",
+        siteName,
+        locale: "en_TT",
         title,
         description,
         url: absoluteUrl(canonicalPath),
-        images: [
-          {
-            url: product.image,
-            alt: product.imageAlt || product.name,
-          },
-        ],
+        images: openGraphImage(product.image, product.imageAlt || product.name),
       },
       twitter: {
         card: "summary_large_image",
@@ -135,15 +133,16 @@ export async function generateMetadata({
         canonical: canonicalPath,
       },
       openGraph: {
+        type: "website",
+        siteName,
+        locale: "en_TT",
         title,
         description,
         url: absoluteUrl(canonicalPath),
-        images: [
-          {
-            url: data.banner || data.image,
-            alt: `${data.name} supplies from AMCOL Industrial`,
-          },
-        ],
+        images: openGraphImage(
+          data.banner || data.image,
+          `${data.name} supplies from AMCOL Industrial`,
+        ),
       },
       twitter: {
         card: "summary_large_image",

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { absoluteUrl } from "@/lib/seo";
+import { absoluteUrl, openGraphImage, siteName } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Industrial News & Project Articles",
@@ -9,16 +9,17 @@ export const metadata: Metadata = {
     canonical: "/News&Articles",
   },
   openGraph: {
+    type: "website",
+    siteName,
+    locale: "en_TT",
     title: "Industrial News & Project Articles",
     description:
       "AMCOL Industrial project stories and field support updates from Trinidad & Tobago industrial sectors.",
     url: absoluteUrl("/News&Articles"),
-    images: [
-      {
-        url: "/images/Heritage Industry.webp",
-        alt: "Industrial project site in Trinidad and Tobago",
-      },
-    ],
+    images: openGraphImage(
+      "/images/Heritage Industry.webp",
+      "Industrial project site in Trinidad and Tobago",
+    ),
   },
   twitter: {
     card: "summary_large_image",

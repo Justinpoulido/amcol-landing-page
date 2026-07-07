@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { SiteFooter } from "@/app/components/SiteFooter";
-import { absoluteUrl } from "@/lib/seo";
+import { absoluteUrl, openGraphImage, siteName } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
@@ -10,10 +10,21 @@ export const metadata: Metadata = {
     canonical: "/privacy",
   },
   openGraph: {
+    type: "website",
+    siteName,
+    locale: "en_TT",
     title: "Privacy Policy",
     description:
       "How AMCOL Industrial collects, uses, and protects customer information.",
     url: absoluteUrl("/privacy"),
+    images: openGraphImage(),
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Privacy Policy",
+    description:
+      "How AMCOL Industrial collects, uses, and protects customer information.",
+    images: ["/images/AMCOL Banner.webp"],
   },
 };
 
