@@ -241,11 +241,6 @@ export default function Home() {
 
         {/* Hero Content Overlay */}
         <div className="relative z-10 mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 text-center">
-          <div className="mb-6 inline-flex rounded-full border border-brand-copper/40 bg-[#0f1b2d]/60 backdrop-blur-sm px-4 py-2">
-            <span className="text-xs font-semibold uppercase tracking-widest text-brand-copper">
-              Industrial Supply, Delivered Right
-            </span>
-          </div>
           <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
             Your Trusted Industrial Supply Partner
           </h1>
