@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { absoluteUrl, getSiteUrl, siteName } from "@/lib/seo";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,12 +14,35 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(getSiteUrl()),
+  applicationName: siteName,
   title: {
     default: "AMCOL Industrial | Industrial, Marine & Safety Supply",
     template: "%s | AMCOL Industrial",
   },
   description:
     "AMCOL Industrial supplies industrial, marine, safety, and maintenance products across Trinidad & Tobago, with dedicated procurement support for facility operators and enterprise projects.",
+  openGraph: {
+    type: "website",
+    siteName,
+    title: "AMCOL Industrial | Industrial, Marine & Safety Supply",
+    description:
+      "Industrial, marine, safety, and maintenance products for procurement teams across Trinidad & Tobago.",
+    url: absoluteUrl("/"),
+    images: [
+      {
+        url: "/images/AMCOL_Logo.webp",
+        alt: "AMCOL Industrial logo",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AMCOL Industrial | Industrial, Marine & Safety Supply",
+    description:
+      "Industrial, marine, safety, and maintenance products for procurement teams across Trinidad & Tobago.",
+    images: ["/images/AMCOL_Logo.webp"],
+  },
 };
 
 export default function RootLayout({

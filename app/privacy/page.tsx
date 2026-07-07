@@ -1,10 +1,20 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { SiteFooter } from "@/app/components/SiteFooter";
+import { absoluteUrl } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
   description: "How AMCOL Industrial collects, uses, and protects customer information.",
+  alternates: {
+    canonical: "/privacy",
+  },
+  openGraph: {
+    title: "Privacy Policy",
+    description:
+      "How AMCOL Industrial collects, uses, and protects customer information.",
+    url: absoluteUrl("/privacy"),
+  },
 };
 
 export default function PrivacyPage() {

@@ -5,11 +5,34 @@ import { getAllProducts, getFeaturedCategories } from "@/lib/catalog-store";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { SiteFooter } from "@/app/components/SiteFooter";
 import { Breadcrumbs } from "@/app/components/Breadcrumbs";
+import { absoluteUrl } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Product Catalog",
   description:
     "Browse AMCOL Industrial's catalog of industrial, marine, safety, and maintenance supplies across every product category.",
+  alternates: {
+    canonical: "/products",
+  },
+  openGraph: {
+    title: "AMCOL Industrial Product Catalog",
+    description:
+      "Browse industrial, marine, safety, construction, and maintenance supplies available from AMCOL Industrial.",
+    url: absoluteUrl("/products"),
+    images: [
+      {
+        url: "/images/AMCOL Banner.webp",
+        alt: "AMCOL Industrial product catalog",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AMCOL Industrial Product Catalog",
+    description:
+      "Browse industrial, marine, safety, construction, and maintenance supplies from AMCOL Industrial.",
+    images: ["/images/AMCOL Banner.webp"],
+  },
 };
 
 type ProductsPageProps = {

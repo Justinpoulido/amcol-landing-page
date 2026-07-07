@@ -1,10 +1,20 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { SiteFooter } from "@/app/components/SiteFooter";
+import { absoluteUrl } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
   description: "Terms governing the use of the AMCOL Industrial website and quote requests.",
+  alternates: {
+    canonical: "/terms",
+  },
+  openGraph: {
+    title: "Terms of Service",
+    description:
+      "Terms governing the use of the AMCOL Industrial website and quote requests.",
+    url: absoluteUrl("/terms"),
+  },
 };
 
 export default function TermsPage() {

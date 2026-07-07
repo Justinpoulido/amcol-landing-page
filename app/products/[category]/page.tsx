@@ -1,10 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { getCategoryBySlug, getProductBySlug } from "@/lib/catalog-store";
 import { ProductImageCarousel } from "./ProductImageCarousel";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { SiteFooter } from "@/app/components/SiteFooter";
 import { Breadcrumbs } from "@/app/components/Breadcrumbs";
+import { absoluteUrl, createMetaDescription } from "@/lib/seo";
 
 type CategoryPageProps = {
   params: Promise<{
@@ -62,6 +64,105 @@ function getSelectedProductType(
 
 function matchesProductType(productType: string, selectedType: string) {
   return productType.toLowerCase() === selectedType.toLowerCase();
+}
+
+function getProductMetaDescription(
+  product: NonNullable<Awaited<ReturnType<typeof getProductBySlug>>>,
+) {
+  const genericDescription =
+    "Product details are available through our sales team for this category.";
+  const description =
+    product.description && product.description !== genericDescription
+      ? product.description
+      : product.summary && product.summary !== genericDescription
+      ? product.summary
+      : undefined;
+
+  return createMetaDescription(
+    description ||
+      `Request pricing and availability for ${product.name} and related ${product.category.toLowerCase()} from AMCOL Industrial in Trinidad & Tobago.`,
+  );
+}
+
+export async function generateMetadata({
+  params,
+}: Pick<CategoryPageProps, "params">): Promise<Metadata> {
+  const { category } = await params;
+  const slug = category.toLowerCase();
+  const data = await getCategoryBySlug(slug);
+  const product = data ? null : await getProductBySlug(slug);
+
+  if (product) {
+    const title = `${product.name} | ${product.categoryName} Supplies`;
+    const description = getProductMetaDescription(product);
+    const canonicalPath = `/products/${product.slug || slug}`;
+
+    return {
+      title,
+      description,
+      alternates: {
+        canonical: canonicalPath,
+      },
+      openGraph: {
+        title,
+        description,
+        url: absoluteUrl(canonicalPath),
+        images: [
+          {
+            url: product.image,
+            alt: product.imageAlt || product.name,
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
+  }
+
+  if (data) {
+    const title = `${data.title} | Industrial Supplies Trinidad & Tobago`;
+    const description = createMetaDescription(data.description);
+    const canonicalPath = `/products/${data.slug}`;
+
+    return {
+      title,
+      description,
+      alternates: {
+        canonical: canonicalPath,
+      },
+      openGraph: {
+        title,
+        description,
+        url: absoluteUrl(canonicalPath),
+        images: [
+          {
+            url: data.banner || data.image,
+            alt: `${data.name} supplies from AMCOL Industrial`,
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [data.banner || data.image],
+      },
+    };
+  }
+
+  return {
+    title: "Product Not Found",
+    description:
+      "The requested AMCOL Industrial product or category could not be found.",
+    robots: {
+      index: false,
+      follow: false,
+    },
+  };
 }
 
 export default async function CategoryPage({ params, searchParams }: CategoryPageProps) {
