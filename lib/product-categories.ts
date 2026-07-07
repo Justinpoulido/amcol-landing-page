@@ -43,7 +43,11 @@ export const productCategoryData: Record<string, ProductCategoryPageData> = {
     subtitle: "Heavy-duty cleaning for demanding worksites",
     description:
       "Cut through grease, oil, carbon buildup, and shop-floor grime with industrial cleaning solutions designed for maintenance teams, plant shutdowns, and routine equipment care.",
-    products: [],
+    products: [
+      { id: 1, name: "WD-40 Specialist Degreaser", price: "Inquire", image: "/images/wd40 degreaser.webp", category: "Degreaser" },
+      { id: 2, name: "Industrial Cleaner Degreaser", price: "Call for Quote", image: "/images/Simple Green Safer Choice Banner.webp", category: "Cleaner" },
+      { id: 3, name: "Heavy-Duty Surface Cleaner", price: "Inquire", image: "/images/Surface Cleaner.webp", category: "Facility Care" },
+    ],
   },
   "surface-disinfectants-deodorizers": {
     slug: "surface-disinfectants-deodorizers",
@@ -334,6 +338,312 @@ export const productCategoryData: Record<string, ProductCategoryPageData> = {
     ],
   },
 };
+
+type ProductContentDetails = Pick<
+  ProductItem,
+  "summary" | "description" | "specifications" | "useCases" | "brand" | "unit" | "stockStatus" | "imageAlt"
+>;
+
+const productContentOverrides: Record<string, Partial<ProductContentDetails>> = {
+  "WD-40 Multi-Use Product": {
+    brand: "WD-40",
+    summary:
+      "Multi-purpose lubricant and penetrant for loosening stuck parts, displacing moisture, and protecting metal surfaces.",
+    description:
+      "WD-40 Multi-Use Product supports day-to-day maintenance across workshops, fleet yards, industrial plants, and facility teams. Use it to help free seized fasteners, quiet light-duty moving parts, protect exposed metal, and displace moisture during routine equipment care.",
+    specifications: [
+      "Multi-use lubricant, penetrant, and moisture displacer",
+      "Suitable for tools, hinges, locks, light mechanisms, and exposed metal",
+      "Useful for preventive maintenance kits and workshop stockrooms",
+    ],
+    useCases: [
+      "Freeing seized nuts, bolts, hinges, and light mechanisms",
+      "Displacing moisture from tools and metal components",
+      "Routine workshop, fleet, and facility maintenance",
+    ],
+  },
+  "Portable Fire Extinguisher": {
+    summary:
+      "Portable fire extinguisher supply for facility readiness, worksite protection, and emergency response points.",
+    description:
+      "Portable fire extinguishers help facilities, workshops, vehicles, and construction areas maintain accessible first-response protection. AMCOL can support extinguisher sourcing for offices, warehouses, plants, yards, and work crews that need practical fire-safety coverage.",
+    specifications: [
+      "Portable extinguisher options available by application",
+      "Suitable for facility, workshop, vehicle, and jobsite placement",
+      "Ask AMCOL for size, class, mounting, and compliance guidance",
+    ],
+    useCases: [
+      "Fire point coverage for offices, stores, yards, and industrial facilities",
+      "Safety readiness for construction and maintenance crews",
+      "Replacement or expansion of emergency-response equipment",
+    ],
+  },
+  "Industrial Safety Helmet": {
+    summary:
+      "Durable head protection for construction, maintenance, warehouse, and plant personnel.",
+    description:
+      "Industrial safety helmets help protect crews from overhead hazards, bumps, and site-impact risks during daily work. Suitable for contractors, maintenance teams, warehouse crews, and plant personnel who need practical head protection for active work areas.",
+    specifications: [
+      "Hard-hat style head protection for industrial and construction settings",
+      "Compatible with common site-safety and PPE programs",
+      "Available for bulk procurement and crew outfitting",
+    ],
+    useCases: [
+      "Construction and maintenance work zones",
+      "Plant, warehouse, and yard operations",
+      "Contractor safety kits and PPE replenishment",
+    ],
+  },
+  "High-Visibility PPE Kit": {
+    summary:
+      "Visibility-focused PPE bundle for crews working around vehicles, equipment, traffic, and active yards.",
+    description:
+      "High-visibility PPE kits help crews remain easier to identify in busy work environments. They are useful for contractors, logistics teams, road crews, warehouses, and plant maintenance groups that need fast PPE replenishment for personnel and visitors.",
+    specifications: [
+      "PPE bundle options available for high-visibility work areas",
+      "Supports visitor, contractor, and crew outfitting",
+      "Suitable for roadway, yard, warehouse, and plant environments",
+    ],
+    useCases: [
+      "Roadwork and construction site readiness",
+      "Warehouse, port, and logistics operations",
+      "Visitor PPE and contractor onboarding packs",
+    ],
+  },
+  "Red Devil Silicone Sealant": {
+    brand: "Red Devil",
+    summary:
+      "Silicone sealant for sealing joints, gaps, windows, doors, kitchens, bathrooms, and maintenance repairs.",
+    description:
+      "Red Devil Silicone Sealant provides flexible sealing support for building maintenance, repair work, and general installation tasks. It is suited for sealing joints and gaps where crews need a dependable cartridge sealant for facilities, workshops, and contractor jobs.",
+    specifications: [
+      "Cartridge-style silicone sealant",
+      "Useful for windows, doors, fixtures, joints, and general sealing",
+      "Suitable for contractor, facility, and maintenance stockrooms",
+    ],
+    useCases: [
+      "Sealing gaps around windows, doors, and fixtures",
+      "Facility maintenance and building repairs",
+      "Contractor installation and punch-list work",
+    ],
+  },
+  "Industrial Abrasive Disc": {
+    summary:
+      "Abrasive disc support for grinding, deburring, surface preparation, and metal maintenance tasks.",
+    description:
+      "Industrial abrasive discs are used by fabrication shops, contractors, and maintenance teams for surface preparation, grinding, and finishing. AMCOL can help source abrasive options based on material, tool type, finish requirements, and jobsite demand.",
+    specifications: [
+      "Grinding and surface-preparation abrasive options",
+      "Suitable for fabrication, maintenance, and repair workflows",
+      "Ask about disc size, grit, material, and application matching",
+    ],
+    useCases: [
+      "Metal preparation before welding or coating",
+      "Grinding, deburring, and edge cleanup",
+      "Workshop and maintenance stock replenishment",
+    ],
+  },
+  "HVAC Coil Cleaner": {
+    summary:
+      "Coil-cleaning chemical support for HVAC service teams and facility maintenance programs.",
+    description:
+      "HVAC coil cleaners help maintenance teams remove buildup from cooling and ventilation equipment so systems can operate more efficiently. AMCOL supports facilities, contractors, and service teams sourcing HVAC chemicals for scheduled service work.",
+    specifications: [
+      "Chemical cleaner options for HVAC service workflows",
+      "Suitable for facility maintenance and contractor service teams",
+      "Ask about dilution, application method, and surface compatibility",
+    ],
+    useCases: [
+      "Routine air-conditioning and ventilation maintenance",
+      "Facility service programs and shutdown work",
+      "Contractor HVAC chemical replenishment",
+    ],
+  },
+  "Anti-Corrosion Protective Spray": {
+    summary:
+      "Corrosion-control spray for protecting metal components exposed to moisture, salt air, and outdoor conditions.",
+    description:
+      "Anti-corrosion protective sprays support metal preservation in marine, industrial, workshop, and outdoor environments. They are useful for maintenance teams protecting tools, fasteners, fittings, exposed parts, and equipment surfaces from rust-prone conditions.",
+    specifications: [
+      "Metal protection and corrosion-control spray options",
+      "Useful in marine, outdoor, plant, and workshop environments",
+      "Supports preventive maintenance and asset preservation programs",
+    ],
+    useCases: [
+      "Protecting exposed metal from moisture and salt-air exposure",
+      "Maintenance of tools, fittings, equipment, and spare parts",
+      "Corrosion-control support for yards, ports, and facilities",
+    ],
+  },
+  "Industrial Extension Ladder": {
+    summary:
+      "Industrial ladder support for elevated access in maintenance, warehouse, utility, and construction work.",
+    description:
+      "Industrial extension ladders provide elevated access for site crews, facility maintenance teams, and warehouse operations. AMCOL can support ladder sourcing for teams that need dependable access equipment matched to jobsite conditions and duty requirements.",
+    specifications: [
+      "Extension ladder options for industrial and commercial access",
+      "Suitable for maintenance, warehouse, utility, and contractor work",
+      "Ask about height, duty rating, material, and storage requirements",
+    ],
+    useCases: [
+      "Facility maintenance and elevated inspection work",
+      "Warehouse, yard, and contractor access needs",
+      "Replacement ladders for site safety programs",
+    ],
+  },
+  "Medical Respirator": {
+    summary:
+      "Respiratory protection supply for occupational health, facility readiness, and controlled work environments.",
+    description:
+      "Medical respirators support occupational health and facility preparedness where respiratory protection is required. AMCOL can assist with respirator sourcing for industrial buyers, healthcare-adjacent facilities, emergency stores, and safety programs.",
+    specifications: [
+      "Respiratory protection options available by application",
+      "Suitable for health stations, emergency stores, and controlled work areas",
+      "Ask about fit, rating, packaging, and bulk availability",
+    ],
+    useCases: [
+      "Occupational health and emergency preparedness",
+      "Controlled work environments and facility response kits",
+      "PPE replenishment for safety and medical-support teams",
+    ],
+  },
+};
+
+const categorySpecificationFocus: Record<string, string[]> = {
+  "surface-disinfectants-deodorizers": [
+    "Facility hygiene and odor-control support",
+    "Suitable for commercial and industrial cleaning programs",
+    "Ask about dilution, surface compatibility, and packaging options",
+  ],
+  "sprayers-pumps": [
+    "Application and transfer equipment options",
+    "Suitable for chemicals, coatings, cleaning agents, and fluids",
+    "Ask about capacity, seals, pressure, and chemical compatibility",
+  ],
+  "adhesives-sealants-tape": [
+    "Bonding, sealing, and repair product options",
+    "Suitable for contractor, facility, and maintenance work",
+    "Ask about cure time, flexibility, substrate compatibility, and packaging",
+  ],
+  "fire-protection": [
+    "Fire-safety and emergency-readiness equipment",
+    "Suitable for offices, yards, warehouses, workshops, and industrial sites",
+    "Ask about mounting, signage, class, and replacement schedules",
+  ],
+  safety: [
+    "Personal protective equipment and jobsite safety support",
+    "Suitable for contractors, plants, warehouses, logistics, and maintenance crews",
+    "Ask about size ranges, compliance needs, and bulk quantities",
+  ],
+  lubricants: [
+    "Lubrication, penetrating, and maintenance chemical options",
+    "Suitable for workshops, fleets, tools, hinges, bearings, and metal parts",
+    "Ask about application method, packaging, and material compatibility",
+  ],
+  abrasives: [
+    "Cutting, grinding, deburring, and finishing options",
+    "Suitable for fabrication, repair, and metal-prep workflows",
+    "Ask about disc size, grit, tool compatibility, and material type",
+  ],
+  welding: [
+    "Welding equipment, consumables, and protection support",
+    "Suitable for fabrication, repair, structural, and workshop jobs",
+    "Ask about process, amperage, material, and consumable requirements",
+  ],
+  "hvac-chemicals": [
+    "HVAC maintenance chemical options",
+    "Suitable for facility service and contractor maintenance work",
+    "Ask about dilution, application method, and surface compatibility",
+  ],
+  "coatings-sealers": [
+    "Surface protection, coating, sealer, and primer options",
+    "Suitable for steel, concrete, tanks, yards, and facility assets",
+    "Ask about coverage, cure time, preparation, and exposure conditions",
+  ],
+  "corrosion-control": [
+    "Rust prevention and metal-preservation support",
+    "Suitable for marine, industrial, outdoor, and workshop environments",
+    "Ask about exposure level, surface preparation, and maintenance intervals",
+  ],
+  marine: [
+    "Marine, port, logistics, and offshore maintenance support",
+    "Suitable for salt-air exposure and heavy operational environments",
+    "Ask about material grade, load needs, and corrosion resistance",
+  ],
+};
+
+function productSlugText(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function buildDefaultProductSummary(product: ProductItem, category: ProductCategoryPageData) {
+  return `${product.name} for ${productSlugText(product.category)} needs across ${productSlugText(
+    category.name,
+  )}, facility maintenance, contractor, and industrial procurement workflows.`;
+}
+
+function buildDefaultProductDescription(
+  product: ProductItem,
+  category: ProductCategoryPageData,
+) {
+  return `${product.name} supports ${productSlugText(
+    product.category,
+  )} requirements for teams sourcing ${productSlugText(
+    category.name,
+  )} in Trinidad & Tobago. AMCOL helps buyers confirm availability, packaging, compatibility, and bulk purchasing needs before adding the item to a supply list or quote request.`;
+}
+
+function buildDefaultUseCases(product: ProductItem, category: ProductCategoryPageData) {
+  return [
+    `${category.name} procurement for industrial, commercial, and contractor teams`,
+    `Maintenance, replenishment, and jobsite use involving ${productSlugText(product.category)}`,
+    "Quote requests, bulk supply lists, and product availability checks",
+  ];
+}
+
+function enrichSeededProduct(
+  product: ProductItem,
+  category: ProductCategoryPageData,
+): ProductItem {
+  const overrides = productContentOverrides[product.name] ?? {};
+  const specifications =
+    overrides.specifications ??
+    product.specifications ??
+    categorySpecificationFocus[category.slug] ?? [
+      `${category.name} product support for industrial buyers`,
+      `Suitable for ${productSlugText(product.category)} applications`,
+      "Ask AMCOL for availability, packaging, and bulk order support",
+    ];
+
+  return {
+    ...product,
+    summary: overrides.summary ?? product.summary ?? buildDefaultProductSummary(product, category),
+    description:
+      overrides.description ??
+      product.description ??
+      buildDefaultProductDescription(product, category),
+    specifications,
+    useCases:
+      overrides.useCases ?? product.useCases ?? buildDefaultUseCases(product, category),
+    brand: overrides.brand ?? product.brand,
+    unit: overrides.unit ?? product.unit ?? "Each",
+    stockStatus: overrides.stockStatus ?? product.stockStatus ?? "Call for availability",
+    imageAlt:
+      overrides.imageAlt ??
+      product.imageAlt ??
+      `${product.name} for ${category.name.toLowerCase()} supply`,
+  };
+}
+
+for (const category of Object.values(productCategoryData)) {
+  category.products = category.products.map((product) =>
+    enrichSeededProduct(product, category),
+  );
+}
 
 export const landingCategoryRows = [
   [
