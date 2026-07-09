@@ -120,3 +120,48 @@ export function productJsonLd(product: {
     },
   };
 }
+
+export function articleJsonLd(article: {
+  title: string;
+  description: string;
+  url: string;
+  image?: string;
+  datePublished: string;
+  dateModified: string;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: article.title,
+    description: article.description,
+    image: article.image ? absoluteUrl(article.image) : absoluteUrl(defaultArticleImage),
+    datePublished: article.datePublished,
+    dateModified: article.dateModified,
+    author: {
+      "@type": "Organization",
+      "@id": organizationId,
+      name: businessInfo.name,
+    },
+    publisher: {
+      "@id": organizationId,
+    },
+    mainEntityOfPage: article.url,
+  };
+}
+
+export function faqJsonLd(faqs: { question: string; answer: string }[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: faq.answer,
+      },
+    })),
+  };
+}
+
+const defaultArticleImage = "/images/AMCOL Banner.webp";

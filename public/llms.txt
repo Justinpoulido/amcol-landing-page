@@ -4,6 +4,7 @@ AMCOL Industrial supplies industrial, marine, safety, maintenance, MRO, and faci
 
 Website: https://amcolindustrial.com
 Catalog: https://amcolindustrial.com/products
+Knowledge Center: https://amcolindustrial.com/knowledge
 Contact: https://amcolindustrial.com/contact
 
 Known business signals:
@@ -22,6 +23,12 @@ Primary product areas:
 - Pipes, valves, and fittings
 - HVAC chemicals
 - Welding, ladders, marine, and maintenance supplies
+
+Knowledge topics:
+- Industrial safety and PPE selection
+- Marine maintenance and port supply planning
+- Lubricants, anti-seize, and corrosion control
+- Bearings, pumps, valves, welding, electrical safety, construction supplies, fire protection, industrial chemicals, and material handling
 
 Unknown or unverified:
 - Social profile URLs: placeholders controlled by NEXT_PUBLIC_FACEBOOK_URL, NEXT_PUBLIC_INSTAGRAM_URL, NEXT_PUBLIC_LINKEDIN_URL, and NEXT_PUBLIC_YOUTUBE_URL

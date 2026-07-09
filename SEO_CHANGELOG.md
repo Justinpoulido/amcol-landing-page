@@ -32,6 +32,11 @@ The PDF was copied temporarily to `tmp/seo-audit/report-for-amcol-industrial.pdf
 - Moved homepage marquee keyframes out of inline `<style>` blocks and into `app/globals.css`.
 - Replaced homepage news card and product category content background images with `next/image` and descriptive alt text.
 - Added `<main>` landmarks to homepage, products, news, and contact pages.
+- Added `/knowledge` Industrial Knowledge Center with search.
+- Added 13 SEO category pages for Safety, Marine, Lubricants, Bearings, Pumps, Valves, Welding, Electrical, PPE, Construction, Fire Protection, Industrial Chemicals, and Material Handling.
+- Added 13 search-intent article pages with reading time, last updated date, Request a Quote CTA, related product category links, and related articles.
+- Added Article, FAQPage, and BreadcrumbList JSON-LD support for knowledge articles.
+- Added Knowledge Center entries to `/sitemap.xml`, header navigation, footer navigation, and `/llms.txt`.
 
 ## Files Changed In Current SEO Orchestration Pass
 
@@ -53,6 +58,14 @@ The PDF was copied temporarily to `tmp/seo-audit/report-for-amcol-industrial.pdf
 - `app/sitemap.ts`
 - `app/contact/page.tsx`
 - `app/globals.css`
+- `app/knowledge/page.tsx`
+- `app/knowledge/[category]/page.tsx`
+- `app/knowledge/[category]/[slug]/page.tsx`
+- `app/components/SiteHeader.tsx`
+- `app/components/SiteFooter.tsx`
+- `lib/knowledge-base.ts`
+- `lib/structured-data.ts`
+- `public/llms.txt`
 
 ## Remaining Manual Tasks
 

@@ -1,6 +1,11 @@
 import type { MetadataRoute } from "next";
 import { getAllProducts, getLandingCategories } from "@/lib/catalog-store";
 import { industrialArticles } from "@/lib/articles";
+import {
+  getKnowledgeArticlePath,
+  knowledgeArticles,
+  knowledgeCategories,
+} from "@/lib/knowledge-base";
 
 const defaultSiteUrl = "https://amcolindustrial.com";
 
@@ -33,6 +38,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticEntries: MetadataRoute.Sitemap = [
     toSitemapEntry("/", { changeFrequency: "weekly", priority: 1 }),
     toSitemapEntry("/products", { changeFrequency: "daily", priority: 0.95 }),
+    toSitemapEntry("/knowledge", { changeFrequency: "weekly", priority: 0.9 }),
     toSitemapEntry("/contact", { changeFrequency: "monthly", priority: 0.8 }),
     toSitemapEntry("/news", { changeFrequency: "monthly", priority: 0.6 }),
     toSitemapEntry("/privacy", { changeFrequency: "yearly", priority: 0.2 }),
@@ -53,6 +59,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }),
   );
 
+  const knowledgeCategoryEntries = knowledgeCategories.map((category) =>
+    toSitemapEntry(`/knowledge/${category.slug}`, {
+      changeFrequency: "monthly",
+      priority: 0.75,
+    }),
+  );
+
+  const knowledgeArticleEntries = knowledgeArticles.map((article) =>
+    toSitemapEntry(getKnowledgeArticlePath(article), {
+      changeFrequency: "monthly",
+      priority: 0.72,
+    }),
+  );
+
   const seenProductSlugs = new Set<string>();
   const productEntries = products
     .filter((product) => {
@@ -70,5 +90,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }),
     );
 
-  return [...staticEntries, ...categoryEntries, ...productEntries, ...articleEntries];
+  return [
+    ...staticEntries,
+    ...categoryEntries,
+    ...productEntries,
+    ...articleEntries,
+    ...knowledgeCategoryEntries,
+    ...knowledgeArticleEntries,
+  ];
 }

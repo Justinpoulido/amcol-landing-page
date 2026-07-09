@@ -48,6 +48,12 @@ export function SiteFooter() {
               >
                 Contact
               </Link>
+              <Link
+                href="/knowledge"
+                className="text-sm text-zinc-500 transition-colors hover:text-zinc-900"
+              >
+                Knowledge
+              </Link>
             </div>
 
             <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-zinc-500 md:justify-end">
