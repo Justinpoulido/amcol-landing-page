@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useMemo, useState } from "react";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { SiteFooter } from "@/app/components/SiteFooter";
@@ -46,11 +47,10 @@ export default function NewsAndArticlesPage() {
         <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8 text-center">
           <p className="text-sm font-semibold tracking-[0.2em] text-red-500">NEWS & ARTICLES</p>
           <h1 className="mt-4 text-4xl font-bold tracking-tight text-white sm:text-6xl">
-            Industrial Work Highlights
+            Industrial Supply Project Highlights in Trinidad & Tobago
           </h1>
           <p className="mt-6 text-lg leading-8 text-zinc-300 max-w-3xl mx-auto">
-            Explore AMCOL project stories, delivery milestones, and field support activities across energy, marine,
-            welding, and safety operations.
+            Project stories, delivery milestones, and field support updates from AMCOL Industrial across energy, marine, welding, safety, and maintenance operations in Trinidad & Tobago.
           </p>
         </div>
       </section>
@@ -114,10 +114,15 @@ export default function NewsAndArticlesPage() {
           {featured ? (
             <div className="overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-sm">
               <div className="grid grid-cols-1 lg:grid-cols-2">
-                <div
-                  className="min-h-[280px] bg-cover bg-center"
-                  style={{ backgroundImage: `url('${featured.image}')` }}
-                />
+                <div className="relative min-h-[280px] overflow-hidden">
+                  <Image
+                    src={featured.image}
+                    alt={`${featured.title} project support in ${featured.location}`}
+                    fill
+                    sizes="(min-width: 1024px) 50vw, 100vw"
+                    className="object-cover"
+                  />
+                </div>
                 <div className="p-8 lg:p-10">
                   <span className="inline-flex rounded-full bg-red-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-red-600">
                     Featured Project
@@ -161,10 +166,15 @@ export default function NewsAndArticlesPage() {
                 key={article.id}
                 className="group overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md"
               >
-                <div
-                  className="h-44 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-                  style={{ backgroundImage: `url('${article.image}')` }}
-                />
+                <div className="relative h-44 overflow-hidden">
+                  <Image
+                    src={article.image}
+                    alt={`${article.title} project support in ${article.location}`}
+                    fill
+                    sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                </div>
                 <div className="p-6">
                   <p className="text-xs font-semibold uppercase tracking-wide text-red-600">{article.sector}</p>
                   <h3 className="mt-2 text-xl font-bold text-zinc-900">{article.title}</h3>

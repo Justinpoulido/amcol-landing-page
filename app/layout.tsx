@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     template: "%s | AMCOL Industrial",
   },
   description:
-    "AMCOL Industrial supplies industrial, marine, safety, and maintenance products across Trinidad & Tobago, with dedicated procurement support for facility operators and enterprise projects.",
+    "Industrial, safety, marine, MRO and maintenance supplies from AMCOL Industrial in Penal, serving worksites across Trinidad & Tobago.",
   alternates: {
     canonical: "/",
   },

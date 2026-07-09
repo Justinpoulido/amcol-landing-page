@@ -409,7 +409,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
               {data.products.length} featured items in this category
             </p>
             <p className="mt-3 text-sm leading-6 text-slate-200/85">
-              Browse a tailored selection built around this category so visitors land on relevant items instead of a generic product listing.
+              Browse a tailored selection for maintenance, repair, safety, contractor, and facility supply needs.
             </p>
             <Link
               href="/products"
@@ -432,7 +432,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
               Related items in {data.name}
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
-              Each category includes the seeded product lineup plus any additional items uploaded through the admin dashboard.
+              Contact AMCOL for availability, bulk quantities, and quote support across relevant industrial supply items.
             </p>
           </div>
 

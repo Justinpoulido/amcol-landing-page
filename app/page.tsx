@@ -242,17 +242,17 @@ export default function Home() {
         {/* Hero Content Overlay */}
         <div className="relative z-10 mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
-            Your Trusted Industrial Supply Partner
+            Industrial Supply Partner in Penal, Trinidad & Tobago
           </h1>
           <p className="mt-6 text-lg leading-8 text-gray-100 sm:text-xl">
-            Reliable products for maintenance, safety, facility operations, and industrial procurement. Serving industries across Trinidad & Tobago with quality brands you know and trust.
+            AMCOL Industrial supplies safety, MRO, marine, construction, and facility maintenance products from Penal to worksites across Trinidad & Tobago.
           </p>
           <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:justify-center">
             <Link
               href="/products"
               className="btn-copper inline-flex items-center justify-center rounded-lg px-8 py-3 text-base shadow-lg focus:outline-none focus:ring-2 focus:ring-brand-copper focus:ring-offset-2 focus:ring-offset-black transition-all"
             >
-              Browse Catalog
+              View Product Lines
               <svg className="ml-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
@@ -307,10 +307,10 @@ export default function Home() {
                 Industrial Categories
               </p>
               <h2 className="mt-5 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl lg:text-[2.7rem]">
-                Shop by product category
+                Industrial Supplies for Trinidad & Tobago Worksites
               </h2>
               <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
-                Explore our core industrial supply lines in a card layout designed for faster scanning, cleaner comparison, and easier navigation.
+                Source safety supplies, abrasives, lubricants, sealants, fire protection, HVAC chemicals, ladders, and maintenance products for plants, contractors, ports, and facilities.
               </p>
             </div>
 
@@ -344,7 +344,7 @@ export default function Home() {
                         {tile.name}
                       </span>
                       <span className="mt-auto inline-flex items-center gap-3 pt-6 text-sm font-medium text-slate-600 transition-colors duration-300 group-hover:text-slate-900">
-                        Browse products
+                        View product line
                         <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-base text-slate-700 transition-all duration-300 group-hover:border-brand-copper/60 group-hover:bg-amber-50 group-hover:text-brand-copper">
                           →
                         </span>
@@ -369,7 +369,7 @@ export default function Home() {
                 Supply support for Trinidad & Tobago worksites
               </h2>
               <p className="mt-5 max-w-xl text-base leading-7 text-slate-600 sm:text-lg">
-                AMCOL helps operations teams source the maintenance, safety, repair, and facility products they need across heavy industry, construction, ports, and commercial facilities.
+                Based in Penal, AMCOL helps procurement and maintenance teams source safety, repair, MRO, and facility products for industrial plants, contractors, ports, yards, and commercial facilities across Trinidad & Tobago.
               </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-3">

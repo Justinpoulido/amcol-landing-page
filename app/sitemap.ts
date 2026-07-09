@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getAllProducts, getLandingCategories } from "@/lib/catalog-store";
+import { industrialArticles } from "@/lib/articles";
 
 const defaultSiteUrl = "https://amcolindustrial.com";
 
@@ -45,6 +46,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }),
   );
 
+  const articleEntries = industrialArticles.map((article) =>
+    toSitemapEntry(`/news/${article.slug}`, {
+      changeFrequency: "monthly",
+      priority: 0.55,
+    }),
+  );
+
   const seenProductSlugs = new Set<string>();
   const productEntries = products
     .filter((product) => {
@@ -62,5 +70,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }),
     );
 
-  return [...staticEntries, ...categoryEntries, ...productEntries];
+  return [...staticEntries, ...categoryEntries, ...productEntries, ...articleEntries];
 }

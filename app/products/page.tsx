@@ -96,10 +96,10 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
         <div className="relative z-10 mx-auto max-w-7xl px-6 text-center lg:px-8">
           <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl">
-            World-Class <span className="text-brand-copper">Products</span>
+            Industrial, Safety & Marine Supplies in Trinidad & Tobago
           </h1>
           <p className="mt-6 mx-auto max-w-2xl text-lg leading-8 text-gray-300">
-            Explore our comprehensive catalog of industrial, construction, and marine supplies designed for performance and durability.
+            Explore industrial supplies, MRO products, PPE, marine maintenance items, construction consumables, and facility support products available through AMCOL Industrial in Penal.
           </p>
         </div>
       </section>
@@ -143,7 +143,9 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                 Product Catalog
               </p>
               <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
-                {searchQuery ? `Search results for "${searchQuery}"` : "Browse all products"}
+                {searchQuery
+                  ? `Search results for "${searchQuery}"`
+                  : "Industrial supplies and MRO products"}
               </h2>
             </div>
             <p className="text-sm text-slate-600">

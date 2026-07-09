@@ -23,6 +23,12 @@ The PDF was copied temporarily to `tmp/seo-audit/report-for-amcol-industrial.pdf
 - Added conditional Google Business Profile link support on the contact page.
 - Added `/llms.txt` for AI-search readability.
 - Added README documentation for tracking env vars, social/GBP placeholders, DMARC, and backlink outreach.
+- Shortened the global homepage meta description.
+- Improved homepage hero, category, industries, products, and news copy with natural Trinidad & Tobago industrial supply terms.
+- Added `/news/[slug]` article detail pages to fix broken article links.
+- Added news article URLs to the sitemap.
+- Replaced meaningful news/project CSS background images with `next/image` and descriptive alt text.
+- Removed category-template wording that referenced seeded products and the admin dashboard.
 
 ## Files Changed In Current SEO Orchestration Pass
 
@@ -37,9 +43,15 @@ The PDF was copied temporarily to `tmp/seo-audit/report-for-amcol-industrial.pdf
 - `public/llms.txt`
 - `README.md`
 - `SEO_CHANGELOG.md`
+- `app/news/[slug]/page.tsx`
+- `app/news/page.tsx`
+- `app/page.tsx`
+- `app/products/page.tsx`
+- `app/sitemap.ts`
 
 ## Remaining Manual Tasks
 
+- Run `npm run build` and `npm run lint` in an environment where Node/npm are available. PowerShell in this agent session could not find `node` or `npm`.
 - Add verified social profile URLs to Vercel env vars.
 - Add verified Google Business Profile URL to `NEXT_PUBLIC_GBP_URL`.
 - Create/verify GA4, GTM, and Meta Pixel IDs before enabling tracking.
@@ -48,9 +60,7 @@ The PDF was copied temporarily to `tmp/seo-audit/report-for-amcol-industrial.pdf
 
 ## Remaining Code Tasks For Next Loop
 
-- Add `/news/[slug]` detail pages or remove detail links to prevent 404s.
 - Convert meaningful CSS background images to `next/image` with alt text.
 - Add `<main>` landmarks to public pages.
-- Shorten global meta description and improve homepage/product/news headings around Trinidad & Tobago industrial supply terms.
 - Move homepage inline marquee `<style>` blocks into `app/globals.css`.
 - Consider true 404 handling for unknown product/category slugs with `notFound()`.
