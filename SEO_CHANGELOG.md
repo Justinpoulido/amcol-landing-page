@@ -37,6 +37,12 @@ The PDF was copied temporarily to `tmp/seo-audit/report-for-amcol-industrial.pdf
 - Added 13 search-intent article pages with reading time, last updated date, Request a Quote CTA, related product category links, and related articles.
 - Added Article, FAQPage, and BreadcrumbList JSON-LD support for knowledge articles.
 - Added Knowledge Center entries to `/sitemap.xml`, header navigation, footer navigation, and `/llms.txt`.
+- Improved internal link health by keeping header HOME and CONSTRUCTION links on `amcolindustrial.com`.
+- Replaced placeholder `href="#"` contact links with verified phone links.
+- Replaced possible dead pipe/fittings homepage card URLs with valid product search URLs.
+- Linked homepage news cards to individual article URLs instead of only the news index.
+- Added stronger footer links to Products, Knowledge, News, and Contact.
+- Added product-catalog links into the Knowledge Center and PPE buying guide.
 
 ## Files Changed In Current SEO Orchestration Pass
 
@@ -66,6 +72,10 @@ The PDF was copied temporarily to `tmp/seo-audit/report-for-amcol-industrial.pdf
 - `lib/knowledge-base.ts`
 - `lib/structured-data.ts`
 - `public/llms.txt`
+- `app/components/SiteHeader.tsx`
+- `app/contact/page.tsx`
+- `app/page.tsx`
+- `app/products/page.tsx`
 
 ## Remaining Manual Tasks
 

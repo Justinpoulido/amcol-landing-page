@@ -66,19 +66,19 @@ const featuredIndustrialBrands = [
   {
     name: "RIDGID",
     image: "/images/Ridgid_pipe_dies.webp",
-    href: "/products/pipes-valves-fittings",
+    href: "/products?search=pipe%20dies",
     description: "Pipe dies and threading accessories for mechanical, fabrication, and maintenance teams.",
   },
   {
     name: "Geko",
     image: "/images/Geko_repair_clamp.webp",
-    href: "/products/pipes-valves-fittings",
+    href: "/products?search=pipe%20repair",
     description: "Pipe repair clamps for fast, secure repairs across industrial water and utility systems.",
   },
   {
     name: "BAND-IT",
     image: "/images/Band-IT_Band.webp",
-    href: "/products/pipes-valves-fittings",
+    href: "/products?search=banding",
     description: "Stainless steel banding and fastening products for pipework, signage, and industrial installs.",
   },
   {
@@ -102,7 +102,7 @@ const featuredIndustrialBrands = [
   {
     name: "RIDGID Pipe Wrench",
     image: "/images/Ridgid_Straight_Pipe_Wrenches.webp",
-    href: "/products/pipes-valves-fittings",
+    href: "/products?search=pipe%20wrench",
     description: "Straight pipe wrenches for mechanical crews, pipefitters, maintenance, and repair work.",
   },
 ];
@@ -251,6 +251,12 @@ export default function Home() {
               className="inline-flex items-center justify-center rounded-lg border-2 border-white px-8 py-3 text-base font-semibold text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-brand-copper focus:ring-offset-2 focus:ring-offset-black transition-all"
             >
               Request a Quote
+            </Link>
+            <Link
+              href="/knowledge"
+              className="inline-flex items-center justify-center rounded-lg border border-cyan-300/60 px-8 py-3 text-base font-semibold text-cyan-100 transition-all hover:bg-cyan-300/10 focus:outline-none focus:ring-2 focus:ring-cyan-300 focus:ring-offset-2 focus:ring-offset-black"
+            >
+              Read Buying Guides
             </Link>
           </div>
         </div>
@@ -485,7 +491,7 @@ export default function Home() {
             {latestArticles.map((article) => (
               <Link
                 key={article.id}
-                href="/news"
+                href={`/news/${article.slug}`}
                 className="group overflow-hidden rounded-2xl border border-white/10 bg-white/5 transition hover:-translate-y-1 hover:border-brand-copper/40"
               >
                 <div className="relative h-44 overflow-hidden">

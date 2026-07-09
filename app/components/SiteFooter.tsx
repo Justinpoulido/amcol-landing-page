@@ -31,6 +31,24 @@ export function SiteFooter() {
           <div className="flex flex-col items-center gap-4 md:items-end">
             <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 md:justify-end">
               <Link
+                href="/products"
+                className="text-sm text-zinc-500 transition-colors hover:text-zinc-900"
+              >
+                Products
+              </Link>
+              <Link
+                href="/knowledge"
+                className="text-sm text-zinc-500 transition-colors hover:text-zinc-900"
+              >
+                Knowledge
+              </Link>
+              <Link
+                href="/news"
+                className="text-sm text-zinc-500 transition-colors hover:text-zinc-900"
+              >
+                News
+              </Link>
+              <Link
                 href="/privacy"
                 className="text-sm text-zinc-500 transition-colors hover:text-zinc-900"
               >
@@ -47,12 +65,6 @@ export function SiteFooter() {
                 className="text-sm text-zinc-500 transition-colors hover:text-zinc-900"
               >
                 Contact
-              </Link>
-              <Link
-                href="/knowledge"
-                className="text-sm text-zinc-500 transition-colors hover:text-zinc-900"
-              >
-                Knowledge
               </Link>
             </div>
 

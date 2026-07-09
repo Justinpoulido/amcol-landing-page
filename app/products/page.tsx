@@ -105,6 +105,35 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
         </div>
       </section>
 
+      <section className="border-b border-zinc-200 bg-white py-8">
+        <div className="mx-auto grid max-w-7xl gap-4 px-6 lg:grid-cols-[1fr_auto] lg:items-center lg:px-8">
+          <div>
+            <h2 className="text-xl font-bold text-zinc-900">
+              Need help choosing the right industrial supplies?
+            </h2>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-600">
+              Use AMCOL&apos;s buying guides for PPE, lubricants, pumps, valves,
+              welding, construction consumables, fire protection, and chemicals
+              before sending your quote request.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href="/knowledge"
+              className="inline-flex rounded-sm bg-zinc-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700"
+            >
+              Browse Knowledge Center
+            </Link>
+            <Link
+              href="/knowledge/ppe/what-ppe-do-industrial-workers-need"
+              className="inline-flex rounded-sm border border-zinc-300 px-4 py-2.5 text-sm font-semibold text-zinc-800 transition hover:border-cyan-300 hover:text-red-700"
+            >
+              PPE Buying Guide
+            </Link>
+          </div>
+        </div>
+      </section>
+
       <section className="bg-white py-16">
         <div className="mx-auto max-w-7xl px-6 text-center lg:px-8">
           <h2 className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">

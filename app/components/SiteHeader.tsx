@@ -2,14 +2,11 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-// TODO(brand-unification): HOME and CONSTRUCTION currently point to the separate
-// amcolhardwarett.com domain. Decide on one unified domain/visual system (see
-// audit Phase 4) and update these once that decision is made.
 const navLinks = [
-  { name: "HOME", href: "https://www.amcolhardwarett.com/index.php", external: true },
+  { name: "HOME", href: "/", external: false },
   { name: "PRODUCTS", href: "/products", external: false },
   { name: "KNOWLEDGE", href: "/knowledge", external: false },
-  { name: "CONSTRUCTION", href: "https://www.amcolhardwarett.com/construction.php", external: true },
+  { name: "CONSTRUCTION", href: "/knowledge/construction", external: false },
   { name: "CONTACT US", href: "/contact", external: false },
 ] as const;
 
