@@ -2,11 +2,13 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getCategoryBySlug, getProductBySlug } from "@/lib/catalog-store";
+import { JsonLd } from "@/app/components/JsonLd";
 import { ProductImageCarousel } from "./ProductImageCarousel";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { SiteFooter } from "@/app/components/SiteFooter";
 import { Breadcrumbs } from "@/app/components/Breadcrumbs";
 import { absoluteUrl, createMetaDescription, openGraphImage, siteName } from "@/lib/seo";
+import { breadcrumbJsonLd, productJsonLd } from "@/lib/structured-data";
 
 type CategoryPageProps = {
   params: Promise<{
@@ -178,6 +180,12 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   const product = data ? null : await getProductBySlug(slug);
 
   if (product) {
+    const breadcrumbItems = [
+      { label: "Home", href: "/" },
+      { label: "Products", href: "/products" },
+      { label: product.categoryName, href: `/products/${product.categorySlug}` },
+      { label: product.name },
+    ];
     const specifications = [
       ...(product.specifications ?? []),
       product.brand ? `Brand: ${product.brand}` : null,
@@ -201,18 +209,13 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
     return (
       <div className="min-h-screen bg-white font-sans text-zinc-900">
         <SiteHeader activeLink="PRODUCTS" />
+        <JsonLd id="product-schema" data={productJsonLd(product)} />
+        <JsonLd id="product-breadcrumb-schema" data={breadcrumbJsonLd(breadcrumbItems)} />
 
         <main className="bg-[linear-gradient(180deg,#f8fbff_0%,#eef5fb_48%,#ffffff_100%)]">
           <section className="border-t border-slate-200 px-6 py-16 sm:px-8 sm:py-24 lg:px-10">
             <div className="mx-auto max-w-7xl">
-              <Breadcrumbs
-                items={[
-                  { label: "Home", href: "/" },
-                  { label: "Products", href: "/products" },
-                  { label: product.categoryName, href: `/products/${product.categorySlug}` },
-                  { label: product.name },
-                ]}
-              />
+              <Breadcrumbs items={breadcrumbItems} />
             </div>
             <div className="mx-auto mt-8 grid max-w-7xl gap-10 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:items-start">
               <ProductImageCarousel
@@ -355,6 +358,14 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   return (
     <div className="min-h-screen bg-white font-sans text-zinc-900">
       <SiteHeader activeLink="PRODUCTS" />
+      <JsonLd
+        id="category-breadcrumb-schema"
+        data={breadcrumbJsonLd([
+          { label: "Home", href: "/" },
+          { label: "Products", href: "/products" },
+          { label: data.name },
+        ])}
+      />
 
       <div className="mx-auto max-w-7xl px-6 pt-6 lg:px-10">
         <Breadcrumbs

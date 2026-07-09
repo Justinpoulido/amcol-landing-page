@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { JsonLd } from "@/app/components/JsonLd";
+import { TrackingScripts } from "@/app/components/TrackingScripts";
 import { absoluteUrl, getSiteUrl, openGraphImage, siteName } from "@/lib/seo";
+import {
+  localBusinessJsonLd,
+  organizationJsonLd,
+  websiteJsonLd,
+} from "@/lib/structured-data";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -54,6 +61,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <JsonLd id="organization-schema" data={organizationJsonLd()} />
+        <JsonLd id="local-business-schema" data={localBusinessJsonLd()} />
+        <JsonLd id="website-schema" data={websiteJsonLd()} />
+        <TrackingScripts />
         {children}
       </body>
     </html>

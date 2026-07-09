@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { SiteFooter } from "@/app/components/SiteFooter";
+import { googleBusinessProfileUrl } from "@/lib/business-info";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -422,6 +423,16 @@ export default function ContactPage() {
                 <br />
                 Penal, Trinidad & Tobago
               </p>
+              {googleBusinessProfileUrl ? (
+                <a
+                  href={googleBusinessProfileUrl}
+                  className="mt-4 inline-flex text-sm font-semibold text-red-600 transition hover:text-red-700"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  View Google Business Profile
+                </a>
+              ) : null}
             </div>
           </div>
         </div>
