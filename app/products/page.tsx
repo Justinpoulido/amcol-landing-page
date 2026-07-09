@@ -85,6 +85,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     <div className="min-h-screen bg-white font-sans text-zinc-900">
       <SiteHeader activeLink="PRODUCTS" />
 
+      <main>
       <section className="relative overflow-hidden bg-brand-charcoal pt-32 pb-24 sm:pt-40 sm:pb-32">
         <div className="absolute inset-0 z-0">
           <div
@@ -120,9 +121,12 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                 href={category.href}
                 className="group relative flex h-64 flex-col overflow-hidden rounded-2xl transition-all hover:shadow-lg"
               >
-                <div
-                  className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-                  style={{ backgroundImage: `url('${category.image}')` }}
+                <Image
+                  src={category.image}
+                  alt={`${category.title} industrial supply category`}
+                  fill
+                  sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-black/50" />
                 <div className="relative flex flex-1 items-center justify-center">
@@ -250,6 +254,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
         </div>
       </section>
 
+      </main>
       <SiteFooter />
     </div>
   );

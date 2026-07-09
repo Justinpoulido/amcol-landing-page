@@ -73,6 +73,7 @@ export default function ContactPage() {
     <div className="min-h-screen bg-white font-sans text-zinc-900">
       <SiteHeader activeLink="CONTACT US" />
 
+      <main>
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-b from-[#0d2238] to-[#1a3a52] py-24 sm:py-32">
         {/* Background Image with Overlay */}
@@ -437,6 +438,7 @@ export default function ContactPage() {
           </div>
         </div>
       </section>
+      </main>
       <SiteFooter />
     </div>
   );

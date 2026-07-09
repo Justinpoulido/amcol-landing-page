@@ -36,6 +36,7 @@ export default function NewsAndArticlesPage() {
     <div className="min-h-screen bg-white font-sans text-zinc-900">
       <SiteHeader />
 
+      <main>
       <section className="relative bg-[#1A1A1B] pt-20 pb-20 sm:pt-24 sm:pb-28 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <div
@@ -199,6 +200,7 @@ export default function NewsAndArticlesPage() {
           </div>
         </div>
       </section>
+      </main>
       <SiteFooter />
     </div>
   );

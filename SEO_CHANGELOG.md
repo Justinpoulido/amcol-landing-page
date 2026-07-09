@@ -29,6 +29,9 @@ The PDF was copied temporarily to `tmp/seo-audit/report-for-amcol-industrial.pdf
 - Added news article URLs to the sitemap.
 - Replaced meaningful news/project CSS background images with `next/image` and descriptive alt text.
 - Removed category-template wording that referenced seeded products and the admin dashboard.
+- Moved homepage marquee keyframes out of inline `<style>` blocks and into `app/globals.css`.
+- Replaced homepage news card and product category content background images with `next/image` and descriptive alt text.
+- Added `<main>` landmarks to homepage, products, news, and contact pages.
 
 ## Files Changed In Current SEO Orchestration Pass
 
@@ -48,6 +51,8 @@ The PDF was copied temporarily to `tmp/seo-audit/report-for-amcol-industrial.pdf
 - `app/page.tsx`
 - `app/products/page.tsx`
 - `app/sitemap.ts`
+- `app/contact/page.tsx`
+- `app/globals.css`
 
 ## Remaining Manual Tasks
 
@@ -60,7 +65,5 @@ The PDF was copied temporarily to `tmp/seo-audit/report-for-amcol-industrial.pdf
 
 ## Remaining Code Tasks For Next Loop
 
-- Convert meaningful CSS background images to `next/image` with alt text.
-- Add `<main>` landmarks to public pages.
-- Move homepage inline marquee `<style>` blocks into `app/globals.css`.
+- Convert remaining decorative hero/banner background images to `next/image` only if they become content-bearing.
 - Consider true 404 handling for unknown product/category slugs with `notFound()`.

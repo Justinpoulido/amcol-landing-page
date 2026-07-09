@@ -165,6 +165,7 @@ export default function Home() {
     <div className="min-h-screen bg-white">
       <SiteHeader />
 
+      <main>
       <div className="relative left-1/2 z-10 w-screen -translate-x-1/2 px-0">
         <div className="overflow-hidden border-y border-cyan-400/30 bg-[linear-gradient(135deg,rgba(13,34,56,0.96)_0%,rgba(15,55,100,0.92)_48%,rgba(6,182,212,0.28)_100%)] shadow-[0_22px_50px_-28px_rgba(6,182,212,0.4)]">
           <div className="relative overflow-hidden px-4 py-3 sm:px-6">
@@ -180,18 +181,6 @@ export default function Home() {
               </div>
 
               <div className="relative min-w-0 flex-1 overflow-hidden lg:mr-auto">
-                <style>{`
-                  @keyframes quickCategoryMarquee {
-                    0% { transform: translateX(0); }
-                    100% { transform: translateX(-50%); }
-                  }
-                  .quick-category-marquee {
-                    animation: quickCategoryMarquee 24s linear infinite;
-                  }
-                  .quick-category-marquee:hover {
-                    animation-play-state: paused;
-                  }
-                `}</style>
                 <div className="quick-category-marquee flex w-max items-center gap-2 pr-2">
                   {[0, 1].map((loop) => (
                     <div key={loop} className="flex shrink-0 items-center gap-2 pr-2">
@@ -434,18 +423,6 @@ export default function Home() {
           </div>
 
           <div className="relative mt-12 overflow-hidden">
-            <style>{`
-              @keyframes featuredBrandCardsMarquee {
-                0% { transform: translateX(0); }
-                100% { transform: translateX(-50%); }
-              }
-              .featured-brand-cards-marquee {
-                animation: featuredBrandCardsMarquee 34s linear infinite;
-              }
-              .featured-brand-cards-marquee:hover {
-                animation-play-state: paused;
-              }
-            `}</style>
             <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-white to-transparent" />
             <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-white to-transparent" />
             <div className="featured-brand-cards-marquee flex w-max items-stretch gap-5 pr-5">
@@ -511,10 +488,15 @@ export default function Home() {
                 href="/news"
                 className="group overflow-hidden rounded-2xl border border-white/10 bg-white/5 transition hover:-translate-y-1 hover:border-brand-copper/40"
               >
-                <div
-                  className="h-44 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-                  style={{ backgroundImage: `url('${article.image}')` }}
-                />
+                <div className="relative h-44 overflow-hidden">
+                  <Image
+                    src={article.image}
+                    alt={`${article.title} project support in ${article.location}`}
+                    fill
+                    sizes="(min-width: 768px) 33vw, 100vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                </div>
                 <div className="p-6">
                   <p className="text-xs font-semibold uppercase tracking-wide text-brand-copper">
                     {article.sector}
@@ -535,6 +517,7 @@ export default function Home() {
         </div>
       </section>
 
+      </main>
       <SiteFooter />
     </div>
   );
