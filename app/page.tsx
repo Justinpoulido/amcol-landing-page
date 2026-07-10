@@ -415,6 +415,39 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="border-t border-zinc-200 bg-white py-16 sm:py-24">
+        <div className="mx-auto max-w-[1440px] px-6 sm:px-8 lg:px-10">
+          <div className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-[linear-gradient(135deg,#0f1b2d_0%,#16273e_58%,#0f766e_100%)] shadow-[0_24px_70px_-42px_rgba(15,23,42,0.55)]">
+            <div className="grid gap-8 px-6 py-10 sm:px-8 sm:py-12 lg:grid-cols-[1fr_auto] lg:items-center lg:px-12">
+              <div className="max-w-3xl">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-brand-copper">
+                  Affiliated Transportation Support
+                </p>
+                <h2 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+                  Haulage & Transportation Services
+                </h2>
+                <p className="mt-5 text-base leading-7 text-slate-200 sm:text-lg">
+                  Need reliable transportation for heavy equipment, industrial materials or oversized cargo? Our affiliated company, Amcol Haulage, provides professional haulage and cargo transportation services across Trinidad and Tobago.
+                </p>
+              </div>
+              <div className="flex lg:justify-end">
+                <a
+                  href="https://www.caribbeantransportservices.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-copper inline-flex w-full items-center justify-center rounded-lg px-7 py-3 text-base shadow-lg focus:outline-none focus:ring-2 focus:ring-brand-copper focus:ring-offset-2 focus:ring-offset-[#0f1b2d] sm:w-auto"
+                >
+                  Visit Amcol Haulage
+                  <span className="ml-2" aria-hidden="true">
+                    →
+                  </span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section id="features" className="border-t border-zinc-200 bg-white py-20 sm:py-28">
         <div className="mx-auto max-w-[1440px] px-6 sm:px-8 lg:px-10">
           <div className="flex flex-col gap-4 text-center sm:flex-row sm:items-end sm:justify-between sm:text-left">
