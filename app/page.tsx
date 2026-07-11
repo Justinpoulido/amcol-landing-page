@@ -107,6 +107,29 @@ const featuredIndustrialBrands = [
   },
 ];
 
+const procurementTrustCards = [
+  {
+    title: "Bulk & Repeat Orders",
+    description:
+      "Support for recurring supply needs, maintenance schedules, and project stock-up.",
+  },
+  {
+    title: "Product Sourcing Support",
+    description:
+      "Help finding the correct product, brand, size, or suitable alternative.",
+  },
+  {
+    title: "Site & Project Supply",
+    description:
+      "Supply support for construction, marine, plant maintenance, shutdowns, and facility work.",
+  },
+  {
+    title: "Delivery & Collection Support",
+    description:
+      "Coordinate pickup, delivery, or affiliated transport support where available.",
+  },
+];
+
 const fallbackLandingCategories = landingCategoryRows.flat();
 
 function chunkCategories(categories: ProductCategoryPageData[], size: number) {
@@ -181,19 +204,15 @@ export default function Home() {
               </div>
 
               <div className="relative min-w-0 flex-1 overflow-hidden lg:mr-auto">
-                <div className="quick-category-marquee flex w-max items-center gap-2 pr-2">
-                  {[0, 1].map((loop) => (
-                    <div key={loop} className="flex shrink-0 items-center gap-2 pr-2">
-                      {quickCategoryShortcuts.map((category) => (
-                        <Link
-                          key={`${loop}-${category.name}`}
-                          href={category.href}
-                          className="inline-flex min-h-9 items-center justify-center rounded-full border border-cyan-300/30 bg-cyan-300/10 px-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-cyan-50 transition hover:border-cyan-200 hover:bg-cyan-300/18 focus-visible:bg-cyan-300/18"
-                        >
-                          {category.name}
-                        </Link>
-                      ))}
-                    </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  {quickCategoryShortcuts.map((category) => (
+                    <Link
+                      key={category.name}
+                      href={category.href}
+                      className="inline-flex min-h-9 items-center justify-center rounded-full border border-cyan-300/30 bg-cyan-300/10 px-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-cyan-50 transition hover:border-cyan-200 hover:bg-cyan-300/18 focus-visible:bg-cyan-300/18"
+                    >
+                      {category.name}
+                    </Link>
                   ))}
                 </div>
               </div>
@@ -250,7 +269,7 @@ export default function Home() {
               href="/contact"
               className="inline-flex items-center justify-center rounded-lg border-2 border-white px-8 py-3 text-base font-semibold text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-brand-copper focus:ring-offset-2 focus:ring-offset-black transition-all"
             >
-              Request a Quote
+              Request Quote
             </Link>
             <Link
               href="/knowledge"
@@ -417,6 +436,40 @@ export default function Home() {
 
       <section className="border-t border-zinc-200 bg-white py-16 sm:py-24">
         <div className="mx-auto max-w-[1440px] px-6 sm:px-8 lg:px-10">
+          <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-700">
+                Procurement Support
+              </p>
+              <h2 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
+                Built for Industrial Procurement
+              </h2>
+              <p className="mt-5 max-w-xl text-base leading-7 text-slate-600 sm:text-lg">
+                Practical supply support for teams managing maintenance, contractor work, plant operations, marine jobs, and facility replenishment across Trinidad & Tobago.
+              </p>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              {procurementTrustCards.map((card) => (
+                <article
+                  key={card.title}
+                  className="rounded-[1.25rem] border border-slate-200 bg-slate-50 p-6 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.45)]"
+                >
+                  <h3 className="text-lg font-semibold text-slate-950">
+                    {card.title}
+                  </h3>
+                  <p className="mt-3 text-sm leading-6 text-slate-600">
+                    {card.description}
+                  </p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-t border-zinc-200 bg-white py-16 sm:py-24">
+        <div className="mx-auto max-w-[1440px] px-6 sm:px-8 lg:px-10">
           <div className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-[linear-gradient(135deg,#0f1b2d_0%,#16273e_58%,#0f766e_100%)] shadow-[0_24px_70px_-42px_rgba(15,23,42,0.55)]">
             <div className="grid gap-8 px-6 py-10 sm:px-8 sm:py-12 lg:grid-cols-[1fr_auto] lg:items-center lg:px-12">
               <div className="max-w-3xl">
@@ -461,40 +514,32 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="relative mt-12 overflow-hidden">
-            <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-white to-transparent" />
-            <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-white to-transparent" />
-            <div className="featured-brand-cards-marquee flex w-max items-stretch gap-5 pr-5">
-              {[0, 1].map((loop) => (
-                <div key={loop} className="flex shrink-0 items-stretch gap-5 pr-5">
-                  {featuredIndustrialBrands.map((brand) => (
-                    <Link
-                      key={`${loop}-${brand.name}`}
-                      href={brand.href}
-                      className="group flex w-[280px] shrink-0 flex-col overflow-hidden rounded-[1.25rem] border border-slate-200 bg-white shadow-[0_18px_44px_-34px_rgba(15,23,42,0.55)] transition hover:-translate-y-1 hover:border-cyan-300 sm:w-[320px]"
-                    >
-                      <div className="relative flex h-56 items-center justify-center overflow-hidden bg-slate-50">
-                        <Image
-                          src={brand.image}
-                          alt={`${brand.name} products`}
-                          fill
-                          sizes="320px"
-                          className="object-contain p-6 transition duration-500 group-hover:scale-105"
-                        />
-                      </div>
-                      <div className="flex flex-1 flex-col p-5">
-                        <h3 className="text-xl font-semibold text-slate-950">{brand.name}</h3>
-                        <p className="mt-3 text-sm leading-6 text-slate-600">{brand.description}</p>
-                        <span className="mt-auto inline-flex items-center gap-2 pt-5 text-sm font-semibold text-cyan-800">
-                          Browse brand category
-                          <span aria-hidden="true">→</span>
-                        </span>
-                      </div>
-                    </Link>
-                  ))}
+          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {featuredIndustrialBrands.map((brand) => (
+              <Link
+                key={brand.name}
+                href={brand.href}
+                className="group flex min-h-[360px] flex-col overflow-hidden rounded-[1.25rem] border border-slate-200 bg-white shadow-[0_18px_44px_-34px_rgba(15,23,42,0.55)] transition hover:-translate-y-1 hover:border-cyan-300"
+              >
+                <div className="relative flex h-56 items-center justify-center overflow-hidden bg-slate-50">
+                  <Image
+                    src={brand.image}
+                    alt={`${brand.name} products`}
+                    fill
+                    sizes="(min-width: 1280px) 25vw, (min-width: 640px) 50vw, 100vw"
+                    className="object-contain p-6 transition duration-500 group-hover:scale-105"
+                  />
                 </div>
-              ))}
-            </div>
+                <div className="flex flex-1 flex-col p-5">
+                  <h3 className="text-xl font-semibold text-slate-950">{brand.name}</h3>
+                  <p className="mt-3 text-sm leading-6 text-slate-600">{brand.description}</p>
+                  <span className="mt-auto inline-flex items-center gap-2 pt-5 text-sm font-semibold text-cyan-800">
+                    Browse brand category
+                    <span aria-hidden="true">→</span>
+                  </span>
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
       </section>

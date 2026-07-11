@@ -52,7 +52,7 @@ create table if not exists public.products (
       'In stock',
       'Low stock',
       'Available on request',
-      'Call for availability'
+      'Available on request'
     )
   )
 );

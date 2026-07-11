@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { JsonLd } from "@/app/components/JsonLd";
+import { MobileContactBar } from "@/app/components/MobileContactBar";
 import { TrackingScripts } from "@/app/components/TrackingScripts";
 import { absoluteUrl, getSiteUrl, openGraphImage, siteName } from "@/lib/seo";
 import {
@@ -66,6 +67,7 @@ export default function RootLayout({
         <JsonLd id="website-schema" data={websiteJsonLd()} />
         <TrackingScripts />
         {children}
+        <MobileContactBar />
       </body>
     </html>
   );

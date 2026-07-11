@@ -292,7 +292,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
                     href="/contact"
                     className="mt-5 inline-flex rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-slate-800"
                   >
-                    Contact sales
+                    Request Quote
                   </Link>
                 </div>
               </div>
@@ -573,7 +573,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
             <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
               {visibleProducts.map((product) => (
                 <Link
-                  key={product.id}
+                  key={`${data.slug}-${product.slug || product.id}-${product.name}`}
                   href={`/products/${product.slug || product.id}`}
                   className="group relative flex min-h-[390px] flex-col overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.55)] transition-all duration-300 hover:-translate-y-1 hover:border-cyan-300 hover:shadow-[0_24px_50px_-26px_rgba(8,47,73,0.35)] sm:p-6"
                 >
@@ -617,7 +617,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
 
                     <div className="mt-auto flex items-center justify-between gap-4 pt-6">
                       <p className="text-sm font-semibold text-slate-600">
-                        {product.stockStatus || "Call for availability"}
+                        {product.stockStatus || "Available on request"}
                       </p>
                       <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-900 transition group-hover:text-cyan-800">
                         View details

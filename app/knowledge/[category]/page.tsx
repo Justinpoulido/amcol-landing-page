@@ -143,7 +143,7 @@ export default async function KnowledgeCategoryPage({ params }: KnowledgeCategor
                 href="/contact"
                 className="mt-5 inline-flex rounded-sm bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-700"
               >
-                Request a Quote
+                Request Quote
               </Link>
             </div>
           </div>
@@ -162,3 +162,4 @@ export default async function KnowledgeCategoryPage({ params }: KnowledgeCategor
     </div>
   );
 }
+

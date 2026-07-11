@@ -25,6 +25,12 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+@media (max-width: 767px) {
+  body {
+    padding-bottom: calc(4.75rem + env(safe-area-inset-bottom));
+  }
+}
+
 .product-card-summary {
   display: -webkit-box;
   line-clamp: 3;
@@ -32,40 +38,6 @@ body {
   -webkit-box-orient: vertical;
   max-height: calc(1.5rem * 3);
   overflow: hidden;
-}
-
-@keyframes quickCategoryMarquee {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
-}
-
-.quick-category-marquee {
-  animation: quickCategoryMarquee 24s linear infinite;
-}
-
-.quick-category-marquee:hover {
-  animation-play-state: paused;
-}
-
-@keyframes featuredBrandCardsMarquee {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
-}
-
-.featured-brand-cards-marquee {
-  animation: featuredBrandCardsMarquee 34s linear infinite;
-}
-
-.featured-brand-cards-marquee:hover {
-  animation-play-state: paused;
 }
 
 .hero-header {

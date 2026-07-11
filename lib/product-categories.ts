@@ -42,11 +42,11 @@ export const productCategoryData: Record<string, ProductCategoryPageData> = {
     title: "Cleaners & Degreasers",
     subtitle: "Heavy-duty cleaning for demanding worksites",
     description:
-      "Cut through grease, oil, carbon buildup, and shop-floor grime with industrial cleaning solutions designed for maintenance teams, plant shutdowns, and routine equipment care.",
+      "Source industrial cleaners and degreasers in Trinidad & Tobago for maintenance teams, plant shutdowns, workshops, and routine equipment care.",
     products: [
-      { id: 1, name: "WD-40 Specialist Degreaser", price: "Inquire", image: "/images/wd40 degreaser.webp", category: "Degreaser" },
-      { id: 2, name: "Industrial Cleaner Degreaser", price: "Call for Quote", image: "/images/Simple Green Safer Choice Banner.webp", category: "Cleaner" },
-      { id: 3, name: "Heavy-Duty Surface Cleaner", price: "Inquire", image: "/images/Surface Cleaner.webp", category: "Facility Care" },
+      { id: 1, name: "WD-40 Specialist Degreaser", price: "Request Quote", image: "/images/wd40 degreaser.webp", category: "Degreaser" },
+      { id: 2, name: "Industrial Cleaner Degreaser", price: "Request Quote", image: "/images/Simple Green Safer Choice Banner.webp", category: "Cleaner" },
+      { id: 3, name: "Heavy-Duty Surface Cleaner", price: "Request Quote", image: "/images/Surface Cleaner.webp", category: "Facility Care" },
     ],
   },
   "surface-disinfectants-deodorizers": {
@@ -60,9 +60,9 @@ export const productCategoryData: Record<string, ProductCategoryPageData> = {
     description:
       "Keep workplaces, washrooms, kitchens, and high-touch surfaces clean with dependable disinfectants and odor-control products suited to industrial and commercial environments.",
     products: [
-      { id: 1, name: "Multi-Surface Disinfectant Spray", price: "Inquire", image: "/images/Surface Cleaner.webp", category: "Disinfectant" },
-      { id: 2, name: "Concentrated Odor Neutralizer", price: "Inquire", image: "/images/Surface Cleaner.webp", category: "Deodorizer" },
-      { id: 3, name: "Janitorial Sanitizing Refill", price: "Call for Quote", image: "/images/Surface Cleaner.webp", category: "Facility Care" },
+      { id: 1, name: "Multi-Surface Disinfectant Spray", price: "Request Quote", image: "/images/Surface Cleaner.webp", category: "Disinfectant" },
+      { id: 2, name: "Concentrated Odor Neutralizer", price: "Request Quote", image: "/images/Surface Cleaner.webp", category: "Deodorizer" },
+      { id: 3, name: "Janitorial Sanitizing Refill", price: "Request Quote", image: "/images/Surface Cleaner.webp", category: "Facility Care" },
     ],
   },
   "sprayers-pumps": {
@@ -76,9 +76,9 @@ export const productCategoryData: Record<string, ProductCategoryPageData> = {
     description:
       "From chemical application to fluid transfer, our sprayers and pumps help crews handle maintenance chemicals, coatings, and cleaning agents with accuracy and efficiency.",
     products: [
-      { id: 1, name: "Gasoline Pressure Sprayer", price: "Inquire", image: "/images/Gasoline Sprayer.webp", category: "Pressure Sprayer" },
-      { id: 2, name: "Handheld Utility Pump", price: "Call for Quote", image: "/images/Gasoline Sprayer.webp", category: "Transfer Pump" },
-      { id: 3, name: "Chemical Application Sprayer", price: "Inquire", image: "/images/Gasoline Sprayer.webp", category: "Chemical Handling" },
+      { id: 1, name: "Gasoline Pressure Sprayer", price: "Request Quote", image: "/images/Gasoline Sprayer.webp", category: "Pressure Sprayer" },
+      { id: 2, name: "Handheld Utility Pump", price: "Request Quote", image: "/images/Gasoline Sprayer.webp", category: "Transfer Pump" },
+      { id: 3, name: "Chemical Application Sprayer", price: "Request Quote", image: "/images/Gasoline Sprayer.webp", category: "Chemical Handling" },
     ],
   },
   "adhesives-sealants-tape": {
@@ -92,9 +92,9 @@ export const productCategoryData: Record<string, ProductCategoryPageData> = {
     description:
       "Seal joints, bond materials, and protect surfaces with industrial-grade silicones, construction adhesives, specialty sealants, and tapes for maintenance and installation work.",
     products: [
-      { id: 1, name: "Red Devil Silicone Sealant", price: "$8.75", image: "/images/Silicone Tube with Red Devil Background.webp", category: "Sealant" },
-      { id: 2, name: "Industrial Silicone Cartridge", price: "Inquire", image: "/images/Silicone-Sealant.webp", category: "Silicone" },
-      { id: 3, name: "Multipurpose Bonding Adhesive", price: "Call for Quote", image: "/images/E6000.webp", category: "Adhesive" },
+      { id: 1, name: "Red Devil Silicone Sealant", price: "Request Quote", image: "/images/Silicone Tube with Red Devil Background.webp", category: "Sealant" },
+      { id: 2, name: "Industrial Silicone Cartridge", price: "Request Quote", image: "/images/Silicone-Sealant.webp", category: "Silicone" },
+      { id: 3, name: "Multipurpose Bonding Adhesive", price: "Request Quote", image: "/images/E6000.webp", category: "Adhesive" },
     ],
   },
   "fire-protection": {
@@ -106,11 +106,11 @@ export const productCategoryData: Record<string, ProductCategoryPageData> = {
     title: "Fire Protection",
     subtitle: "Preparedness products for safer facilities",
     description:
-      "Support emergency readiness with extinguishers, signage, and safety accessories designed to help sites stay compliant and respond quickly when every second matters.",
+      "Source fire protection supplies in Trinidad for facilities, yards, workshops, and jobsites that need extinguishers, signage, brackets, and emergency-readiness support.",
     products: [
-      { id: 1, name: "Portable Fire Extinguisher", price: "Inquire", image: "/images/Fire extinguisher.webp", category: "Extinguishers" },
-      { id: 2, name: "Wall Mount Fire Bracket", price: "Call for Quote", image: "/images/Fire extinguisher.webp", category: "Accessories" },
-      { id: 3, name: "Safety Fire Station Signage", price: "Inquire", image: "/images/Fire extinguisher.webp", category: "Safety Signage" },
+      { id: 1, name: "Portable Fire Extinguisher", price: "Request Quote", image: "/images/Fire extinguisher.webp", category: "Extinguishers" },
+      { id: 2, name: "Wall Mount Fire Bracket", price: "Request Quote", image: "/images/Fire extinguisher.webp", category: "Accessories" },
+      { id: 3, name: "Safety Fire Station Signage", price: "Request Quote", image: "/images/Fire extinguisher.webp", category: "Safety Signage" },
     ],
   },
   safety: {
@@ -122,11 +122,11 @@ export const productCategoryData: Record<string, ProductCategoryPageData> = {
     title: "Safety",
     subtitle: "Worksite protection for crews and contractors",
     description:
-      "Outfit your team with trusted personal protective equipment and site-safety essentials for construction zones, industrial plants, logistics yards, and maintenance operations.",
+      "Find safety supplies and PPE in Trinidad for construction zones, industrial plants, logistics yards, maintenance crews, and contractor teams.",
     products: [
-      { id: 1, name: "Industrial Safety Helmet", price: "$85 TTD", image: "/images/Hardhat.webp", category: "Head Protection" },
-      { id: 2, name: "High-Visibility PPE Kit", price: "Inquire", image: "/images/PPE Equipment.webp", category: "PPE" },
-      { id: 3, name: "Protective Equipment Set", price: "Call for Quote", image: "/images/protective_equipment.webp", category: "Worksite Safety" },
+      { id: 1, name: "Industrial Safety Helmet", price: "Request Quote", image: "/images/Hardhat.webp", category: "Head Protection" },
+      { id: 2, name: "High-Visibility PPE Kit", price: "Request Quote", image: "/images/PPE Equipment.webp", category: "PPE" },
+      { id: 3, name: "Protective Equipment Set", price: "Request Quote", image: "/images/protective_equipment.webp", category: "Worksite Safety" },
     ],
   },
   "locks-security": {
@@ -140,9 +140,9 @@ export const productCategoryData: Record<string, ProductCategoryPageData> = {
     description:
       "Protect gates, storage areas, tools, and perimeter assets with robust locking hardware and security accessories built for industrial and commercial settings.",
     products: [
-      { id: 1, name: "Heavy-Duty Fence Lock", price: "Inquire", image: "/images/locks-security-deadbolts.webp", category: "Padlocks" },
-      { id: 2, name: "Security Hasp and Staple Set", price: "Call for Quote", image: "/images/locks-security-deadbolts.webp", category: "Hardware" },
-      { id: 3, name: "Commercial Locking Assembly", price: "Inquire", image: "/images/locks-security-deadbolts.webp", category: "Access Control" },
+      { id: 1, name: "Heavy-Duty Fence Lock", price: "Request Quote", image: "/images/locks-security-deadbolts.webp", category: "Padlocks" },
+      { id: 2, name: "Security Hasp and Staple Set", price: "Request Quote", image: "/images/locks-security-deadbolts.webp", category: "Hardware" },
+      { id: 3, name: "Commercial Locking Assembly", price: "Request Quote", image: "/images/locks-security-deadbolts.webp", category: "Access Control" },
     ],
   },
   lubricants: {
@@ -154,11 +154,11 @@ export const productCategoryData: Record<string, ProductCategoryPageData> = {
     title: "Lubricants",
     subtitle: "Reduce friction, wear, and unplanned downtime",
     description:
-      "Maintain moving equipment, free seized parts, and protect metal surfaces with lubricants and penetrants suited for workshops, fleets, and industrial maintenance programs.",
+      "Source lubricants and penetrants in Trinidad & Tobago for workshops, fleets, industrial maintenance programs, seized parts, and metal surface protection.",
     products: [
-      { id: 1, name: "WD-40 Multi-Use Product", price: "$12.99", image: "/images/Wd40 bottle.webp", category: "Lubricant" },
-      { id: 2, name: "Marine Grade Lubricant", price: "Inquire", image: "/images/3 WD-40 Cans Banner.webp", category: "Maintenance" },
-      { id: 3, name: "Penetrating Maintenance Spray", price: "Call for Quote", image: "/images/Wd40 bottle.webp", category: "Penetrant" },
+      { id: 1, name: "WD-40 Multi-Use Product", price: "Request Quote", image: "/images/Wd40 bottle.webp", category: "Lubricant" },
+      { id: 2, name: "Marine Grade Lubricant", price: "Request Quote", image: "/images/3 WD-40 Cans Banner.webp", category: "Maintenance" },
+      { id: 3, name: "Penetrating Maintenance Spray", price: "Request Quote", image: "/images/Wd40 bottle.webp", category: "Penetrant" },
     ],
   },
   abrasives: {
@@ -172,9 +172,9 @@ export const productCategoryData: Record<string, ProductCategoryPageData> = {
     description:
       "Handle prep, cutting, deburring, and finishing with abrasive discs and accessories selected for fabrication shops, maintenance work, and metal-processing tasks.",
     products: [
-      { id: 1, name: "Industrial Abrasive Disc", price: "Inquire", image: "/images/Abrasives1.webp", category: "Grinding" },
-      { id: 2, name: "Diablo Cutting Disc", price: "Call for Quote", image: "/images/Diablo Disc Banner.webp", category: "Cutting" },
-      { id: 3, name: "Metal Surface Finishing Wheel", price: "Inquire", image: "/images/Abrasives1.webp", category: "Finishing" },
+      { id: 1, name: "Industrial Abrasive Disc", price: "Request Quote", image: "/images/Abrasives1.webp", category: "Grinding" },
+      { id: 2, name: "Diablo Cutting Disc", price: "Request Quote", image: "/images/Diablo Disc Banner.webp", category: "Cutting" },
+      { id: 3, name: "Metal Surface Finishing Wheel", price: "Request Quote", image: "/images/Abrasives1.webp", category: "Finishing" },
     ],
   },
   welding: {
@@ -186,11 +186,11 @@ export const productCategoryData: Record<string, ProductCategoryPageData> = {
     title: "Welding",
     subtitle: "Fabrication equipment for precision and strength",
     description:
-      "Support fabrication, repair, and structural work with welding machines, consumables, and accessories chosen for dependable arc performance and shop-floor productivity.",
+      "Source welding supplies in Trinidad for fabrication, repair, structural work, maintenance crews, and shop-floor productivity.",
     products: [
-      { id: 1, name: "Heavy Duty Welding Equipment", price: "Inquire", image: "/images/Welding.webp", category: "Equipment" },
-      { id: 2, name: "Welding Electrodes", price: "Call for Quote", image: "/images/Welding_industrial.webp", category: "Consumables" },
-      { id: 3, name: "Auto-Darkening Welding Helmet", price: "Inquire", image: "/images/PPE Equipment.webp", category: "Protection" },
+      { id: 1, name: "Heavy Duty Welding Equipment", price: "Request Quote", image: "/images/Welding.webp", category: "Equipment" },
+      { id: 2, name: "Welding Electrodes", price: "Request Quote", image: "/images/Welding_industrial.webp", category: "Consumables" },
+      { id: 3, name: "Auto-Darkening Welding Helmet", price: "Request Quote", image: "/images/PPE Equipment.webp", category: "Protection" },
     ],
   },
   "hvac-chemicals": {
@@ -202,11 +202,11 @@ export const productCategoryData: Record<string, ProductCategoryPageData> = {
     title: "HVAC Chemicals",
     subtitle: "Chemical support for cooling and ventilation systems",
     description:
-      "Keep HVAC systems running cleanly and efficiently with coil cleaners, treatment products, and maintenance chemicals formulated for service teams and facility managers.",
+      "Find HVAC chemicals in Trinidad & Tobago for service contractors, facility managers, coil cleaning, treatment needs, and scheduled maintenance programs.",
     products: [
-      { id: 1, name: "HVAC Coil Cleaner", price: "Inquire", image: "/images/HVAC.webp", category: "System Cleaner" },
-      { id: 2, name: "Condensate Line Treatment", price: "Call for Quote", image: "/images/HVAC.webp", category: "Maintenance" },
-      { id: 3, name: "Air Handler Service Chemical", price: "Inquire", image: "/images/HVAC.webp", category: "Facility Care" },
+      { id: 1, name: "HVAC Coil Cleaner", price: "Request Quote", image: "/images/HVAC.webp", category: "System Cleaner" },
+      { id: 2, name: "Condensate Line Treatment", price: "Request Quote", image: "/images/HVAC.webp", category: "Maintenance" },
+      { id: 3, name: "Air Handler Service Chemical", price: "Request Quote", image: "/images/HVAC.webp", category: "Facility Care" },
     ],
   },
   "coatings-sealers": {
@@ -220,9 +220,9 @@ export const productCategoryData: Record<string, ProductCategoryPageData> = {
     description:
       "Preserve assets and extend service life with coatings and sealers engineered for demanding environments, exposed steel, concrete surfaces, and corrosion-prone installations.",
     products: [
-      { id: 1, name: "Protective Surface Sealer", price: "Inquire", image: "/images/Jotun sealer.webp", category: "Sealer" },
-      { id: 2, name: "Industrial Protective Coating", price: "Call for Quote", image: "/images/Jotun sealer.webp", category: "Coating" },
-      { id: 3, name: "Heavy Duty Surface Primer", price: "Inquire", image: "/images/Jotun sealer.webp", category: "Primer" },
+      { id: 1, name: "Protective Surface Sealer", price: "Request Quote", image: "/images/Jotun sealer.webp", category: "Sealer" },
+      { id: 2, name: "Industrial Protective Coating", price: "Request Quote", image: "/images/Jotun sealer.webp", category: "Coating" },
+      { id: 3, name: "Heavy Duty Surface Primer", price: "Request Quote", image: "/images/Jotun sealer.webp", category: "Primer" },
     ],
   },
   "corrosion-control": {
@@ -236,9 +236,9 @@ export const productCategoryData: Record<string, ProductCategoryPageData> = {
     description:
       "Defend equipment, structures, and exposed components against rust and corrosion with treatments and maintenance products suited for marine, industrial, and outdoor use.",
     products: [
-      { id: 1, name: "Anti-Corrosion Protective Spray", price: "Inquire", image: "/images/Corrosion Spray.webp", category: "Corrosion Inhibitor" },
-      { id: 2, name: "Rust Protection Coating", price: "Call for Quote", image: "/images/Corrosion Spray.webp", category: "Metal Protection" },
-      { id: 3, name: "Surface Preservation Treatment", price: "Inquire", image: "/images/Corrosion Spray.webp", category: "Maintenance" },
+      { id: 1, name: "Anti-Corrosion Protective Spray", price: "Request Quote", image: "/images/Corrosion Spray.webp", category: "Corrosion Inhibitor" },
+      { id: 2, name: "Rust Protection Coating", price: "Request Quote", image: "/images/Corrosion Spray.webp", category: "Metal Protection" },
+      { id: 3, name: "Surface Preservation Treatment", price: "Request Quote", image: "/images/Corrosion Spray.webp", category: "Maintenance" },
     ],
   },
   ladders: {
@@ -252,9 +252,9 @@ export const productCategoryData: Record<string, ProductCategoryPageData> = {
     description:
       "Choose from dependable ladder solutions for warehouses, maintenance teams, utility jobs, and site work where safe access and durability are essential.",
     products: [
-      { id: 1, name: "Industrial Extension Ladder", price: "Inquire", image: "/images/Industrial-Aluminium-Extension-Ladder.webp", category: "Extension Ladder" },
-      { id: 2, name: "Heavy Duty Site Ladder", price: "Call for Quote", image: "/images/Ladder.webp", category: "Access Equipment" },
-      { id: 3, name: "Warehouse Utility Ladder", price: "Inquire", image: "/images/Ladder.webp", category: "Facility Access" },
+      { id: 1, name: "Industrial Extension Ladder", price: "Request Quote", image: "/images/Industrial-Aluminium-Extension-Ladder.webp", category: "Extension Ladder" },
+      { id: 2, name: "Heavy Duty Site Ladder", price: "Request Quote", image: "/images/Ladder.webp", category: "Access Equipment" },
+      { id: 3, name: "Warehouse Utility Ladder", price: "Request Quote", image: "/images/Ladder.webp", category: "Facility Access" },
     ],
   },
   "spill-containment-emergency-response": {
@@ -266,11 +266,11 @@ export const productCategoryData: Record<string, ProductCategoryPageData> = {
     title: "Spill Containment & Emergency Response",
     subtitle: "Fast-response solutions when control matters most",
     description:
-      "Prepare teams for leaks, drips, and fluid emergencies with containment and response products that help reduce downtime, protect personnel, and support environmental control measures.",
+      "Source spill containment supplies in Trinidad for leaks, drips, fluid emergencies, maintenance crews, and environmental-control response needs.",
     products: [
-      { id: 1, name: "Emergency Spill Response Crate", price: "Inquire", image: "/images/Crate.webp", category: "Spill Kit" },
-      { id: 2, name: "Absorbent Response Pack", price: "Call for Quote", image: "/images/Crate.webp", category: "Containment" },
-      { id: 3, name: "Industrial Spill Control Station", price: "Inquire", image: "/images/Crate.webp", category: "Emergency Response" },
+      { id: 1, name: "Emergency Spill Response Crate", price: "Request Quote", image: "/images/Crate.webp", category: "Spill Kit" },
+      { id: 2, name: "Absorbent Response Pack", price: "Request Quote", image: "/images/Crate.webp", category: "Containment" },
+      { id: 3, name: "Industrial Spill Control Station", price: "Request Quote", image: "/images/Crate.webp", category: "Emergency Response" },
     ],
   },
   marine: {
@@ -282,11 +282,11 @@ export const productCategoryData: Record<string, ProductCategoryPageData> = {
     title: "Marine",
     subtitle: "Products selected for offshore and port operations",
     description:
-      "Support marine logistics, offshore work, and dockside maintenance with durable supplies chosen for salt-air exposure, heavy handling, and operational reliability.",
+      "Source marine maintenance supplies in Trinidad for port operations, offshore work, dockside maintenance, salt-air exposure, and heavy handling needs.",
     products: [
-      { id: 1, name: "Marine Rigging Supplies", price: "Inquire", image: "/images/RIG.webp", category: "Rigging" },
-      { id: 2, name: "Cargo Handling Support Equipment", price: "Call for Quote", image: "/images/Cargo ship.webp", category: "Logistics" },
-      { id: 3, name: "Marine Maintenance Lubricant", price: "Inquire", image: "/images/3 WD-40 Cans Banner.webp", category: "Maintenance" },
+      { id: 1, name: "Marine Rigging Supplies", price: "Request Quote", image: "/images/RIG.webp", category: "Rigging" },
+      { id: 2, name: "Cargo Handling Support Equipment", price: "Request Quote", image: "/images/Cargo ship.webp", category: "Logistics" },
+      { id: 3, name: "Marine Maintenance Lubricant", price: "Request Quote", image: "/images/3 WD-40 Cans Banner.webp", category: "Maintenance" },
     ],
   },
   medical: {
@@ -300,9 +300,9 @@ export const productCategoryData: Record<string, ProductCategoryPageData> = {
     description:
       "Source medical-support and hygiene-related products suited for occupational health stations, emergency preparedness, and frontline protection in controlled environments.",
     products: [
-      { id: 1, name: "Medical Respirator", price: "Inquire", image: "/images/medical respirator.webp", category: "Respiratory" },
-      { id: 2, name: "Protective Medical PPE Set", price: "Call for Quote", image: "/images/PPE Equipment.webp", category: "PPE" },
-      { id: 3, name: "Facility First Response Kit", price: "Inquire", image: "/images/medical respirator.webp", category: "Preparedness" },
+      { id: 1, name: "Medical Respirator", price: "Request Quote", image: "/images/medical respirator.webp", category: "Respiratory" },
+      { id: 2, name: "Protective Medical PPE Set", price: "Request Quote", image: "/images/PPE Equipment.webp", category: "PPE" },
+      { id: 3, name: "Facility First Response Kit", price: "Request Quote", image: "/images/medical respirator.webp", category: "Preparedness" },
     ],
   },
   "commodity-chemicals": {
@@ -316,9 +316,9 @@ export const productCategoryData: Record<string, ProductCategoryPageData> = {
     description:
       "Meet processing, cleaning, and manufacturing demand with commodity chemical supply options that support production continuity and site-level operational needs.",
     products: [
-      { id: 1, name: "Bulk Commodity Chemical Drum", price: "Inquire", image: "/images/Barrel.webp", category: "Bulk Supply" },
-      { id: 2, name: "Industrial Process Chemical", price: "Call for Quote", image: "/images/Barrel.webp", category: "Processing" },
-      { id: 3, name: "Facility Chemical Replenishment", price: "Inquire", image: "/images/Barrel.webp", category: "Operations" },
+      { id: 1, name: "Bulk Commodity Chemical Drum", price: "Request Quote", image: "/images/Barrel.webp", category: "Bulk Supply" },
+      { id: 2, name: "Industrial Process Chemical", price: "Request Quote", image: "/images/Barrel.webp", category: "Processing" },
+      { id: 3, name: "Facility Chemical Replenishment", price: "Request Quote", image: "/images/Barrel.webp", category: "Operations" },
     ],
   },
   matting: {
@@ -332,9 +332,9 @@ export const productCategoryData: Record<string, ProductCategoryPageData> = {
     description:
       "Improve footing, reduce fatigue, and protect surfaces with matting solutions tailored for industrial entrances, wet areas, workshop floors, and high-traffic zones.",
     products: [
-      { id: 1, name: "Industrial Non-Slip Matting", price: "Inquire", image: "/images/Matting Industrial non-slip.webp", category: "Safety Matting" },
-      { id: 2, name: "Entrance Protection Floor Mat", price: "Call for Quote", image: "/images/Matting Industrial non-slip.webp", category: "Facility Protection" },
-      { id: 3, name: "Workshop Anti-Fatigue Mat", price: "Inquire", image: "/images/Matting Industrial non-slip.webp", category: "Ergonomic Support" },
+      { id: 1, name: "Industrial Non-Slip Matting", price: "Request Quote", image: "/images/Matting Industrial non-slip.webp", category: "Safety Matting" },
+      { id: 2, name: "Entrance Protection Floor Mat", price: "Request Quote", image: "/images/Matting Industrial non-slip.webp", category: "Facility Protection" },
+      { id: 3, name: "Workshop Anti-Fatigue Mat", price: "Request Quote", image: "/images/Matting Industrial non-slip.webp", category: "Ergonomic Support" },
     ],
   },
 };
@@ -580,21 +580,19 @@ function productSlugText(value: string) {
     .trim();
 }
 
-function buildDefaultProductSummary(product: ProductItem, category: ProductCategoryPageData) {
-  return `${product.name} for ${productSlugText(product.category)} needs across ${productSlugText(
-    category.name,
-  )}, facility maintenance, contractor, and industrial procurement workflows.`;
+function buildDefaultProductSummary(product: ProductItem) {
+  return `${product.name} suited for ${productSlugText(
+    product.category,
+  )}, maintenance, contractor, and facility supply needs. Contact AMCOL Industrial to confirm availability, options, and bulk order support.`;
 }
 
 function buildDefaultProductDescription(
   product: ProductItem,
   category: ProductCategoryPageData,
 ) {
-  return `${product.name} supports ${productSlugText(
-    product.category,
-  )} requirements for teams sourcing ${productSlugText(
+  return `${product.name} supports teams sourcing ${productSlugText(
     category.name,
-  )} in Trinidad & Tobago. AMCOL helps buyers confirm availability, packaging, compatibility, and bulk purchasing needs before adding the item to a supply list or quote request.`;
+  )} in Trinidad & Tobago for maintenance, contractor, and facility work. AMCOL can help confirm availability, packaging, compatibility, and bulk purchasing needs before the item is added to a supply list or quote request.`;
 }
 
 function buildDefaultUseCases(product: ProductItem, category: ProductCategoryPageData) {
@@ -621,7 +619,7 @@ function enrichSeededProduct(
 
   return {
     ...product,
-    summary: overrides.summary ?? product.summary ?? buildDefaultProductSummary(product, category),
+    summary: overrides.summary ?? product.summary ?? buildDefaultProductSummary(product),
     description:
       overrides.description ??
       product.description ??
@@ -631,7 +629,7 @@ function enrichSeededProduct(
       overrides.useCases ?? product.useCases ?? buildDefaultUseCases(product, category),
     brand: overrides.brand ?? product.brand,
     unit: overrides.unit ?? product.unit ?? "Each",
-    stockStatus: overrides.stockStatus ?? product.stockStatus ?? "Call for availability",
+    stockStatus: overrides.stockStatus ?? product.stockStatus ?? "Available on request",
     imageAlt:
       overrides.imageAlt ??
       product.imageAlt ??
@@ -681,3 +679,5 @@ export const featuredProductCategories = [
   productCategoryData.marine,
   productCategoryData.welding,
 ];
+
+

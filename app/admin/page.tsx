@@ -927,7 +927,7 @@ export default function AdminDashboardPage() {
                         </td>
                         <td className="border-t border-slate-100 px-5 py-4">
                           <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
-                            {product.stockStatus || "Call for availability"}
+                            {product.stockStatus || "Available on request"}
                           </span>
                         </td>
                         <td className="border-t border-slate-100 px-5 py-4">
@@ -1257,7 +1257,7 @@ export default function AdminDashboardPage() {
                           <option>In stock</option>
                           <option>Low stock</option>
                           <option>Available on request</option>
-                          <option>Call for availability</option>
+                          <option>Available on request</option>
                         </select>
                       </label>
                     </div>
@@ -1622,3 +1622,4 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
+

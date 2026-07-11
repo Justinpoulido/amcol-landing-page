@@ -39,6 +39,10 @@ export const metadata: Metadata = {
 type ProductsPageProps = {
   searchParams?: Promise<{
     search?: string | string[];
+    category?: string | string[];
+    brand?: string | string[];
+    availability?: string | string[];
+    type?: string | string[];
   }>;
 };
 
@@ -70,16 +74,68 @@ function productMatchesSearch(
   return searchableText.includes(query.toLowerCase());
 }
 
+function getUniqueValues(values: Array<string | undefined>) {
+  return Array.from(
+    new Set(values.map((value) => value?.trim()).filter((value): value is string => Boolean(value))),
+  ).sort((left, right) => left.localeCompare(right));
+}
+
 export default async function ProductsPage({ searchParams }: ProductsPageProps) {
   const query = await searchParams;
   const searchQuery = getSearchValue(query?.search)?.trim() ?? "";
+  const selectedCategory = getSearchValue(query?.category)?.trim() ?? "";
+  const selectedBrand = getSearchValue(query?.brand)?.trim() ?? "";
+  const selectedAvailability = getSearchValue(query?.availability)?.trim() ?? "";
+  const selectedType = getSearchValue(query?.type)?.trim() ?? "";
   const [products, featuredProductCategories] = await Promise.all([
     getAllProducts(),
     Promise.resolve(getFeaturedCategories()),
   ]);
-  const visibleProducts = searchQuery
-    ? products.filter((product) => productMatchesSearch(product, searchQuery))
-    : products;
+  const categoryOptions = getUniqueValues(
+    products.map((product) => product.categoryName || product.category),
+  );
+  const brandOptions = getUniqueValues(products.map((product) => product.brand));
+  const availabilityOptions = getUniqueValues(
+    products.map((product) => product.stockStatus),
+  );
+  const productTypeOptions = getUniqueValues(products.map((product) => product.category));
+  const hasActiveFilters = Boolean(
+    searchQuery ||
+      selectedCategory ||
+      selectedBrand ||
+      selectedAvailability ||
+      selectedType,
+  );
+  const visibleProducts = products.filter((product) => {
+    if (searchQuery && !productMatchesSearch(product, searchQuery)) {
+      return false;
+    }
+
+    if (
+      selectedCategory &&
+      (product.categoryName || product.category).toLowerCase() !==
+        selectedCategory.toLowerCase()
+    ) {
+      return false;
+    }
+
+    if (selectedBrand && product.brand?.toLowerCase() !== selectedBrand.toLowerCase()) {
+      return false;
+    }
+
+    if (
+      selectedAvailability &&
+      product.stockStatus?.toLowerCase() !== selectedAvailability.toLowerCase()
+    ) {
+      return false;
+    }
+
+    if (selectedType && product.category.toLowerCase() !== selectedType.toLowerCase()) {
+      return false;
+    }
+
+    return true;
+  });
 
   return (
     <div className="min-h-screen bg-white font-sans text-zinc-900">
@@ -186,26 +242,122 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
             </p>
           </div>
 
-          <form action="/products" className="mt-8 max-w-xl">
-            <label htmlFor="product-search" className="sr-only">
-              Search products
-            </label>
-            <div className="relative">
-              <svg
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-                className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 fill-slate-400"
-              >
-                <path d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-7.5-3.365-7.5-7.5z" />
-              </svg>
-              <input
-                id="product-search"
-                name="search"
-                type="search"
-                defaultValue={searchQuery}
-                placeholder="Search by product, category, brand, or SKU..."
-                className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-11 pr-4 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-cyan-300 focus:ring-2 focus:ring-cyan-100"
-              />
+          <form
+            action="/products"
+            className="mt-8 rounded-[1.25rem] border border-slate-200 bg-white p-4 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.45)]"
+          >
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[1.5fr_1fr_1fr_1fr_1fr_auto]">
+              <label className="space-y-2">
+                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-600">
+                  Search
+                </span>
+                <div className="relative">
+                  <svg
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                    className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 fill-slate-400"
+                  >
+                    <path d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-7.5-3.365-7.5-7.5z" />
+                  </svg>
+                  <input
+                    id="product-search"
+                    name="search"
+                    type="search"
+                    defaultValue={searchQuery}
+                    placeholder="Product, brand, SKU..."
+                    className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-11 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-cyan-300 focus:ring-2 focus:ring-cyan-100"
+                  />
+                </div>
+              </label>
+
+              <label className="space-y-2">
+                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-600">
+                  Category
+                </span>
+                <select
+                  name="category"
+                  defaultValue={selectedCategory}
+                  className="h-12 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-100"
+                >
+                  <option value="">All categories</option>
+                  {categoryOptions.map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="space-y-2">
+                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-600">
+                  Brand
+                </span>
+                <select
+                  name="brand"
+                  defaultValue={selectedBrand}
+                  className="h-12 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-100"
+                >
+                  <option value="">All brands</option>
+                  {brandOptions.map((brand) => (
+                    <option key={brand} value={brand}>
+                      {brand}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="space-y-2">
+                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-600">
+                  Availability
+                </span>
+                <select
+                  name="availability"
+                  defaultValue={selectedAvailability}
+                  className="h-12 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-100"
+                >
+                  <option value="">Any status</option>
+                  {availabilityOptions.map((availability) => (
+                    <option key={availability} value={availability}>
+                      {availability}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="space-y-2">
+                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-600">
+                  Product Type
+                </span>
+                <select
+                  name="type"
+                  defaultValue={selectedType}
+                  className="h-12 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-100"
+                >
+                  <option value="">All types</option>
+                  {productTypeOptions.map((productType) => (
+                    <option key={productType} value={productType}>
+                      {productType}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <div className="flex items-end gap-2 md:col-span-2 xl:col-span-1">
+                <button
+                  type="submit"
+                  className="inline-flex h-12 flex-1 items-center justify-center rounded-xl bg-slate-950 px-5 text-sm font-semibold text-white transition hover:bg-slate-800"
+                >
+                  Apply
+                </button>
+                {hasActiveFilters ? (
+                  <Link
+                    href="/products"
+                    className="inline-flex h-12 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:border-cyan-300 hover:text-cyan-800"
+                  >
+                    Clear
+                  </Link>
+                ) : null}
+              </div>
             </div>
           </form>
 
@@ -213,7 +365,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
             {visibleProducts.map((product) => (
               <Link
-                key={product.id}
+                key={`${product.categorySlug}-${product.slug || product.id}-${product.name}`}
                 href={`/products/${product.slug}`}
                 className="group relative flex min-h-[420px] flex-col overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.55)] transition-all duration-300 hover:-translate-y-1 hover:border-cyan-300 hover:shadow-[0_24px_50px_-26px_rgba(8,47,73,0.35)] sm:p-6"
               >
@@ -255,7 +407,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
                   <div className="mt-auto flex items-center justify-between pt-6">
                     <span className="text-sm font-medium text-slate-500">
-                      {product.stockStatus || "Call for availability"}
+                      {product.stockStatus || "Available on request"}
                     </span>
                     <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-900 transition group-hover:text-cyan-800">
                       View details
