@@ -24,30 +24,47 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
   applicationName: siteName,
+
   title: {
-    default: "AMCOL Industrial | Industrial, Marine & Safety Supply",
+    default: "Industrial, Marine & Safety Supplies Trinidad | AMCOL Industrial",
     template: "%s | AMCOL Industrial",
   },
+
   description:
-    "Industrial, safety, marine, MRO and maintenance supplies from AMCOL Industrial in Penal, serving worksites across Trinidad & Tobago.",
+    "AMCOL Industrial supplies safety, MRO, marine, construction, and facility maintenance products across Trinidad & Tobago. Request quotes for industrial supplies today.",
+
+  keywords: [
+    "industrial supplies Trinidad",
+    "industrial supplies Trinidad and Tobago",
+    "marine supplies Trinidad",
+    "safety supplies Trinidad",
+    "PPE Trinidad",
+    "MRO supplies Trinidad",
+    "construction supplies Trinidad",
+    "facility maintenance supplies",
+    "AMCOL Industrial",
+  ],
+
   alternates: {
     canonical: "/",
   },
+
   openGraph: {
     type: "website",
     siteName,
     locale: "en_TT",
-    title: "AMCOL Industrial | Industrial, Marine & Safety Supply",
+    title: "Industrial, Marine & Safety Supplies Trinidad | AMCOL Industrial",
     description:
-      "Industrial, marine, safety, and maintenance products for procurement teams across Trinidad & Tobago.",
+      "AMCOL Industrial supplies safety, MRO, marine, construction, and facility maintenance products across Trinidad & Tobago. Request quotes for industrial supplies today.",
     url: absoluteUrl("/"),
     images: openGraphImage(),
   },
+
   twitter: {
     card: "summary_large_image",
-    title: "AMCOL Industrial | Industrial, Marine & Safety Supply",
+    title: "Industrial, Marine & Safety Supplies Trinidad | AMCOL Industrial",
     description:
-      "Industrial, marine, safety, and maintenance products for procurement teams across Trinidad & Tobago.",
+      "AMCOL Industrial supplies safety, MRO, marine, construction, and facility maintenance products across Trinidad & Tobago. Request quotes for industrial supplies today.",
     images: ["/images/AMCOL Banner.webp"],
   },
 };
