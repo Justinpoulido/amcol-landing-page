@@ -20,16 +20,31 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 ## Admin Portal Access
 
-The `/admin` dashboard and `/api/admin/*` routes are protected with HTTP Basic Auth.
+The `/admin` dashboard and `/api/admin/*` routes are protected by a login page
+backed by server-only Vercel environment variables.
 
 Set these environment variables locally and in Vercel:
 
 ```bash
 ADMIN_USERNAME=your-admin-username
 ADMIN_PASSWORD=your-secure-password
+# Optional: use a separate signing secret for admin session cookies.
+ADMIN_SESSION_SECRET=your-long-random-session-secret
 ```
 
-If either value is missing, the admin portal returns a configuration error instead of exposing admin access.
+In Vercel, add the variables under Project Settings > Environment Variables for
+Production, Preview, and Development as needed. Do not prefix these values with
+`NEXT_PUBLIC_`; that would expose them to the browser bundle.
+
+For local development, place the same values in `.env.local`, or pull them from
+Vercel after linking the project:
+
+```bash
+vercel env pull .env.local --yes
+```
+
+If `ADMIN_USERNAME` or `ADMIN_PASSWORD` is missing, the admin login page disables
+sign-in instead of exposing admin access.
 
 ## SEO, Analytics, and Authority Setup
 

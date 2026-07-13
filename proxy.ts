@@ -1,67 +1,62 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import {
+  adminSession,
+  hasAdminCredentials,
+  verifyAdminSessionToken,
+} from "@/lib/admin-auth";
 
-const adminRealm = "AMCOL Admin";
+function redirectToLogin(request: NextRequest, reason?: string) {
+  const loginUrl = new URL("/admin/login", request.url);
 
-function unauthorizedResponse() {
-  return new NextResponse("Authentication required.", {
-    status: 401,
-    headers: {
-      "WWW-Authenticate": `Basic realm="${adminRealm}", charset="UTF-8"`,
-      "Cache-Control": "no-store",
-    },
-  });
-}
-
-function credentialsNotConfiguredResponse() {
-  return new NextResponse("Admin credentials are not configured.", {
-    status: 503,
-    headers: {
-      "Cache-Control": "no-store",
-    },
-  });
-}
-
-function getBasicCredentials(authorizationHeader: string | null) {
-  if (!authorizationHeader?.startsWith("Basic ")) {
-    return null;
+  if (reason) {
+    loginUrl.searchParams.set("error", reason);
   }
 
-  try {
-    const decoded = atob(authorizationHeader.slice("Basic ".length).trim());
-    const separatorIndex = decoded.indexOf(":");
-
-    if (separatorIndex < 0) {
-      return null;
-    }
-
-    return {
-      username: decoded.slice(0, separatorIndex),
-      password: decoded.slice(separatorIndex + 1),
-    };
-  } catch {
-    return null;
-  }
+  return NextResponse.redirect(loginUrl);
 }
 
-export function proxy(request: NextRequest) {
-  const adminUsername = process.env.ADMIN_USERNAME;
-  const adminPassword = process.env.ADMIN_PASSWORD;
-
-  if (!adminUsername || !adminPassword) {
-    return credentialsNotConfiguredResponse();
+function configurationResponse(request: NextRequest) {
+  if (request.nextUrl.pathname.startsWith("/api/")) {
+    return NextResponse.json(
+      { error: "Admin credentials are not configured." },
+      { status: 503, headers: { "Cache-Control": "no-store" } },
+    );
   }
 
-  const credentials = getBasicCredentials(request.headers.get("authorization"));
+  const loginUrl = new URL("/admin/login", request.url);
+  loginUrl.searchParams.set("configured", "missing");
 
-  if (
-    credentials?.username === adminUsername &&
-    credentials.password === adminPassword
-  ) {
+  return NextResponse.redirect(loginUrl);
+}
+
+export async function proxy(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+  const isLoginPage = pathname === "/admin/login";
+  const isAuthEndpoint =
+    pathname === "/api/admin/login" || pathname === "/api/admin/logout";
+
+  if (isAuthEndpoint) {
     return NextResponse.next();
   }
 
-  return unauthorizedResponse();
+  if (!hasAdminCredentials()) {
+    return isLoginPage ? NextResponse.next() : configurationResponse(request);
+  }
+
+  const isSignedIn = await verifyAdminSessionToken(
+    request.cookies.get(adminSession.cookieName)?.value,
+  );
+
+  if (isSignedIn) {
+    if (isLoginPage) {
+      return NextResponse.redirect(new URL("/admin", request.url));
+    }
+
+    return NextResponse.next();
+  }
+
+  return isLoginPage ? NextResponse.next() : redirectToLogin(request, "expired");
 }
 
 export const config = {

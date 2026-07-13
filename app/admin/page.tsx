@@ -764,6 +764,14 @@ export default function AdminDashboardPage() {
             >
               View products
             </Link>
+            <form action="/api/admin/logout" method="post">
+              <button
+                type="submit"
+                className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/15"
+              >
+                Sign out
+              </button>
+            </form>
             <button
               type="button"
               onClick={openAddProduct}
