@@ -13,7 +13,7 @@ export async function POST(request: Request) {
 
   if (!hasAdminCredentials()) {
     loginUrl.searchParams.set("configured", "missing");
-    return NextResponse.redirect(loginUrl);
+    return NextResponse.redirect(loginUrl, 303);
   }
 
   const formData = await request.formData();
@@ -22,10 +22,10 @@ export async function POST(request: Request) {
 
   if (!(await validateAdminCredentials(username, password))) {
     loginUrl.searchParams.set("error", "invalid");
-    return NextResponse.redirect(loginUrl);
+    return NextResponse.redirect(loginUrl, 303);
   }
 
-  const response = NextResponse.redirect(new URL("/admin", request.url));
+  const response = NextResponse.redirect(new URL("/admin", request.url), 303);
   response.cookies.set({
     name: adminSession.cookieName,
     value: await createAdminSessionToken(username),
