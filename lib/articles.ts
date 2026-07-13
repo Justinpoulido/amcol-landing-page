@@ -52,7 +52,7 @@ export const industrialArticles: IndustrialArticle[] = [
     completedOn: "2026-06-24",
     summary:
       "AMCOL shared industrial catalogue resources with SEOGS attendees, highlighting supply categories for maintenance, safety, construction, marine, and facility operations.",
-    image: "/images/AMCOL_Suriname/AMCOL_Surinam_catalouge.webp",
+    image: "/images/AMCOL_Suriname/AMCOL_Surinam-Booth_Industiral.webp",
     tags: ["SEOGS 2026", "product catalogue", "industrial supply"],
     eventUrl: seogsEventUrl,
     eventLabel: "Visit SEOGS 2026",
