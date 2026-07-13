@@ -10,9 +10,7 @@ export const defaultOpenGraphImage = {
 
 export function getSiteUrl() {
   const configuredUrl =
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    process.env.SITE_URL ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : defaultSiteUrl);
+    process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || defaultSiteUrl;
 
   return configuredUrl.replace(/\/+$/, "");
 }
@@ -28,7 +26,7 @@ export function createMetaDescription(value: string, maxLength = 155) {
     return normalized;
   }
 
-  return `${normalized.slice(0, maxLength - 1).trimEnd()}…`;
+  return `${normalized.slice(0, maxLength - 3).trimEnd()}...`;
 }
 
 export function openGraphImage(

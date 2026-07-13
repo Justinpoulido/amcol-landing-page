@@ -2,9 +2,11 @@
 
 import Image from "next/image";
 import { useMemo, useState } from "react";
+import { JsonLd } from "@/app/components/JsonLd";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { SiteFooter } from "@/app/components/SiteFooter";
 import { industrialArticles } from "@/lib/articles";
+import { breadcrumbJsonLd, itemListJsonLd } from "@/lib/structured-data";
 
 const sectorFilters = ["All", "Events", "Energy", "Welding", "Marine", "Safety"] as const;
 
@@ -35,6 +37,23 @@ export default function NewsAndArticlesPage() {
   return (
     <div className="min-h-screen bg-white font-sans text-zinc-900">
       <SiteHeader />
+      <JsonLd
+        id="news-list-breadcrumb-schema"
+        data={breadcrumbJsonLd([
+          { label: "Home", href: "/" },
+          { label: "News", href: "/news" },
+        ])}
+      />
+      <JsonLd
+        id="news-item-list-schema"
+        data={itemListJsonLd(
+          industrialArticles.map((article) => ({
+            name: article.title,
+            url: `/news/${article.slug}`,
+          })),
+          "AMCOL Industrial news and project articles",
+        )}
+      />
 
       <main>
       <section className="relative bg-[#1A1A1B] pt-20 pb-20 sm:pt-24 sm:pb-28 overflow-hidden">
