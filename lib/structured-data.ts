@@ -5,6 +5,38 @@ const organizationId = absoluteUrl("/#organization");
 const websiteId = absoluteUrl("/#website");
 const localBusinessId = absoluteUrl("/#localbusiness");
 
+function getNumericPrice(value?: string) {
+  const match = value?.replace(/,/g, "").match(/\d+(?:\.\d+)?/);
+
+  return match?.[0];
+}
+
+function getOfferAvailability(value?: string) {
+  const normalized = value?.toLowerCase();
+
+  if (!normalized) {
+    return undefined;
+  }
+
+  if (normalized.includes("limited")) {
+    return "https://schema.org/LimitedAvailability";
+  }
+
+  if (
+    normalized.includes("out of stock") ||
+    normalized.includes("unavailable") ||
+    normalized.includes("sold out")
+  ) {
+    return "https://schema.org/OutOfStock";
+  }
+
+  if (normalized.includes("in stock") || normalized === "available") {
+    return "https://schema.org/InStock";
+  }
+
+  return undefined;
+}
+
 export function organizationJsonLd() {
   return {
     "@context": "https://schema.org",
@@ -16,6 +48,24 @@ export function organizationJsonLd() {
     logo: absoluteUrl(businessInfo.logo),
     email: businessInfo.email,
     telephone: businessInfo.telephone,
+    contactPoint: [
+      {
+        "@type": "ContactPoint",
+        contactType: "sales",
+        telephone: businessInfo.telephone,
+        email: businessInfo.email,
+        areaServed: "TT",
+        availableLanguage: ["en"],
+      },
+      {
+        "@type": "ContactPoint",
+        contactType: "customer support",
+        telephone: businessInfo.telephone,
+        email: businessInfo.supportEmail,
+        areaServed: "TT",
+        availableLanguage: ["en"],
+      },
+    ],
     sameAs: socialLinks.length > 0 ? socialLinks : undefined,
   };
 }
@@ -36,6 +86,7 @@ export function localBusinessJsonLd() {
     logo: absoluteUrl(businessInfo.logo),
     email: businessInfo.email,
     telephone: businessInfo.telephone,
+    priceRange: businessInfo.priceRange,
     address: {
       "@type": "PostalAddress",
       ...businessInfo.address,
@@ -45,6 +96,15 @@ export function localBusinessJsonLd() {
       name,
     })),
     openingHours: businessInfo.openingHours,
+    contactPoint: {
+      "@type": "ContactPoint",
+      contactType: "sales",
+      telephone: businessInfo.telephone,
+      email: businessInfo.email,
+      areaServed: "TT",
+      availableLanguage: ["en"],
+    },
+    hasMap: googleBusinessProfileUrl || undefined,
     sameAs: sameAs.length > 0 ? sameAs : undefined,
   };
 }
@@ -88,11 +148,15 @@ export function productJsonLd(product: {
   imageAlt?: string;
   brand?: string;
   sku?: string;
+  price?: string;
   categoryName: string;
   category: string;
   stockStatus?: string;
   slug?: string;
 }) {
+  const numericPrice = getNumericPrice(product.price);
+  const availability = getOfferAvailability(product.stockStatus);
+
   return {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -108,16 +172,20 @@ export function productJsonLd(product: {
       : undefined,
     sku: product.sku,
     url: product.slug ? absoluteUrl(`/products/${product.slug}`) : undefined,
-    offers: {
-      "@type": "Offer",
-      priceCurrency: "TTD",
-      availability: product.stockStatus?.toLowerCase().includes("limited")
-        ? "https://schema.org/LimitedAvailability"
+    offers:
+      numericPrice || availability
+        ? {
+            "@type": "Offer",
+            priceCurrency: numericPrice ? "TTD" : undefined,
+            price: numericPrice,
+            url: product.slug ? absoluteUrl(`/products/${product.slug}`) : undefined,
+            availability,
+            itemCondition: "https://schema.org/NewCondition",
+            seller: {
+              "@id": organizationId,
+            },
+          }
         : undefined,
-      seller: {
-        "@id": organizationId,
-      },
-    },
   };
 }
 
@@ -132,6 +200,8 @@ export function articleJsonLd(article: {
   return {
     "@context": "https://schema.org",
     "@type": "Article",
+    "@id": `${article.url}#article`,
+    inLanguage: "en-TT",
     headline: article.title,
     description: article.description,
     image: article.image ? absoluteUrl(article.image) : absoluteUrl(defaultArticleImage),
@@ -144,6 +214,9 @@ export function articleJsonLd(article: {
     },
     publisher: {
       "@id": organizationId,
+    },
+    isPartOf: {
+      "@id": websiteId,
     },
     mainEntityOfPage: article.url,
   };
@@ -165,3 +238,17 @@ export function faqJsonLd(faqs: { question: string; answer: string }[]) {
 }
 
 const defaultArticleImage = "/images/AMCOL Banner.webp";
+
+export function itemListJsonLd(items: { name: string; url: string }[], name: string) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name,
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      url: absoluteUrl(item.url),
+    })),
+  };
+}

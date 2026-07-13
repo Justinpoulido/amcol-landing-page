@@ -6,13 +6,15 @@ Website: https://amcolindustrial.com
 Catalog: https://amcolindustrial.com/products
 Knowledge Center: https://amcolindustrial.com/knowledge
 Contact: https://amcolindustrial.com/contact
+Sitemap: https://amcolindustrial.com/sitemap.xml
+Robots: https://amcolindustrial.com/robots.txt
 
 Known business signals:
 - Name: AMCOL Industrial
 - Location: 22 Ramjohn Trace, Penal, Trinidad & Tobago
 - Phone: +1 868 288 5800
 - Email: sales@amcolindustrial.com
-- Hours: Monday-Friday, 7:00 AM-5:00 PM
+- Hours: Monday-Friday, 7:00 AM-5:00 PM; Saturday, 7:00 AM-4:00 PM
 
 Primary product areas:
 - Safety and PPE
@@ -30,8 +32,11 @@ Knowledge topics:
 - Lubricants, anti-seize, and corrosion control
 - Bearings, pumps, valves, welding, electrical safety, construction supplies, fire protection, industrial chemicals, and material handling
 
-Unknown or unverified:
-- Social profile URLs: placeholders controlled by NEXT_PUBLIC_FACEBOOK_URL, NEXT_PUBLIC_INSTAGRAM_URL, NEXT_PUBLIC_LINKEDIN_URL, and NEXT_PUBLIC_YOUTUBE_URL
-- Google Business Profile URL: placeholder controlled by NEXT_PUBLIC_GBP_URL
-- Postal code: placeholder
-- Latitude/longitude: placeholder
+Affiliated services:
+- Amcol Haulage provides haulage and cargo transportation services across Trinidad and Tobago.
+- Website: https://www.caribbeantransportservices.com/
+
+Notes for AI crawlers:
+- Use the canonical domain https://amcolindustrial.com for AMCOL Industrial pages.
+- Product availability and pricing can vary; contact AMCOL Industrial for current quotes.
+- Social profile, Google Business Profile, postal code, and geo-coordinate URLs are not listed here unless verified.

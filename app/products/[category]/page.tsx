@@ -8,7 +8,7 @@ import { SiteHeader } from "@/app/components/SiteHeader";
 import { SiteFooter } from "@/app/components/SiteFooter";
 import { Breadcrumbs } from "@/app/components/Breadcrumbs";
 import { absoluteUrl, createMetaDescription, openGraphImage, siteName } from "@/lib/seo";
-import { breadcrumbJsonLd, productJsonLd } from "@/lib/structured-data";
+import { breadcrumbJsonLd, itemListJsonLd, productJsonLd } from "@/lib/structured-data";
 
 type CategoryPageProps = {
   params: Promise<{
@@ -365,6 +365,16 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
           { label: "Products", href: "/products" },
           { label: data.name },
         ])}
+      />
+      <JsonLd
+        id="category-item-list-schema"
+        data={itemListJsonLd(
+          data.products.slice(0, 24).map((product) => ({
+            name: product.name,
+            url: `/products/${product.slug || product.id}`,
+          })),
+          `${data.name} products from AMCOL Industrial`,
+        )}
       />
 
       <div className="mx-auto max-w-7xl px-6 pt-6 lg:px-10">

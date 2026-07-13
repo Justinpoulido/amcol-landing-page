@@ -4,7 +4,7 @@ import { absoluteUrl, openGraphImage, siteName } from "@/lib/seo";
 export const metadata: Metadata = {
   title: "Contact AMCOL Industrial",
   description:
-    "Request quotes, product availability, and procurement support from AMCOL Industrial in Penal, Trinidad & Tobago.",
+    "Contact AMCOL Industrial in Penal for industrial supplies, safety products, marine maintenance items, MRO support, and bulk procurement across Trinidad & Tobago.",
   alternates: {
     canonical: "/contact",
   },
@@ -14,19 +14,19 @@ export const metadata: Metadata = {
     locale: "en_TT",
     title: "Contact AMCOL Industrial",
     description:
-      "Reach AMCOL Industrial for industrial supplies, safety products, marine support, and maintenance procurement in Trinidad & Tobago.",
+      "Request industrial supply pricing, availability, sourcing help, and procurement support from AMCOL Industrial in Penal.",
     url: absoluteUrl("/contact"),
     images: openGraphImage(
-      "/images/Heritage Industry.webp",
-      "Industrial facility supplied by AMCOL Industrial",
+      "/images/AMCOL Banner.webp",
+      "Contact AMCOL Industrial for procurement support",
     ),
   },
   twitter: {
     card: "summary_large_image",
     title: "Contact AMCOL Industrial",
     description:
-      "Request quotes and industrial procurement support from AMCOL Industrial.",
-    images: ["/images/Heritage Industry.webp"],
+      "Request industrial supply pricing, availability, sourcing help, and procurement support from AMCOL Industrial.",
+    images: ["/images/AMCOL Banner.webp"],
   },
 };
 

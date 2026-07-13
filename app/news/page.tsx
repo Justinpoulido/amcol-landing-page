@@ -6,7 +6,7 @@ import { SiteHeader } from "@/app/components/SiteHeader";
 import { SiteFooter } from "@/app/components/SiteFooter";
 import { industrialArticles } from "@/lib/articles";
 
-const sectorFilters = ["All", "Energy", "Welding", "Marine", "Safety"] as const;
+const sectorFilters = ["All", "Events", "Energy", "Welding", "Marine", "Safety"] as const;
 
 export default function NewsAndArticlesPage() {
   const [query, setQuery] = useState("");
@@ -145,12 +145,24 @@ export default function NewsAndArticlesPage() {
                       </span>
                     ))}
                   </div>
-                  <a
-                    href={`/news/${featured.slug}`}
-                    className="mt-8 inline-block rounded-md bg-zinc-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-zinc-700"
-                  >
-                    Read Article
-                  </a>
+                  <div className="mt-8 flex flex-wrap gap-3">
+                    <a
+                      href={`/news/${featured.slug}`}
+                      className="inline-block rounded-md bg-zinc-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-zinc-700"
+                    >
+                      Read Article
+                    </a>
+                    {featured.eventUrl ? (
+                      <a
+                        href={featured.eventUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block rounded-md border border-zinc-300 bg-white px-5 py-2.5 text-sm font-semibold text-zinc-900 transition hover:border-red-300 hover:text-red-600"
+                      >
+                        {featured.eventLabel ?? "Visit event"}
+                      </a>
+                    ) : null}
+                  </div>
                 </div>
               </div>
             </div>
@@ -194,6 +206,16 @@ export default function NewsAndArticlesPage() {
                   >
                     View details
                   </a>
+                  {article.eventUrl ? (
+                    <a
+                      href={article.eventUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-5 mt-5 inline-flex items-center text-sm font-semibold text-red-600 transition hover:text-zinc-900"
+                    >
+                      {article.eventLabel ?? "Visit event"}
+                    </a>
+                  ) : null}
                 </div>
               </article>
             ))}

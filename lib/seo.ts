@@ -4,6 +4,8 @@ export const siteName = "AMCOL Industrial";
 export const defaultOpenGraphImage = {
   url: "/images/AMCOL Banner.webp",
   alt: "AMCOL Industrial supply and procurement support",
+  width: 1200,
+  height: 630,
 };
 
 export function getSiteUrl() {
@@ -37,6 +39,8 @@ export function openGraphImage(
     {
       url,
       alt,
+      width: defaultOpenGraphImage.width,
+      height: defaultOpenGraphImage.height,
     },
   ];
 }

@@ -13,7 +13,8 @@ export const businessInfo = {
     addressCountry: "TT",
   },
   areaServed: ["Trinidad and Tobago", "Penal", "San Fernando", "Port of Spain"],
-  openingHours: "Mo-Fr 07:00-17:00",
+  openingHours: ["Mo-Fr 07:00-17:00", "Sa 07:00-16:00"],
+  priceRange: "$$",
 };
 
 export const socialLinks = [

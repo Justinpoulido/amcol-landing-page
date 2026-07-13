@@ -8,7 +8,7 @@ import { SiteFooter } from "@/app/components/SiteFooter";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { industrialArticles } from "@/lib/articles";
 import { absoluteUrl, createMetaDescription, openGraphImage, siteName } from "@/lib/seo";
-import { breadcrumbJsonLd } from "@/lib/structured-data";
+import { articleJsonLd, breadcrumbJsonLd } from "@/lib/structured-data";
 
 type NewsArticlePageProps = {
   params: Promise<{
@@ -84,6 +84,17 @@ export default async function NewsArticlePage({ params }: NewsArticlePageProps) 
     <div className="min-h-screen bg-white font-sans text-zinc-900">
       <SiteHeader />
       <JsonLd id="news-breadcrumb-schema" data={breadcrumbJsonLd(breadcrumbItems)} />
+      <JsonLd
+        id="news-article-schema"
+        data={articleJsonLd({
+          title: article.title,
+          description: article.summary,
+          url: absoluteUrl(`/news/${article.slug}`),
+          image: article.image,
+          datePublished: article.completedOn,
+          dateModified: article.completedOn,
+        })}
+      />
 
       <main>
         <section className="border-t border-slate-200 bg-slate-950 px-6 py-16 text-white sm:py-24 lg:px-8">
@@ -118,7 +129,7 @@ export default async function NewsArticlePage({ params }: NewsArticlePageProps) 
                 Project Summary
               </p>
               <p className="mt-4 text-base leading-8 text-slate-700">
-                AMCOL Industrial supported this work with procurement coordination, relevant product sourcing, and supply guidance for operational teams in Trinidad & Tobago.
+                AMCOL Industrial supported this work with procurement coordination, relevant product sourcing, and supply guidance for operational teams in Trinidad & Tobago and the wider region.
               </p>
               <dl className="mt-8 grid gap-4 text-sm text-slate-600">
                 <div>
@@ -146,6 +157,19 @@ export default async function NewsArticlePage({ params }: NewsArticlePageProps) 
               >
                 Request supply support
               </Link>
+              {article.eventUrl ? (
+                <a
+                  href={article.eventUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 inline-flex rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:border-cyan-300 hover:text-cyan-800 sm:ml-3 sm:mt-8"
+                >
+                  {article.eventLabel ?? "Visit event"}
+                  <span aria-hidden="true" className="ml-2">
+                    →
+                  </span>
+                </a>
+              ) : null}
             </article>
           </div>
         </section>

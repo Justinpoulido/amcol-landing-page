@@ -233,6 +233,7 @@ export default async function KnowledgeArticlePage({ params }: KnowledgeArticleP
           title: article.title,
           description: article.excerpt,
           url: absoluteUrl(articlePath),
+          image: "/images/AMCOL Banner.webp",
           datePublished: article.lastUpdated,
           dateModified: article.lastUpdated,
         })}

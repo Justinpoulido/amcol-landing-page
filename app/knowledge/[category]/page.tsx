@@ -12,7 +12,7 @@ import {
   knowledgeCategories,
 } from "@/lib/knowledge-base";
 import { absoluteUrl, openGraphImage, siteName } from "@/lib/seo";
-import { breadcrumbJsonLd } from "@/lib/structured-data";
+import { breadcrumbJsonLd, itemListJsonLd } from "@/lib/structured-data";
 
 type KnowledgeCategoryPageProps = {
   params: Promise<{
@@ -158,6 +158,16 @@ export default async function KnowledgeCategoryPage({ params }: KnowledgeCategor
           { label: "Knowledge", href: "/knowledge" },
           { label: category.name, href: `/knowledge/${category.slug}` },
         ])}
+      />
+      <JsonLd
+        id="knowledge-category-item-list-schema"
+        data={itemListJsonLd(
+          articles.map((article) => ({
+            name: article.title,
+            url: getKnowledgeArticlePath(article),
+          })),
+          `${category.name} guides from AMCOL Industrial`,
+        )}
       />
     </div>
   );

@@ -11,7 +11,7 @@ import {
   searchKnowledgeArticles,
 } from "@/lib/knowledge-base";
 import { absoluteUrl, openGraphImage, siteName } from "@/lib/seo";
-import { breadcrumbJsonLd } from "@/lib/structured-data";
+import { breadcrumbJsonLd, itemListJsonLd } from "@/lib/structured-data";
 
 export const metadata: Metadata = {
   title: "Industrial Knowledge Center",
@@ -192,6 +192,18 @@ export default async function KnowledgePage({ searchParams }: KnowledgePageProps
           { label: "Home", href: "/" },
           { label: "Knowledge", href: "/knowledge" },
         ])}
+      />
+      <JsonLd
+        id="knowledge-item-list-schema"
+        data={itemListJsonLd(
+          visibleArticles.slice(0, 24).map((article) => ({
+            name: article.title,
+            url: getKnowledgeArticlePath(article),
+          })),
+          searchQuery
+            ? `AMCOL Industrial knowledge search results for ${searchQuery}`
+            : "AMCOL Industrial Knowledge Center guides",
+        )}
       />
     </div>
   );

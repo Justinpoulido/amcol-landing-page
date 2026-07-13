@@ -2,10 +2,16 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getAllProducts, getFeaturedCategories } from "@/lib/catalog-store";
+import {
+  landingCategoryRows,
+  type ProductCategoryPageData,
+} from "@/lib/product-categories";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { SiteFooter } from "@/app/components/SiteFooter";
 import { Breadcrumbs } from "@/app/components/Breadcrumbs";
+import { JsonLd } from "@/app/components/JsonLd";
 import { absoluteUrl, openGraphImage, siteName } from "@/lib/seo";
+import { itemListJsonLd } from "@/lib/structured-data";
 
 export const metadata: Metadata = {
   title: "Product Catalog",
@@ -80,6 +86,16 @@ function getUniqueValues(values: Array<string | undefined>) {
   ).sort((left, right) => left.localeCompare(right));
 }
 
+function chunkCategories(categories: ProductCategoryPageData[], size: number) {
+  const rows: ProductCategoryPageData[][] = [];
+
+  for (let index = 0; index < categories.length; index += size) {
+    rows.push(categories.slice(index, index + size));
+  }
+
+  return rows;
+}
+
 export default async function ProductsPage({ searchParams }: ProductsPageProps) {
   const query = await searchParams;
   const searchQuery = getSearchValue(query?.search)?.trim() ?? "";
@@ -91,6 +107,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     getAllProducts(),
     Promise.resolve(getFeaturedCategories()),
   ]);
+  const industrialCategories = landingCategoryRows.flat();
   const categoryOptions = getUniqueValues(
     products.map((product) => product.categoryName || product.category),
   );
@@ -186,6 +203,68 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
             >
               PPE Buying Guide
             </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-b border-zinc-200 bg-[linear-gradient(180deg,#f8fbff_0%,#eef5fb_48%,#ffffff_100%)] py-16 sm:py-20">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="overflow-hidden rounded-[1.75rem] border border-slate-200/80 bg-white/90 px-5 py-9 shadow-[0_24px_70px_-44px_rgba(15,23,42,0.38)] sm:px-8 sm:py-12 lg:px-10">
+            <div className="grid gap-6 lg:grid-cols-[0.78fr_1.22fr] lg:items-end">
+              <div>
+                <p className="inline-flex rounded-full border border-cyan-200 bg-cyan-50 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-800">
+                  Industrial Categories
+                </p>
+                <h2 className="mt-5 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
+                  Start with the product line your worksite needs
+                </h2>
+              </div>
+              <p className="max-w-2xl text-base leading-7 text-slate-600 sm:text-lg lg:ml-auto">
+                Browse safety supplies, abrasives, lubricants, sealants, fire protection, HVAC chemicals, ladders, and maintenance products before narrowing the catalog below.
+              </p>
+            </div>
+
+            <div className="mt-12 space-y-6 sm:space-y-8">
+              {chunkCategories(industrialCategories, 4).map((row, rowIndex) => (
+                <div
+                  key={rowIndex}
+                  className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4"
+                >
+                  {row.map((tile) => (
+                    <Link
+                      key={tile.name}
+                      href={tile.href}
+                      className="group relative flex min-h-[288px] flex-col overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white p-5 text-left shadow-[0_18px_40px_-30px_rgba(15,23,42,0.55)] transition-all duration-300 hover:-translate-y-1 hover:border-cyan-300 hover:shadow-[0_24px_50px_-26px_rgba(8,47,73,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2"
+                    >
+                      <div className="absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.20),transparent_68%)] opacity-80 transition-opacity duration-300 group-hover:opacity-100" />
+                      <div className="relative flex h-44 w-full items-center justify-center rounded-[1.25rem] border border-slate-100 bg-[linear-gradient(180deg,#f8fbfd_0%,#eef6fb_100%)] px-4">
+                        <Image
+                          src={tile.image}
+                          alt={tile.name}
+                          width={220}
+                          height={180}
+                          className="h-auto max-h-36 w-auto max-w-[180px] object-contain transition-transform duration-300 group-hover:scale-[1.08]"
+                        />
+                      </div>
+                      <div className="relative flex flex-1 flex-col pt-5">
+                        <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-cyan-700">
+                          Product Line
+                        </span>
+                        <span className="mt-3 text-base font-semibold leading-6 text-slate-900 transition-colors duration-300 group-hover:text-[#0f1b2d]">
+                          {tile.name}
+                        </span>
+                        <span className="mt-auto inline-flex items-center gap-3 pt-6 text-sm font-medium text-slate-600 transition-colors duration-300 group-hover:text-slate-900">
+                          View category
+                          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-base text-slate-700 transition-all duration-300 group-hover:border-brand-copper/60 group-hover:bg-amber-50 group-hover:text-brand-copper">
+                            →
+                          </span>
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -436,6 +515,18 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       </section>
 
       </main>
+      <JsonLd
+        id="products-item-list-schema"
+        data={itemListJsonLd(
+          visibleProducts.slice(0, 24).map((product) => ({
+            name: product.name,
+            url: `/products/${product.slug}`,
+          })),
+          searchQuery
+            ? `AMCOL Industrial product search results for ${searchQuery}`
+            : "AMCOL Industrial product catalog",
+        )}
+      />
       <SiteFooter />
     </div>
   );
