@@ -145,7 +145,7 @@ export default async function KnowledgePage({ searchParams }: KnowledgePageProps
                 href="/contact"
                 className="inline-flex w-fit items-center justify-center rounded-sm bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-700"
               >
-                Request Quote
+                Request Quote/Service
               </Link>
             </div>
 

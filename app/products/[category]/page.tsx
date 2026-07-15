@@ -292,7 +292,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
                     href="/contact"
                     className="mt-5 inline-flex rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-slate-800"
                   >
-                    Request Quote
+                    Request Quote/Service
                   </Link>
                 </div>
               </div>

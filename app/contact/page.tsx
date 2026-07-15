@@ -12,6 +12,7 @@ export default function ContactPage() {
     company: "",
     phone: "",
     projectType: "",
+    pumpBrand: "",
     urgency: "",
     message: "",
   });
@@ -25,7 +26,13 @@ export default function ContactPage() {
     >
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+      ...(name === "projectType" && value !== "Pump Service Request"
+        ? { pumpBrand: "" }
+        : {}),
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -52,6 +59,7 @@ export default function ContactPage() {
         company: "",
         phone: "",
         projectType: "",
+        pumpBrand: "",
         urgency: "",
         message: "",
       });
@@ -191,7 +199,7 @@ export default function ContactPage() {
                     htmlFor="projectType"
                     className="block text-sm font-semibold leading-6 text-zinc-900"
                   >
-                    Project Type
+                    Projects and Services
                   </label>
                   <select
                     id="projectType"
@@ -204,6 +212,7 @@ export default function ContactPage() {
                     <option value="Structural Supply">Structural Supply</option>
                     <option value="Fleet Maintenance">Fleet Maintenance</option>
                     <option value="Bulk Procurement">Bulk Procurement</option>
+                    <option value="Pump Service Request">Pump Service Request</option>
                     <option value="Safety Equipment">Safety Equipment</option>
                     <option value="Other">Other</option>
                   </select>
@@ -230,6 +239,29 @@ export default function ContactPage() {
                   </select>
                 </div>
               </div>
+
+              {formData.projectType === "Pump Service Request" ? (
+                <div>
+                  <label
+                    htmlFor="pumpBrand"
+                    className="block text-sm font-semibold leading-6 text-zinc-900"
+                  >
+                    Pump Brand for Service
+                  </label>
+                  <select
+                    id="pumpBrand"
+                    name="pumpBrand"
+                    required
+                    value={formData.pumpBrand}
+                    onChange={handleChange}
+                    className="mt-2 block w-full rounded-md border-0 bg-zinc-50 px-3 py-2.5 text-zinc-900 shadow-sm ring-1 ring-inset ring-zinc-300 focus:ring-2 focus:ring-inset focus:ring-orange-500 sm:text-sm sm:leading-6"
+                  >
+                    <option value="">Select Pump Brand...</option>
+                    <option value="Dosivac">Dosivac</option>
+                    <option value="Nomad">Nomad</option>
+                  </select>
+                </div>
+              ) : null}
 
               <div>
                 <label

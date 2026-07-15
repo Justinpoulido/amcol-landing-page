@@ -180,7 +180,7 @@ export function SiteHeader({ activeLink }: SiteHeaderProps) {
                     href="/contact"
                     className="hero-quote-button inline-flex min-h-12 flex-1 items-center justify-center border border-[#39d9cd] px-5 text-[11px] font-bold uppercase tracking-[0.28em] text-[#39d9cd] transition hover:bg-[#39d9cd] hover:text-[#101722] focus-visible:bg-[#39d9cd] focus-visible:text-[#101722] sm:px-6"
                   >
-                    Request Quote
+                    Request Quote/Service
                   </Link>
                   <Link
                     href="/admin"

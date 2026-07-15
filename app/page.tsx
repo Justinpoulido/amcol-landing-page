@@ -390,25 +390,25 @@ export default function Home() {
 
         {/* Hero Content Overlay */}
         <div className="relative z-10 mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 text-center">
-          <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
+          <div className="hero-action-row flex flex-col gap-4 sm:flex-row sm:justify-center">
             <Link
               href="/products"
-              className="btn-copper inline-flex items-center justify-center rounded-lg px-8 py-3 text-base shadow-lg focus:outline-none focus:ring-2 focus:ring-brand-copper focus:ring-offset-2 focus:ring-offset-black transition-all"
+              className="industrial-cta industrial-cta-primary inline-flex items-center justify-center border border-red-300/70 bg-[linear-gradient(180deg,rgba(226,31,61,0.98)_0%,rgba(153,23,38,0.98)_100%)] px-8 py-3 text-base font-extrabold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.24),inset_0_-18px_28px_rgba(86,12,22,0.2),0_18px_34px_-24px_rgba(0,0,0,0.78)] transition hover:-translate-y-0.5 hover:border-red-200 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-18px_28px_rgba(86,12,22,0.22),0_22px_42px_-24px_rgba(226,31,61,0.96)] focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2 focus:ring-offset-black"
             >
               View Product Lines
-              <svg className="ml-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="ml-2 h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
             </Link>
             <Link
               href="/contact"
-              className="inline-flex items-center justify-center rounded-lg border-2 border-white px-8 py-3 text-base font-semibold text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-brand-copper focus:ring-offset-2 focus:ring-offset-black transition-all"
+              className="industrial-cta industrial-cta-steel inline-flex items-center justify-center border border-white/75 bg-[linear-gradient(180deg,rgba(255,255,255,0.20)_0%,rgba(15,23,42,0.48)_100%)] px-8 py-3 text-base font-extrabold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.24),inset_0_-18px_28px_rgba(3,7,18,0.18),0_18px_34px_-24px_rgba(0,0,0,0.78)] backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-white hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-white/80 focus:ring-offset-2 focus:ring-offset-black"
             >
-              Request Quote
+              Request Quote/Service
             </Link>
             <Link
               href="/knowledge"
-              className="inline-flex items-center justify-center rounded-lg border border-cyan-300/60 px-8 py-3 text-base font-semibold text-cyan-100 transition-all hover:bg-cyan-300/10 focus:outline-none focus:ring-2 focus:ring-cyan-300 focus:ring-offset-2 focus:ring-offset-black"
+              className="industrial-cta industrial-cta-blue inline-flex items-center justify-center border border-cyan-300/75 bg-[linear-gradient(180deg,rgba(57,217,205,0.18)_0%,rgba(8,47,73,0.46)_100%)] px-8 py-3 text-base font-extrabold text-cyan-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.22),inset_0_-18px_28px_rgba(3,7,18,0.16),0_18px_34px_-24px_rgba(0,0,0,0.78)] backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-cyan-100 hover:bg-cyan-300/15 focus:outline-none focus:ring-2 focus:ring-cyan-300 focus:ring-offset-2 focus:ring-offset-black"
             >
               Read Buying Guides
             </Link>

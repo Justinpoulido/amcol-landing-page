@@ -10,6 +10,7 @@ type ContactRequestPayload = {
   company?: unknown;
   phone?: unknown;
   projectType?: unknown;
+  pumpBrand?: unknown;
   urgency?: unknown;
   message?: unknown;
 };
@@ -40,6 +41,7 @@ export async function POST(request: Request) {
     const company = cleanText(body.company, 180);
     const phone = cleanText(body.phone, 80);
     const projectType = cleanText(body.projectType, 120);
+    const pumpBrand = cleanText(body.pumpBrand, 80);
     const urgency = cleanText(body.urgency, 80);
     const message = cleanText(body.message, 4000);
 
@@ -57,6 +59,21 @@ export async function POST(request: Request) {
       );
     }
 
+    if (
+      projectType === "Pump Service Request" &&
+      !["Dosivac", "Nomad"].includes(pumpBrand)
+    ) {
+      return NextResponse.json(
+        { error: "Please select the pump brand for service." },
+        { status: 400 },
+      );
+    }
+
+    const requestMessage =
+      projectType === "Pump Service Request" && pumpBrand
+        ? [`Pump Brand: ${pumpBrand}`, message].filter(Boolean).join("\n\n")
+        : message;
+
     const supabase = createSupabaseAdminClient();
     const { error } = await supabase.from("contact_requests").insert({
       full_name: fullName,
@@ -65,7 +82,7 @@ export async function POST(request: Request) {
       phone: phone || null,
       project_type: projectType || null,
       urgency: urgency || null,
-      message: message || null,
+      message: requestMessage || null,
       source_page: "/contact",
     });
 

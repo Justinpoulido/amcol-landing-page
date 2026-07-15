@@ -216,7 +216,7 @@ export default async function KnowledgeArticlePage({ params }: KnowledgeArticleP
                     href="/contact"
                     className="mt-5 inline-flex rounded-sm bg-[#39d9cd] px-5 py-3 text-sm font-bold uppercase tracking-[0.16em] text-[#101722] transition hover:bg-white"
                   >
-                    Request Quote
+                    Request Quote/Service
                   </Link>
                 </div>
               </aside>

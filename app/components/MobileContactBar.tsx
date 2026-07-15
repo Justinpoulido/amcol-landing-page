@@ -34,7 +34,7 @@ export function MobileContactBar() {
           aria-label="Request a quote from AMCOL Industrial"
           className="inline-flex min-h-11 items-center justify-center rounded-md bg-slate-950 px-3 text-sm font-semibold text-white transition hover:bg-slate-800 focus-visible:bg-slate-800"
         >
-          Request Quote
+          Request Quote/Service
         </Link>
       </div>
     </nav>

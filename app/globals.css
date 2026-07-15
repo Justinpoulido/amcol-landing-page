@@ -227,6 +227,125 @@ p {
   transform: translateY(-2px);
 }
 
+.hero-action-row {
+  align-items: stretch;
+}
+
+.industrial-cta {
+  position: relative;
+  isolation: isolate;
+  min-height: 5.15rem;
+  min-width: min(100%, 15.5rem);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  border-radius: 8px;
+  font-weight: 800;
+  line-height: 1.35;
+  letter-spacing: 0;
+  text-align: center;
+  text-shadow: 0 1px 1px rgba(3, 7, 18, 0.32);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -18px 28px rgba(3, 7, 18, 0.16),
+    0 18px 34px -24px rgba(0, 0, 0, 0.78);
+  transition:
+    border-color 0.22s ease,
+    box-shadow 0.22s ease,
+    color 0.22s ease,
+    transform 0.22s ease;
+}
+
+.industrial-cta::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(115deg, rgba(255, 255, 255, 0.2), transparent 24%, rgba(255, 255, 255, 0.08) 44%, transparent 62%),
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 7px);
+  mix-blend-mode: screen;
+  opacity: 0.7;
+}
+
+.industrial-cta::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  z-index: -1;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  pointer-events: none;
+}
+
+.industrial-cta:hover,
+.industrial-cta:focus-visible {
+  transform: translateY(-2px);
+}
+
+.industrial-cta:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.7);
+  outline-offset: 3px;
+}
+
+.industrial-cta-primary {
+  border-color: rgba(255, 163, 163, 0.68);
+  background:
+    linear-gradient(180deg, rgba(226, 31, 61, 0.98) 0%, rgba(153, 23, 38, 0.98) 100%),
+    #c81f34;
+  color: #fff;
+}
+
+.industrial-cta-primary:hover,
+.industrial-cta-primary:focus-visible {
+  border-color: rgba(255, 202, 202, 0.92);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -18px 28px rgba(86, 12, 22, 0.22),
+    0 22px 42px -24px rgba(226, 31, 61, 0.96);
+}
+
+.industrial-cta-steel {
+  border-color: rgba(255, 255, 255, 0.72);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(15, 23, 42, 0.36) 100%),
+    rgba(15, 23, 42, 0.2);
+  color: #fff;
+  backdrop-filter: blur(4px);
+}
+
+.industrial-cta-steel:hover,
+.industrial-cta-steel:focus-visible {
+  border-color: rgba(255, 255, 255, 0.95);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(15, 23, 42, 0.3) 100%),
+    rgba(255, 255, 255, 0.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -18px 28px rgba(3, 7, 18, 0.18),
+    0 22px 42px -24px rgba(255, 255, 255, 0.5);
+}
+
+.industrial-cta-blue {
+  border-color: rgba(57, 217, 205, 0.72);
+  background:
+    linear-gradient(180deg, rgba(57, 217, 205, 0.13) 0%, rgba(8, 47, 73, 0.36) 100%),
+    rgba(8, 47, 73, 0.18);
+  color: #dffcff;
+  backdrop-filter: blur(4px);
+}
+
+.industrial-cta-blue:hover,
+.industrial-cta-blue:focus-visible {
+  border-color: rgba(125, 245, 239, 0.95);
+  background:
+    linear-gradient(180deg, rgba(57, 217, 205, 0.18) 0%, rgba(8, 47, 73, 0.3) 100%),
+    rgba(57, 217, 205, 0.1);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    inset 0 -18px 28px rgba(3, 7, 18, 0.16),
+    0 22px 42px -24px rgba(57, 217, 205, 0.86);
+}
+
 /* Button Styles */
 .btn-primary {
   background-color: var(--color-primary);
