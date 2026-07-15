@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { industrialArticles } from "@/lib/articles";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { SiteFooter } from "@/app/components/SiteFooter";
@@ -289,6 +289,7 @@ function IndustryCardsSection() {
 export default function Home() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [activeBrandIndex, setActiveBrandIndex] = useState(0);
+  const industriesMapRef = useRef<HTMLDivElement>(null);
   const activeBrand = featuredIndustrialBrands[activeBrandIndex];
 
   useEffect(() => {
@@ -306,6 +307,58 @@ export default function Home() {
     }, 6500);
 
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const mapLayer = industriesMapRef.current;
+    const section = mapLayer?.parentElement;
+
+    if (!mapLayer || !section) {
+      return;
+    }
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let animationFrame = 0;
+
+    const updateMapPosition = () => {
+      animationFrame = 0;
+
+      if (reducedMotion.matches) {
+        mapLayer.style.backgroundPosition = "50% 50%";
+        return;
+      }
+
+      const rect = section.getBoundingClientRect();
+      const viewportCenter = window.innerHeight / 2;
+      const sectionCenter = rect.top + rect.height / 2;
+      const scrollProgress = (viewportCenter - sectionCenter) / (window.innerHeight + rect.height);
+      const clampedProgress = Math.max(-1, Math.min(1, scrollProgress));
+      const verticalPan = clampedProgress * 46;
+      const horizontalPan = clampedProgress * 18;
+
+      mapLayer.style.backgroundPosition = `calc(50% + ${horizontalPan}px) calc(50% + ${verticalPan}px)`;
+    };
+
+    const requestMapPositionUpdate = () => {
+      if (animationFrame) {
+        return;
+      }
+
+      animationFrame = window.requestAnimationFrame(updateMapPosition);
+    };
+
+    updateMapPosition();
+    window.addEventListener("scroll", requestMapPositionUpdate, { passive: true });
+    window.addEventListener("resize", requestMapPositionUpdate);
+
+    return () => {
+      if (animationFrame) {
+        window.cancelAnimationFrame(animationFrame);
+      }
+
+      window.removeEventListener("scroll", requestMapPositionUpdate);
+      window.removeEventListener("resize", requestMapPositionUpdate);
+    };
   }, []);
 
   const showPreviousBrand = () => {
@@ -450,7 +503,23 @@ export default function Home() {
 
       <NewsEventsSection />
 
-      <section id="industries" className="border-t border-zinc-200 bg-[#f5f8fb] py-20 sm:py-28">
+      <section
+        id="industries"
+        className="relative isolate overflow-hidden border-y border-cyan-900/15 bg-[#e8f6f9] py-20 sm:py-28"
+      >
+        <div
+          ref={industriesMapRef}
+          aria-hidden="true"
+          className="absolute inset-0 -z-10 bg-[url('/images/Background_map_AMCOL.webp')] bg-[length:124%_auto] bg-center bg-no-repeat opacity-100 mix-blend-multiply will-change-[background-position]"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_67%_45%,rgba(0,137,168,0.18),transparent_42%),linear-gradient(90deg,rgba(255,255,255,0.92)_0%,rgba(255,255,255,0.64)_35%,rgba(232,246,249,0.12)_100%)]"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute left-0 top-0 -z-10 h-full w-[48%] bg-white/45 shadow-[42px_0_70px_rgba(255,255,255,0.5)]"
+        />
         <div className="mx-auto max-w-[1440px] px-6 sm:px-8 lg:px-10">
           <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-end">
             <div>
