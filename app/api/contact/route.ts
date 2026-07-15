@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { sendContactNotification } from "@/lib/contact-notifications";
 import { hasSupabaseAdminConfig } from "@/lib/supabase/config";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
@@ -74,8 +75,11 @@ export async function POST(request: Request) {
         ? [`Pump Brand: ${pumpBrand}`, message].filter(Boolean).join("\n\n")
         : message;
 
+    const sourcePage = "/contact";
     const supabase = createSupabaseAdminClient();
-    const { error } = await supabase.from("contact_requests").insert({
+    const { data: insertedRequest, error } = await supabase
+      .from("contact_requests")
+      .insert({
       full_name: fullName,
       email,
       company: company || null,
@@ -83,11 +87,30 @@ export async function POST(request: Request) {
       project_type: projectType || null,
       urgency: urgency || null,
       message: requestMessage || null,
-      source_page: "/contact",
-    });
+      source_page: sourcePage,
+    })
+      .select("id, created_at")
+      .single();
 
     if (error) {
       throw new Error(error.message);
+    }
+
+    try {
+      await sendContactNotification({
+        id: insertedRequest?.id,
+        fullName,
+        email,
+        company,
+        phone,
+        projectType,
+        urgency,
+        message: requestMessage,
+        sourcePage,
+        createdAt: insertedRequest?.created_at,
+      });
+    } catch (notificationError) {
+      console.error("Contact notification email failed", notificationError);
     }
 
     return NextResponse.json({ ok: true }, { status: 201 });

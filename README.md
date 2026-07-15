@@ -46,6 +46,23 @@ vercel env pull .env.local --yes
 If `ADMIN_USERNAME` or `ADMIN_PASSWORD` is missing, the admin login page disables
 sign-in instead of exposing admin access.
 
+## Contact Request Email Notifications
+
+Contact form submissions are saved to Supabase first, then the server attempts to
+email AMCOL with the request details through Resend.
+
+Set these server-only environment variables locally and in Vercel:
+
+```bash
+RESEND_API_KEY=re_your_resend_api_key
+CONTACT_NOTIFICATION_TO=sales@amcolindustrial.com
+CONTACT_NOTIFICATION_FROM="AMCOL Website <notifications@amcolindustrial.com>"
+```
+
+`CONTACT_NOTIFICATION_TO` can be a comma-separated list for multiple inboxes.
+The `CONTACT_NOTIFICATION_FROM` domain must be verified in Resend. Do not prefix
+these values with `NEXT_PUBLIC_`.
+
 ## SEO, Analytics, and Authority Setup
 
 The site includes metadata, sitemap, robots.txt, JSON-LD structured data, `llms.txt`, and optional tracking/social placeholders.
