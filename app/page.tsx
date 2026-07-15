@@ -458,10 +458,10 @@ export default function Home() {
                 Industries We Serve
               </p>
               <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl lg:text-[2.7rem]">
-                Industrial Supply Partner in Penal, Trinidad & Tobago
+                Industrial Supply Partner Across the Caribbean
               </h1>
               <p className="mt-5 max-w-xl text-base leading-7 text-slate-600 sm:text-lg">
-                AMCOL Industrial supplies safety, MRO, marine, construction, and facility maintenance products from Penal to worksites across Trinidad & Tobago.
+                AMCOL Industrial supplies safety, MRO, marine, construction, and facility maintenance products for worksites across Trinidad & Tobago and the wider Caribbean.
               </p>
             </div>
             <div className="rounded-[1.25rem] border border-slate-200 bg-white p-5 shadow-[0_18px_44px_-34px_rgba(15,23,42,0.55)] sm:p-6">
