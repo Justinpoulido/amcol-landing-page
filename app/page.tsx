@@ -79,43 +79,50 @@ const knowledgeGuideShortcuts = [
 const featuredIndustrialBrands = [
   {
     name: "RIDGID",
-    image: "/images/Ridgid_pipe_dies.webp",
+    image: "/images/Ridgid_pipe_dies_no_bg.png",
+    logo: "/images/brands/ridgid.png",
     href: "/products?search=pipe%20dies",
     description: "Pipe dies and threading accessories for mechanical, fabrication, and maintenance teams.",
   },
   {
     name: "Geko",
     image: "/images/Geko_repair_clamp.webp",
+    logo: "/images/brands/geko.png",
     href: "/products?search=pipe%20repair",
     description: "Pipe repair clamps for fast, secure repairs across industrial water and utility systems.",
   },
   {
     name: "BAND-IT",
     image: "/images/Band-IT_Band.webp",
+    logo: "/images/brands/band-it.png",
     href: "/products?search=banding",
     description: "Stainless steel banding and fastening products for pipework, signage, and industrial installs.",
   },
   {
     name: "DuPont Tyvek",
     image: "/images/Tyvek_Dupont_Disposable_Coveralls.webp",
+    logo: "/images/brands/tyvek.png",
     href: "/products/safety",
     description: "Disposable protective coveralls for safety, maintenance, and controlled work environments.",
   },
   {
     name: "Loctite",
-    image: "/images/Loctite_threading_compound_anti-sieze.webp",
+    image: "/images/Loctite_Anti-Seize_no_bg.png",
+    logo: "/images/brands/loctite.png",
     href: "/products/lubricants",
     description: "Heavy-duty anti-seize and thread compounds for metal parts exposed to demanding conditions.",
   },
   {
     name: "Salisbury ElectriFlex",
     image: "/images/Salisbury ElectriFlex Insulating Rubber Gloves.webp",
+    logo: "/images/brands/salisbury.png",
     href: "/products/safety",
     description: "Insulating rubber gloves for electrical safety, maintenance crews, and utility work.",
   },
   {
     name: "RIDGID Pipe Wrench",
     image: "/images/Ridgid_Straight_Pipe_Wrenches.webp",
+    logo: "/images/brands/ridgid.png",
     href: "/products?search=pipe%20wrench",
     description: "Straight pipe wrenches for mechanical crews, pipefitters, maintenance, and repair work.",
   },
@@ -288,7 +295,7 @@ function IndustryCardsSection() {
 
 export default function Home() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [activeBrandIndex, setActiveBrandIndex] = useState(0);
+  const [activeBrandIndex, setActiveBrandIndex] = useState(6);
   const industriesMapRef = useRef<HTMLDivElement>(null);
   const activeBrand = featuredIndustrialBrands[activeBrandIndex];
 
@@ -296,16 +303,6 @@ export default function Home() {
     const interval = setInterval(() => {
       setCurrentImageIndex((prevIndex) => (prevIndex + 1) % heroImages.length);
     }, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveBrandIndex(
-        (prevIndex) => (prevIndex + 1) % featuredIndustrialBrands.length,
-      );
-    }, 6500);
-
     return () => clearInterval(interval);
   }, []);
 
@@ -639,22 +636,27 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="features" className="border-t border-zinc-200 bg-white py-20 sm:py-28">
+      <IndustryCardsSection />
+
+      <section id="features" className="border-t border-slate-800 bg-[#07111a] py-20 sm:py-28">
         <div className="mx-auto max-w-[1440px] px-6 sm:px-8 lg:px-10">
           <div className="flex flex-col gap-4 text-center sm:flex-row sm:items-end sm:justify-between sm:text-left">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-700">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-sky-400">
                 Featured Industrial Brands
               </p>
-              <h2 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
-                Trusted names for everyday industrial supply
+              <h2 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+                Trusted by industry. Delivered by Amcol.
               </h2>
+              <p className="mt-3 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">
+                We partner with world-class brands to bring reliable solutions to every job, every day.
+              </p>
             </div>
             <div className="flex justify-center gap-2 sm:justify-end">
               <button
                 type="button"
                 onClick={showPreviousBrand}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-lg text-slate-700 shadow-[0_14px_30px_-24px_rgba(15,23,42,0.55)] transition hover:border-cyan-300 hover:bg-cyan-50 hover:text-cyan-900"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-700 bg-slate-950 text-lg text-sky-100 transition hover:border-sky-400 hover:bg-slate-900"
                 aria-label="Show previous featured brand"
               >
                 ←
@@ -662,7 +664,7 @@ export default function Home() {
               <button
                 type="button"
                 onClick={showNextBrand}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-lg text-slate-700 shadow-[0_14px_30px_-24px_rgba(15,23,42,0.55)] transition hover:border-cyan-300 hover:bg-cyan-50 hover:text-cyan-900"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-700 bg-slate-950 text-lg text-sky-100 transition hover:border-sky-400 hover:bg-slate-900"
                 aria-label="Show next featured brand"
               >
                 →
@@ -670,51 +672,61 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="mt-12 overflow-hidden rounded-[1.75rem] border border-slate-200 bg-[linear-gradient(135deg,#f8fbff_0%,#eef6fb_48%,#ffffff_100%)] shadow-[0_24px_70px_-46px_rgba(15,23,42,0.45)]">
-            <div className="grid gap-0 lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="mt-12 overflow-hidden rounded-[1.25rem] border border-slate-700 bg-[#101b25] shadow-[0_28px_80px_-48px_rgba(0,0,0,0.95)]">
+            <div className="grid gap-0 lg:grid-cols-[1.08fr_0.92fr]">
               <Link
                 href={activeBrand.href}
-                className="group relative flex min-h-[440px] flex-col overflow-hidden bg-slate-950 p-6 text-white sm:p-8 lg:min-h-[520px]"
+                className="group relative flex min-h-[560px] flex-col overflow-hidden bg-[#07111a] p-7 text-white sm:p-9 lg:min-h-[620px] lg:p-10"
               >
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.18),transparent_35%),linear-gradient(135deg,#0f1b2d_0%,#172b45_62%,#0e7490_100%)]" />
-                <div className="relative z-10 flex flex-1 flex-col">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-200">
+                <div className="absolute inset-y-0 right-0 w-[46%] bg-[#101b25]" />
+                <div className="absolute inset-x-0 bottom-0 h-44 bg-[linear-gradient(180deg,transparent_0%,rgba(3,9,14,0.88)_100%)]" />
+                <div className="relative z-10 flex max-w-[58%] flex-1 flex-col sm:max-w-[50%]">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-sky-400">
                     Featured Brand
                   </p>
-                  <h3 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">
+                  <h3 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
                     {activeBrand.name}
                   </h3>
-                  <p className="mt-5 max-w-xl text-base leading-7 text-slate-200 sm:text-lg">
+                  <span className="mt-5 h-px w-9 bg-sky-400" />
+                  <p className="mt-5 text-sm leading-6 text-slate-300 sm:text-base sm:leading-7">
                     {activeBrand.description}
                   </p>
-                  <span className="mt-8 inline-flex w-fit items-center gap-3 rounded-full border border-cyan-200/30 bg-cyan-200/10 px-5 py-3 text-sm font-semibold text-cyan-50 transition group-hover:border-cyan-100 group-hover:bg-cyan-100/15">
-                    Browse brand category
-                    <span aria-hidden="true">→</span>
+                  <div className="mt-7 space-y-3 text-sm text-slate-300">
+                    <p>Heavy-duty products built for demanding work.</p>
+                    <p>Trusted by maintenance and field crews.</p>
+                    <p>Reliable performance when it matters.</p>
+                  </div>
+                  <span className="mt-8 inline-flex w-fit items-center gap-3 rounded-md bg-[#2879ce] px-5 py-3 text-sm font-semibold text-white transition group-hover:bg-[#3a8fe3]">
+                    View products <span aria-hidden="true">→</span>
                   </span>
                 </div>
-                <div className="relative z-10 mt-10 flex min-h-56 items-center justify-center rounded-[1.5rem] border border-white/10 bg-white/95 p-8 shadow-[0_24px_60px_-36px_rgba(0,0,0,0.65)]">
+                <div className="absolute inset-y-[18%] right-[3%] z-10 flex w-[36%] items-center justify-center sm:inset-y-[12%] sm:right-[7%] sm:w-[46%]">
                   <Image
                     key={activeBrand.image}
                     src={activeBrand.image}
                     alt={`${activeBrand.name} products`}
-                    width={420}
-                    height={320}
-                    className="h-auto max-h-72 w-auto max-w-full object-contain transition duration-500 group-hover:scale-[1.04]"
+                    width={700}
+                    height={700}
+                    className="h-auto max-h-[460px] w-full object-contain transition duration-500 group-hover:scale-[1.04]"
                   />
+                </div>
+                <div className="relative z-10 mt-auto rounded-lg border border-slate-700/80 bg-slate-900/80 px-4 py-4 backdrop-blur-sm">
+                  <span className="text-sm font-semibold text-sky-400">Applications:</span>
+                  <span className="ml-3 text-sm text-slate-300">Mechanical crews&nbsp; • &nbsp;Pipefitters&nbsp; • &nbsp;Maintenance&nbsp; • &nbsp;Repair work</span>
                 </div>
               </Link>
 
-              <div className="flex flex-col justify-between p-5 sm:p-6 lg:p-8">
+              <div className="flex flex-col justify-between bg-[#101b25] p-6 sm:p-8 lg:p-9">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-cyan-700">
-                    Brand Selector
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-sky-400">
+                    Browse Brands
                   </p>
-                  <h3 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950">
+                  <h3 className="mt-3 text-2xl font-semibold tracking-tight text-white">
                     Choose a trusted supply line
                   </h3>
                 </div>
 
-                <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                <div className="mt-7 grid gap-3 sm:grid-cols-2">
                   {featuredIndustrialBrands.map((brand, index) => {
                     const isActive = index === activeBrandIndex;
 
@@ -723,36 +735,37 @@ export default function Home() {
                         key={brand.name}
                         type="button"
                         onClick={() => setActiveBrandIndex(index)}
-                        className={`group flex min-h-24 items-center gap-4 rounded-[1rem] border p-3 text-left transition ${
+                        className={`group flex min-h-[88px] items-center gap-3 rounded-lg border p-3 text-left transition ${
                           isActive
-                            ? "border-cyan-300 bg-white shadow-[0_18px_36px_-30px_rgba(8,47,73,0.65)]"
-                            : "border-slate-200 bg-white/65 hover:border-cyan-200 hover:bg-white"
+                            ? "border-sky-400 bg-slate-900 shadow-[0_0_24px_-10px_rgba(56,189,248,0.9)]"
+                            : "border-slate-700 bg-slate-900/30 hover:border-slate-500 hover:bg-slate-900/70"
                         }`}
                         aria-pressed={isActive}
                       >
-                        <span className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-50">
+                        <span className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-md bg-white p-1.5">
                           <Image
-                            src={brand.image}
+                            src={brand.logo ?? brand.image}
                             alt=""
                             fill
-                            sizes="64px"
-                            className="object-contain p-2 transition duration-300 group-hover:scale-105"
+                            sizes="56px"
+                            className="object-contain p-1.5 transition duration-300 group-hover:scale-105"
                           />
                         </span>
-                        <span>
-                          <span className="block text-sm font-semibold text-slate-950">
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-sm font-semibold text-white">
                             {brand.name}
                           </span>
-                          <span className="mt-1 block text-xs leading-5 text-slate-500">
+                          <span className={`mt-1 block text-xs leading-5 ${isActive ? "text-sky-400" : "text-slate-400"}`}>
                             {isActive ? "Currently featured" : "View spotlight"}
                           </span>
                         </span>
+                        <span className="text-base text-slate-300" aria-hidden="true">→</span>
                       </button>
                     );
                   })}
                 </div>
 
-                <div className="mt-6 flex items-center justify-between border-t border-slate-200 pt-5">
+                <div className="mt-7 flex items-center justify-between border-t border-slate-700 pt-5">
                   <div className="flex gap-2">
                     {featuredIndustrialBrands.map((brand, index) => (
                       <button
@@ -761,14 +774,14 @@ export default function Home() {
                         onClick={() => setActiveBrandIndex(index)}
                         className={`h-2.5 rounded-full transition-all ${
                           index === activeBrandIndex
-                            ? "w-8 bg-cyan-600"
-                            : "w-2.5 bg-slate-300 hover:bg-cyan-300"
+                            ? "w-8 bg-sky-500"
+                            : "w-2.5 bg-slate-600 hover:bg-sky-400"
                         }`}
                         aria-label={`Show ${brand.name}`}
                       />
                     ))}
                   </div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
                     {activeBrandIndex + 1} / {featuredIndustrialBrands.length}
                   </p>
                 </div>
@@ -777,8 +790,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      <IndustryCardsSection />
 
       </main>
       <SiteFooter />
