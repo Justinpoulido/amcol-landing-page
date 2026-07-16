@@ -114,7 +114,7 @@ const featuredIndustrialBrands = [
   },
   {
     name: "Salisbury ElectriFlex",
-    image: "/images/Salisbury ElectriFlex Insulating Rubber Gloves.webp",
+    image: "/images/Salisbury ElectriFlex Insulating Rubber Gloves.png",
     logo: "/images/brands/salisbury.png",
     href: "/products/safety",
     description: "Insulating rubber gloves for electrical safety, maintenance crews, and utility work.",
