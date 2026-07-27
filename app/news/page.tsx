@@ -60,7 +60,7 @@ export default function NewsAndArticlesPage() {
         <div className="absolute inset-0 z-0">
           <div
             className="absolute inset-0 bg-cover bg-center opacity-40 grayscale mix-blend-overlay"
-            style={{ backgroundImage: "url('/images/Heritage Industry.webp')" }}
+            style={{ backgroundImage: "url('/images/Shore_base.png')" }}
           />
           <div className="absolute inset-0 bg-gradient-to-b from-[#1A1A1B]/80 via-[#1A1A1B]/70 to-[#1A1A1B]" />
         </div>

@@ -15,15 +15,18 @@ const topbarItems = [
     label: "#22 Ramjohn Trace, Penal",
     href: "https://www.google.com/maps/search/?api=1&query=%2322+Ramjohn+Trace,+Penal,+Trinidad+and+Tobago",
     icon: "location",
+    mobileHidden: true,
   },
   {
     label: "Office: +1 (868) 288-5800",
     href: "tel:+18682885800",
     icon: "phone",
+    mobileHidden: false,
   },
   {
     label: "Mon-Fri: 7am - 5pm",
     icon: "clock",
+    mobileHidden: true,
   },
 ] as const;
 
@@ -32,7 +35,7 @@ type SiteHeaderProps = {
 };
 
 type HeaderIconProps = {
-  name: "location" | "phone" | "clock" | "external" | "shield" | "search";
+  name: "location" | "phone" | "clock" | "external" | "search" | "menu";
   className?: string;
 };
 
@@ -59,11 +62,17 @@ function HeaderIcon({ name, className = "h-4 w-4" }: HeaderIconProps) {
         <path d="M9 7h8v8" />
       </>
     ),
-    shield: <path d="M12 22s8-3.8 8-10V5l-8-3-8 3v7c0 6.2 8 10 8 10Z" />,
     search: (
       <>
         <circle cx="11" cy="11" r="7" />
         <path d="m20 20-3.8-3.8" />
+      </>
+    ),
+    menu: (
+      <>
+        <path d="M4 7h16" />
+        <path d="M4 12h16" />
+        <path d="M4 17h16" />
       </>
     ),
   };
@@ -84,12 +93,34 @@ function HeaderIcon({ name, className = "h-4 w-4" }: HeaderIconProps) {
   );
 }
 
+function ProductSearchForm({ id, className }: { id: string; className?: string }) {
+  return (
+    <form action="/products" className={`relative ${className ?? ""}`}>
+      <label htmlFor={id} className="sr-only">
+        Search products
+      </label>
+      <HeaderIcon
+        name="search"
+        className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#39d9cd]"
+      />
+      <input
+        id={id}
+        name="search"
+        type="search"
+        placeholder="Search products..."
+        className="h-10 w-full rounded-lg border border-white/15 bg-white/8 pl-10 pr-3 text-sm font-medium text-white outline-none transition placeholder:text-slate-400 hover:border-white/30 focus:border-[#39d9cd] focus:bg-white/12"
+      />
+    </form>
+  );
+}
+
 export function SiteHeader({ activeLink }: SiteHeaderProps) {
   return (
-    <header className="hero-header relative z-40">
+    <header className="hero-header sticky top-0 z-50">
       <div className="hero-topbar">
-        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 text-[11px] font-bold uppercase tracking-[0.18em] text-white/90 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-white/90 sm:px-6 lg:px-8">
           {topbarItems.map((item) => {
+            const visibility = item.mobileHidden ? "hidden sm:inline-flex" : "inline-flex";
             const content = (
               <>
                 <HeaderIcon name={item.icon} className="h-4 w-4 shrink-0 text-[#39d9cd]" />
@@ -101,12 +132,15 @@ export function SiteHeader({ activeLink }: SiteHeaderProps) {
               <a
                 key={item.label}
                 href={item.href}
-                className="hero-topbar-item inline-flex items-center gap-2 transition-colors hover:text-white"
+                className={`hero-topbar-item ${visibility} items-center gap-2 transition-colors hover:text-white`}
               >
                 {content}
               </a>
             ) : (
-              <span key={item.label} className="hero-topbar-item inline-flex items-center gap-2">
+              <span
+                key={item.label}
+                className={`hero-topbar-item ${visibility} items-center gap-2`}
+              >
                 {content}
               </span>
             );
@@ -115,83 +149,62 @@ export function SiteHeader({ activeLink }: SiteHeaderProps) {
       </div>
 
       <div className="hero-mainnav">
-        <div className="mx-auto flex w-full max-w-[1900px] flex-col overflow-hidden md:min-h-[166px] md:flex-row md:items-stretch">
-          <div className="hero-brand-panel flex items-center justify-center px-6 py-6 sm:px-8 md:w-[31%] md:min-w-[360px] md:justify-start lg:px-16">
-            <Link className="hero-brand-logo-wrap relative z-10 shrink-0" href="/" aria-label="AMCOL Home">
-              <Image
-                src="/images/AMCOL_Logo.webp"
-                alt="AMCOL Logo"
-                width={420}
-                height={104}
-                priority
-                className="hero-brand-logo h-20 w-auto max-w-[290px] sm:h-24 md:h-[6.4rem] md:max-w-[360px]"
-              />
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-6 gap-y-0 px-4 py-3 sm:px-6 lg:px-8">
+          <Link className="relative z-10 shrink-0" href="/" aria-label="AMCOL Home">
+            <Image
+              src="/images/AMCOL_Logo.webp"
+              alt="AMCOL Logo"
+              width={420}
+              height={104}
+              priority
+              className="hero-brand-logo h-10 w-auto sm:h-12"
+            />
+          </Link>
+
+          <input type="checkbox" id="site-nav-toggle" className="peer sr-only" />
+
+          <label
+            htmlFor="site-nav-toggle"
+            aria-label="Toggle navigation"
+            className="ml-auto inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg border border-white/15 text-slate-200 transition hover:border-[#39d9cd] hover:text-white peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-[#39d9cd] md:hidden"
+          >
+            <HeaderIcon name="menu" className="h-5 w-5" />
+          </label>
+
+          <div className="hidden w-full flex-col gap-1 pt-3 peer-checked:flex md:ml-auto md:flex md:w-auto md:flex-row md:items-center md:gap-6 md:pt-0">
+            <nav
+              aria-label="Main navigation"
+              className="flex flex-col md:flex-row md:items-center md:gap-6"
+            >
+              {navLinks.map((link) => {
+                const isActive = link.name === activeLink;
+
+                return (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    aria-current={isActive ? "page" : undefined}
+                    className={`hero-nav-link min-h-[52px] border-b border-white/8 px-1 text-[13px] font-semibold uppercase md:min-h-[44px] md:border-0 ${
+                      isActive ? "text-[#39d9cd]" : "text-[#cbd5e1] hover:text-white"
+                    }`}
+                  >
+                    {link.name}
+                  </Link>
+                );
+              })}
+            </nav>
+
+            <ProductSearchForm
+              id="site-header-product-search"
+              className="mt-3 w-full md:mt-0 md:w-[240px]"
+            />
+
+            <Link
+              href="/contact"
+              className="btn btn-primary btn-sm mt-3 w-full md:mt-0 md:w-auto"
+            >
+              Request a Quote
             </Link>
-          </div>
-
-          <div className="hero-links-panel flex flex-1 items-center justify-center px-4 py-5 sm:px-6 lg:px-10">
-            <div className="flex w-full flex-col items-center justify-center gap-5 xl:flex-row xl:justify-end xl:gap-8">
-              <div className="flex min-w-0 flex-1 flex-col items-center gap-2">
-                <nav className="hero-primary-nav flex flex-wrap items-center justify-center gap-x-5 gap-y-4 text-[11px] font-bold uppercase tracking-[0.26em] sm:gap-x-7 lg:gap-x-9">
-                  {navLinks.map((link) => {
-                    const isActive = link.name === activeLink;
-
-                    return (
-                      <a
-                        key={link.name}
-                        href={link.href}
-                        target={link.external ? "_blank" : undefined}
-                        rel={link.external ? "noopener noreferrer" : undefined}
-                        className={`hero-nav-link inline-flex items-center gap-2 px-1 py-3 ${
-                          isActive ? "text-[#39d9cd]" : "text-slate-200/90 hover:text-white"
-                        }`}
-                      >
-                        {link.name}
-                        {link.external ? <HeaderIcon name="external" className="h-3.5 w-3.5 opacity-55" /> : null}
-                      </a>
-                    );
-                  })}
-                </nav>
-
-                <form
-                  action="/products"
-                  className="hero-nav-search relative w-full max-w-[390px] rounded-sm border border-cyan-300/28 bg-[linear-gradient(135deg,rgba(57,217,205,0.14)_0%,rgba(255,255,255,0.08)_46%,rgba(7,17,31,0.64)_100%)] p-1 shadow-[0_0_0_1px_rgba(57,217,205,0.08),0_12px_28px_-22px_rgba(57,217,205,0.9)]"
-                >
-                  <label htmlFor="site-header-product-search" className="sr-only">
-                    Search products
-                  </label>
-                  <HeaderIcon
-                    name="search"
-                    className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#39d9cd]"
-                  />
-                  <input
-                    id="site-header-product-search"
-                    name="search"
-                    type="search"
-                    placeholder="Search products..."
-                    className="h-10 w-full rounded-sm border border-cyan-200/34 bg-[#eefcff]/14 pl-10 pr-3 text-sm font-medium text-white outline-none transition placeholder:text-cyan-50/72 hover:border-cyan-200/55 hover:bg-[#eefcff]/18 focus:border-[#39d9cd] focus:bg-[#eefcff]/20 focus:ring-2 focus:ring-[#39d9cd]/28"
-                  />
-                </form>
-              </div>
-
-              <div className="flex w-full max-w-[330px] shrink-0 flex-col gap-2">
-                <div className="flex items-center gap-3">
-                  <Link
-                    href="/contact"
-                    className="hero-quote-button inline-flex min-h-12 flex-1 items-center justify-center border border-[#39d9cd] px-5 text-[11px] font-bold uppercase tracking-[0.28em] text-[#39d9cd] transition hover:bg-[#39d9cd] hover:text-[#101722] focus-visible:bg-[#39d9cd] focus-visible:text-[#101722] sm:px-6"
-                  >
-                    Request Quote/Service
-                  </Link>
-                  <Link
-                    href="/admin"
-                    aria-label="Open AMCOL admin portal"
-                    className="hero-icon-button inline-flex h-12 w-12 shrink-0 items-center justify-center border border-white/18 text-[#39d9cd] transition hover:border-[#39d9cd] hover:bg-white/5"
-                  >
-                    <HeaderIcon name="shield" className="h-5 w-5" />
-                  </Link>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>

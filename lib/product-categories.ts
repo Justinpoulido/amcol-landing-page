@@ -38,7 +38,7 @@ export const productCategoryData: Record<string, ProductCategoryPageData> = {
     name: "Cleaners & Degreasers",
     href: "/products/cleaners-degreasers",
     image: "/images/wd40 degreaser.webp",
-    banner: "/images/Heritage Industry.webp",
+    banner: "/images/Shore_base.png",
     title: "Cleaners & Degreasers",
     subtitle: "Heavy-duty cleaning for demanding worksites",
     description:
@@ -150,7 +150,7 @@ export const productCategoryData: Record<string, ProductCategoryPageData> = {
     name: "Lubricants",
     href: "/products/lubricants",
     image: "/images/Wd40 bottle.webp",
-    banner: "/images/Heritage Industry.webp",
+    banner: "/images/Shore_base.png",
     title: "Lubricants",
     subtitle: "Reduce friction, wear, and unplanned downtime",
     description:

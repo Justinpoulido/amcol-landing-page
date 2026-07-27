@@ -8,7 +8,8 @@ import { SiteHeader } from "@/app/components/SiteHeader";
 import { SiteFooter } from "@/app/components/SiteFooter";
 
 const heroImages = [
-  "/images/Heritage Industry.webp",
+  "/images/hero-industrial-marine.png",
+  "/images/Shore_base.png",
   "/images/TGU.webp",
   "/images/Proman_industrial.webp",
   "/images/Port Authority.webp",
@@ -52,7 +53,7 @@ const industriesServed = [
   {
     name: "Facilities & Maintenance",
     description: "Everyday industrial supply for facility managers handling cleaning, HVAC, repairs, and safety readiness.",
-    image: "/images/Heritage Industry.webp",
+    image: "/images/Shore_base.png",
     href: "/products/cleaners-degreasers",
     categories: "Cleaners, HVAC, fire protection",
   },
@@ -119,13 +120,6 @@ const featuredIndustrialBrands = [
     href: "/products/safety",
     description: "Insulating rubber gloves for electrical safety, maintenance crews, and utility work.",
   },
-  {
-    name: "RIDGID Pipe Wrench",
-    image: "/images/Ridgid_Straight_Pipe_Wrenches.webp",
-    logo: "/images/brands/ridgid.png",
-    href: "/products?search=pipe%20wrench",
-    description: "Straight pipe wrenches for mechanical crews, pipefitters, maintenance, and repair work.",
-  },
 ];
 
 const procurementTrustCards = [
@@ -153,11 +147,11 @@ const procurementTrustCards = [
 
 function NewsEventsSection() {
   return (
-    <section className="border-t border-zinc-200 bg-[linear-gradient(180deg,#f8fbff_0%,#eef5fb_100%)] py-18 sm:py-24">
+    <section className="border-t border-zinc-200 bg-[#f5f8fb] py-18 sm:py-24">
       <div className="mx-auto max-w-[1440px] px-6 sm:px-8 lg:px-10">
         <div className="flex flex-col gap-3 text-center sm:flex-row sm:items-end sm:justify-between sm:text-left">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-700">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#0e7c76]">
               News & Events
             </p>
             <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
@@ -166,7 +160,7 @@ function NewsEventsSection() {
           </div>
           <Link
             href="/news"
-            className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.16em] text-cyan-800 transition hover:text-slate-950"
+            className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.16em] text-[#0e7c76] transition hover:text-slate-950"
           >
             View all news
             <span aria-hidden="true">→</span>
@@ -177,7 +171,7 @@ function NewsEventsSection() {
           {latestArticles.map((article) => (
             <article
               key={article.id}
-              className="group overflow-hidden rounded-[1.25rem] border border-slate-200 bg-white text-left shadow-[0_22px_50px_-36px_rgba(15,23,42,0.55)] transition hover:-translate-y-1 hover:border-cyan-300 hover:shadow-[0_24px_55px_-30px_rgba(8,47,73,0.35)]"
+              className="group overflow-hidden rounded-xl border border-slate-200 bg-white text-left shadow-[0_22px_50px_-36px_rgba(15,23,42,0.55)] transition hover:border-cyan-300 hover:shadow-[0_24px_55px_-30px_rgba(8,47,73,0.35)]"
             >
               <Link href={`/news/${article.slug}`} className="block">
                 <div className="relative h-44 overflow-hidden">
@@ -191,11 +185,11 @@ function NewsEventsSection() {
                 </div>
               </Link>
               <div className="p-6">
-                <p className="text-xs font-semibold uppercase tracking-wide text-cyan-700">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[#0e7c76]">
                   {article.sector}
                 </p>
                 <h3 className="mt-2 text-lg font-semibold text-slate-950">
-                  <Link href={`/news/${article.slug}`} className="transition hover:text-cyan-800">
+                  <Link href={`/news/${article.slug}`} className="transition hover:text-[#0e7c76]">
                     {article.title}
                   </Link>
                 </h3>
@@ -210,7 +204,7 @@ function NewsEventsSection() {
                 <div className="mt-5 flex flex-wrap gap-4 text-sm font-semibold">
                   <Link
                     href={`/news/${article.slug}`}
-                    className="text-slate-950 transition hover:text-cyan-800"
+                    className="text-slate-950 transition hover:text-[#0e7c76]"
                   >
                     Read update
                   </Link>
@@ -219,7 +213,7 @@ function NewsEventsSection() {
                       href={article.eventUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-cyan-800 transition hover:text-slate-950"
+                      className="text-[#0e7c76] transition hover:text-slate-950"
                     >
                       {article.eventLabel ?? "Visit event"}
                       <span aria-hidden="true"> →</span>
@@ -241,7 +235,7 @@ function IndustryCardsSection() {
       <div className="mx-auto max-w-[1440px] px-6 sm:px-8 lg:px-10">
         <div className="flex flex-col gap-4 text-center sm:flex-row sm:items-end sm:justify-between sm:text-left">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-700">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#0e7c76]">
               Industries We Serve
             </p>
             <h2 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
@@ -250,7 +244,7 @@ function IndustryCardsSection() {
           </div>
           <Link
             href="/products"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-cyan-800 transition hover:text-slate-950"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-[#0e7c76] transition hover:text-slate-950"
           >
             View product catalog
             <span aria-hidden="true">→</span>
@@ -262,7 +256,7 @@ function IndustryCardsSection() {
             <Link
               key={industry.name}
               href={industry.href}
-              className="group overflow-hidden rounded-[1.25rem] border border-slate-200 bg-white text-left shadow-[0_22px_50px_-36px_rgba(15,23,42,0.55)] transition hover:-translate-y-1 hover:border-cyan-300 hover:shadow-[0_24px_55px_-30px_rgba(8,47,73,0.35)]"
+              className="group overflow-hidden rounded-xl border border-slate-200 bg-white text-left shadow-[0_22px_50px_-36px_rgba(15,23,42,0.55)] transition hover:border-cyan-300 hover:shadow-[0_24px_55px_-30px_rgba(8,47,73,0.35)]"
             >
               <div className="relative h-48 overflow-hidden bg-slate-900">
                 <Image
@@ -280,7 +274,7 @@ function IndustryCardsSection() {
               <div className="p-5">
                 <h3 className="text-lg font-semibold text-slate-950">{industry.name}</h3>
                 <p className="mt-3 text-sm leading-6 text-slate-600">{industry.description}</p>
-                <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-cyan-800">
+                <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#0e7c76]">
                   View relevant products
                   <span aria-hidden="true">→</span>
                 </span>
@@ -295,16 +289,26 @@ function IndustryCardsSection() {
 
 export default function Home() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [activeBrandIndex, setActiveBrandIndex] = useState(6);
+  const [isSlideshowPaused, setIsSlideshowPaused] = useState(false);
+  const [activeBrandIndex, setActiveBrandIndex] = useState(0);
   const industriesMapRef = useRef<HTMLDivElement>(null);
   const activeBrand = featuredIndustrialBrands[activeBrandIndex];
 
   useEffect(() => {
+    if (isSlideshowPaused) {
+      return;
+    }
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (reducedMotion.matches) {
+      return;
+    }
+
     const interval = setInterval(() => {
       setCurrentImageIndex((prevIndex) => (prevIndex + 1) % heroImages.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isSlideshowPaused]);
 
   useEffect(() => {
     const mapLayer = industriesMapRef.current;
@@ -383,7 +387,7 @@ export default function Home() {
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.18),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(6,182,212,0.13),transparent_28%)]" />
             <div className="relative flex w-full flex-col gap-3 lg:flex-row lg:items-center lg:gap-4">
               <div className="hidden w-[260px] shrink-0 flex-col gap-1 md:flex">
-                <p className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.28em] text-cyan-200">
+                <p className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-200">
                   Quick Product Shortcuts
                 </p>
                 <p className="truncate text-xs text-cyan-50/75">
@@ -412,11 +416,12 @@ export default function Home() {
 
       {/* Hero Section */}
       <section
-        className="relative flex min-h-[70vh] items-center justify-center overflow-hidden bg-transparent pt-24 pb-24 sm:pt-28 sm:pb-32 lg:pt-36 lg:pb-40"
+        className="relative flex min-h-[62vh] items-center overflow-hidden bg-brand-charcoal pt-20 pb-20 sm:pt-24 sm:pb-24 lg:pt-28 lg:pb-28"
         aria-label="AMCOL Industrial homepage banner"
+        aria-roledescription="carousel"
       >
         {/* Background Slideshow */}
-        <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 z-0" aria-live="off">
           {heroImages.map((image, index) => (
             <div
               key={image}
@@ -435,47 +440,79 @@ export default function Home() {
               />
             </div>
           ))}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0f1b2d]/70 via-[#0f1b2d]/65 to-[#0f1b2d]/85" />
+          <div className="absolute inset-0 bg-[linear-gradient(100deg,rgba(11,20,32,0.88)_0%,rgba(11,20,32,0.72)_45%,rgba(11,20,32,0.45)_100%)]" />
         </div>
 
         {/* Hero Content Overlay */}
-        <div className="relative z-10 mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 text-center">
-          <div className="hero-action-row flex flex-col gap-4 sm:flex-row sm:justify-center">
-            <Link
-              href="/products"
-              className="industrial-cta industrial-cta-primary inline-flex items-center justify-center border border-red-300/70 bg-[linear-gradient(180deg,rgba(226,31,61,0.98)_0%,rgba(153,23,38,0.98)_100%)] px-8 py-3 text-base font-extrabold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.24),inset_0_-18px_28px_rgba(86,12,22,0.2),0_18px_34px_-24px_rgba(0,0,0,0.78)] transition hover:-translate-y-0.5 hover:border-red-200 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-18px_28px_rgba(86,12,22,0.22),0_22px_42px_-24px_rgba(226,31,61,0.96)] focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2 focus:ring-offset-black"
-            >
-              View Product Lines
-              <svg className="ml-2 h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
-            </Link>
-            <Link
-              href="/contact"
-              className="industrial-cta industrial-cta-steel inline-flex items-center justify-center border border-white/75 bg-[linear-gradient(180deg,rgba(255,255,255,0.20)_0%,rgba(15,23,42,0.48)_100%)] px-8 py-3 text-base font-extrabold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.24),inset_0_-18px_28px_rgba(3,7,18,0.18),0_18px_34px_-24px_rgba(0,0,0,0.78)] backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-white hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-white/80 focus:ring-offset-2 focus:ring-offset-black"
-            >
-              Request Quote/Service
-            </Link>
+        <div className="relative z-10 mx-auto w-full max-w-[1440px] px-6 sm:px-8 lg:px-10">
+          <div className="max-w-[46rem]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#39d9cd]">
+              Penal, Trinidad &amp; Tobago
+            </p>
+            <h1 className="mt-4 text-[2rem] font-bold leading-[1.12] tracking-[-0.025em] text-white sm:text-5xl lg:text-[3.25rem]">
+              Industrial, Marine &amp; Safety Supply for Trinidad &amp; Tobago
+            </h1>
+            <p className="mt-5 max-w-2xl text-base leading-7 text-[#e6edf5] sm:text-lg">
+              One supplier for MRO, PPE, abrasives, lubricants, sealants and fire
+              protection — stocked in Penal, delivered across T&amp;T and the wider
+              Caribbean.
+            </p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Link href="/products" className="btn btn-primary">
+                Browse Products
+                <svg className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </Link>
+              <Link href="/contact" className="btn btn-secondary-dark">
+                Request a Quote
+              </Link>
+            </div>
             <Link
               href="/knowledge"
-              className="industrial-cta industrial-cta-blue inline-flex items-center justify-center border border-cyan-300/75 bg-[linear-gradient(180deg,rgba(57,217,205,0.18)_0%,rgba(8,47,73,0.46)_100%)] px-8 py-3 text-base font-extrabold text-cyan-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.22),inset_0_-18px_28px_rgba(3,7,18,0.16),0_18px_34px_-24px_rgba(0,0,0,0.78)] backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-cyan-100 hover:bg-cyan-300/15 focus:outline-none focus:ring-2 focus:ring-cyan-300 focus:ring-offset-2 focus:ring-offset-black"
+              className="mt-5 inline-flex items-center gap-1 text-sm text-white/80 underline-offset-4 transition hover:text-white hover:underline"
             >
-              Read Buying Guides
+              Or read our buying guides
+              <span aria-hidden="true">→</span>
             </Link>
           </div>
         </div>
 
-        {/* Carousel Indicators */}
-        <div className="absolute bottom-8 left-0 right-0 z-20 flex justify-center gap-3">
+        {/* Carousel Controls */}
+        <div className="absolute bottom-6 left-0 right-0 z-20 flex items-center justify-center gap-1">
+          <button
+            type="button"
+            onClick={() => setIsSlideshowPaused((paused) => !paused)}
+            aria-pressed={isSlideshowPaused}
+            aria-label={isSlideshowPaused ? "Play background slideshow" : "Pause background slideshow"}
+            className="mr-2 inline-flex h-7 w-7 items-center justify-center rounded-md bg-black/40 text-white transition hover:bg-black/60"
+          >
+            {isSlideshowPaused ? (
+              <svg aria-hidden="true" viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-current">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            ) : (
+              <svg aria-hidden="true" viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-current">
+                <path d="M6 5h4v14H6zM14 5h4v14h-4z" />
+              </svg>
+            )}
+          </button>
           {heroImages.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentImageIndex(index)}
-              className={`h-2.5 rounded-full transition-all duration-300 ${
-                index === currentImageIndex ? "w-8 bg-cyan-400" : "w-2.5 bg-white/50 hover:bg-white/70"
-              }`}
+              aria-current={index === currentImageIndex}
+              className="group flex h-11 items-center px-1.5"
               aria-label={`Go to slide ${index + 1}`}
-            />
+            >
+              <span
+                className={`h-2.5 rounded-full transition-all duration-300 ${
+                  index === currentImageIndex
+                    ? "w-8 bg-[#39d9cd]"
+                    : "w-2.5 bg-white/50 group-hover:bg-white/70"
+                }`}
+              />
+            </button>
           ))}
         </div>
       </section>
@@ -502,7 +539,7 @@ export default function Home() {
 
       <section
         id="industries"
-        className="relative isolate overflow-hidden border-y border-cyan-900/15 bg-[#e8f6f9] py-20 sm:py-28"
+        className="relative isolate overflow-hidden border-y border-cyan-900/15 bg-[#f5f8fb] py-20 sm:py-28"
       >
         <div
           ref={industriesMapRef}
@@ -520,20 +557,20 @@ export default function Home() {
         <div className="mx-auto max-w-[1440px] px-6 sm:px-8 lg:px-10">
           <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-end">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-700">
-                Industries We Serve
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#0e7c76]">
+                Regional Coverage
               </p>
-              <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl lg:text-[2.7rem]">
+              <h2 className="mt-4 text-2xl font-semibold tracking-tight text-slate-950 sm:text-[2rem]">
                 Industrial Supply Partner Across the Caribbean
-              </h1>
+              </h2>
               <p className="mt-5 max-w-xl text-base leading-7 text-slate-600 sm:text-lg">
                 AMCOL Industrial supplies safety, MRO, marine, construction, and facility maintenance products for worksites across Trinidad & Tobago and the wider Caribbean.
               </p>
             </div>
-            <div className="rounded-[1.25rem] border border-slate-200 bg-white p-5 shadow-[0_18px_44px_-34px_rgba(15,23,42,0.55)] sm:p-6">
+            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-[0_18px_44px_-34px_rgba(15,23,42,0.55)] sm:p-6">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-cyan-700">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#0e7c76]">
                     Knowledge Base
                   </p>
                   <h3 className="mt-3 text-xl font-semibold tracking-tight text-slate-950">
@@ -542,7 +579,7 @@ export default function Home() {
                 </div>
                 <Link
                   href="/knowledge"
-                  className="inline-flex shrink-0 items-center gap-2 text-sm font-semibold text-cyan-800 transition hover:text-slate-950"
+                  className="inline-flex shrink-0 items-center gap-2 text-sm font-semibold text-[#0e7c76] transition hover:text-slate-950"
                 >
                   View guides
                   <span aria-hidden="true">→</span>
@@ -553,9 +590,9 @@ export default function Home() {
                   <Link
                     key={guide.href}
                     href={guide.href}
-                    className="group border border-slate-200 bg-slate-50 px-4 py-4 transition hover:-translate-y-0.5 hover:border-cyan-300 hover:bg-white hover:shadow-[0_16px_34px_-28px_rgba(8,47,73,0.5)]"
+                    className="group border border-slate-200 bg-slate-50 px-4 py-4 transition hover:border-cyan-300 hover:bg-white hover:shadow-[0_16px_34px_-28px_rgba(8,47,73,0.5)]"
                   >
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-700">
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#0e7c76]">
                       {guide.label}
                     </span>
                     <span className="mt-2 block text-sm font-semibold leading-5 text-slate-900 transition group-hover:text-cyan-900">
@@ -573,7 +610,7 @@ export default function Home() {
         <div className="mx-auto max-w-[1440px] px-6 sm:px-8 lg:px-10">
           <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-700">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#0e7c76]">
                 Procurement Support
               </p>
               <h2 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
@@ -588,7 +625,7 @@ export default function Home() {
               {procurementTrustCards.map((card) => (
                 <article
                   key={card.title}
-                  className="rounded-[1.25rem] border border-slate-200 bg-slate-50 p-6 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.45)]"
+                  className="rounded-xl border border-slate-200 bg-slate-50 p-6 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.45)]"
                 >
                   <h3 className="text-lg font-semibold text-slate-950">
                     {card.title}
@@ -605,10 +642,10 @@ export default function Home() {
 
       <section className="border-t border-zinc-200 bg-white py-16 sm:py-24">
         <div className="mx-auto max-w-[1440px] px-6 sm:px-8 lg:px-10">
-          <div className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-[linear-gradient(135deg,#0f1b2d_0%,#16273e_58%,#0f766e_100%)] shadow-[0_24px_70px_-42px_rgba(15,23,42,0.55)]">
+          <div className="overflow-hidden rounded-xl border border-slate-200 bg-[linear-gradient(135deg,#0f1b2d_0%,#16273e_58%,#0f766e_100%)] shadow-[0_24px_70px_-42px_rgba(15,23,42,0.55)]">
             <div className="grid gap-8 px-6 py-10 sm:px-8 sm:py-12 lg:grid-cols-[1fr_auto] lg:items-center lg:px-12">
               <div className="max-w-3xl">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-brand-copper">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-copper">
                   Affiliated Transportation Support
                 </p>
                 <h2 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
@@ -623,7 +660,7 @@ export default function Home() {
                   href="https://www.caribbeantransportservices.com/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="btn-copper inline-flex w-full items-center justify-center rounded-lg px-7 py-3 text-base shadow-lg focus:outline-none focus:ring-2 focus:ring-brand-copper focus:ring-offset-2 focus:ring-offset-[#0f1b2d] sm:w-auto"
+                  className="btn btn-copper w-full sm:w-auto"
                 >
                   Visit Amcol Haulage
                   <span className="ml-2" aria-hidden="true">
@@ -642,7 +679,7 @@ export default function Home() {
         <div className="mx-auto max-w-[1440px] px-6 sm:px-8 lg:px-10">
           <div className="flex flex-col gap-4 text-center sm:flex-row sm:items-end sm:justify-between sm:text-left">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-sky-400">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#39d9cd]">
                 Featured Industrial Brands
               </p>
               <h2 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
@@ -672,7 +709,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="mt-12 overflow-hidden rounded-[1.25rem] border border-slate-700 bg-[#101b25] shadow-[0_28px_80px_-48px_rgba(0,0,0,0.95)]">
+          <div className="mt-12 overflow-hidden rounded-xl border border-slate-700 bg-[#101b25] shadow-[0_28px_80px_-48px_rgba(0,0,0,0.95)]">
             <div className="grid gap-0 lg:grid-cols-[1.08fr_0.92fr]">
               <Link
                 href={activeBrand.href}
@@ -681,7 +718,7 @@ export default function Home() {
                 <div className="absolute inset-y-0 right-0 w-[46%] bg-[#101b25]" />
                 <div className="absolute inset-x-0 bottom-0 h-44 bg-[linear-gradient(180deg,transparent_0%,rgba(3,9,14,0.88)_100%)]" />
                 <div className="relative z-10 flex max-w-[58%] flex-1 flex-col sm:max-w-[50%]">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-sky-400">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#39d9cd]">
                     Featured Brand
                   </p>
                   <h3 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -696,7 +733,7 @@ export default function Home() {
                     <p>Trusted by maintenance and field crews.</p>
                     <p>Reliable performance when it matters.</p>
                   </div>
-                  <span className="mt-8 inline-flex w-fit items-center gap-3 rounded-md bg-[#2879ce] px-5 py-3 text-sm font-semibold text-white transition group-hover:bg-[#3a8fe3]">
+                  <span className="btn btn-primary mt-8 w-fit">
                     View products <span aria-hidden="true">→</span>
                   </span>
                 </div>
@@ -711,14 +748,14 @@ export default function Home() {
                   />
                 </div>
                 <div className="relative z-10 mt-auto rounded-lg border border-slate-700/80 bg-slate-900/80 px-4 py-4 backdrop-blur-sm">
-                  <span className="text-sm font-semibold text-sky-400">Applications:</span>
+                  <span className="text-sm font-semibold text-[#39d9cd]">Applications:</span>
                   <span className="ml-3 text-sm text-slate-300">Mechanical crews&nbsp; • &nbsp;Pipefitters&nbsp; • &nbsp;Maintenance&nbsp; • &nbsp;Repair work</span>
                 </div>
               </Link>
 
               <div className="flex flex-col justify-between bg-[#101b25] p-6 sm:p-8 lg:p-9">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-sky-400">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#39d9cd]">
                     Browse Brands
                   </p>
                   <h3 className="mt-3 text-2xl font-semibold tracking-tight text-white">
@@ -755,7 +792,7 @@ export default function Home() {
                           <span className="block text-sm font-semibold text-white">
                             {brand.name}
                           </span>
-                          <span className={`mt-1 block text-xs leading-5 ${isActive ? "text-sky-400" : "text-slate-400"}`}>
+                          <span className={`mt-1 block text-xs leading-5 ${isActive ? "text-[#39d9cd]" : "text-slate-400"}`}>
                             {isActive ? "Currently featured" : "View spotlight"}
                           </span>
                         </span>

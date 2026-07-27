@@ -173,7 +173,7 @@ const legacyCategorySelectQuery = `
   created_at
 `;
 
-const defaultCategoryImage = "/images/Heritage Industry.webp";
+const defaultCategoryImage = "/images/Shore_base.png";
 const defaultCategoryBanner = "/images/Proman_industrial.webp";
 const defaultProductSummary =
   "Product details are available through our sales team for this category.";

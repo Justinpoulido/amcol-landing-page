@@ -17,7 +17,7 @@ export const metadata: Metadata = {
       "AMCOL Industrial project stories and field support updates from Trinidad & Tobago industrial sectors.",
     url: absoluteUrl("/news"),
     images: openGraphImage(
-      "/images/Heritage Industry.webp",
+      "/images/Shore_base.png",
       "Industrial project site in Trinidad and Tobago",
     ),
   },
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     title: "Industrial News & Project Articles",
     description:
       "Project stories and field support updates from AMCOL Industrial.",
-    images: ["/images/Heritage Industry.webp"],
+    images: ["/images/Shore_base.png"],
   },
 };
 

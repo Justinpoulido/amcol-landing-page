@@ -66,7 +66,7 @@ export default async function KnowledgePage({ searchParams }: KnowledgePageProps
           <div className="absolute inset-0 z-0">
             <div
               className="absolute inset-0 bg-cover bg-center opacity-45 grayscale mix-blend-overlay"
-              style={{ backgroundImage: "url('/images/Heritage Industry.webp')" }}
+              style={{ backgroundImage: "url('/images/Shore_base.png')" }}
             />
             <div className="absolute inset-0 bg-gradient-to-b from-[#0f1b2d]/80 via-[#0f1b2d]/66 to-[#0f1b2d]" />
           </div>
