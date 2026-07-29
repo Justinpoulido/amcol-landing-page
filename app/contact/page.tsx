@@ -87,8 +87,8 @@ export default function ContactPage() {
         {/* Background Image with Overlay */}
         <div className="absolute inset-0 z-0">
           <div
-            className="absolute inset-0 bg-cover bg-center opacity-55"
-            style={{ backgroundImage: "url('/images/band-warehouse-mro.png')" }}
+            className="absolute inset-0 bg-cover bg-center opacity-40 grayscale mix-blend-overlay"
+            style={{ backgroundImage: "url('/images/Shore_base.png')" }}
           />
           <div className="absolute inset-0 bg-gradient-to-b from-[#0d2238]/85 via-[#1a3a52]/80 to-[#0d2238]/90" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(57,217,205,0.15),transparent_50%)]" />
@@ -115,7 +115,7 @@ export default function ContactPage() {
           <div className="lg:col-span-2 bg-white rounded-2xl shadow-xl border border-zinc-200 overflow-hidden">
             <div className="bg-zinc-50 px-8 py-6 border-b border-zinc-200">
               <h2 className="text-2xl font-bold text-[#1A1A1B] flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-[#39d9cd]"></span>
+                <span className="h-3 w-3 rounded-full bg-orange-500 animate-pulse"></span>
                 Priority Inquiry
               </h2>
               <p className="text-sm text-zinc-500 mt-1">
@@ -139,7 +139,7 @@ export default function ContactPage() {
                     required
                     value={formData.name}
                     onChange={handleChange}
-                    className="mt-2 block w-full rounded-lg border-0 py-2.5 px-3 text-zinc-900 shadow-sm ring-1 ring-inset ring-zinc-300 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-[#0e7c76] sm:text-sm sm:leading-6 bg-zinc-50"
+                    className="mt-2 block w-full rounded-md border-0 py-2.5 px-3 text-zinc-900 shadow-sm ring-1 ring-inset ring-zinc-300 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-orange-500 sm:text-sm sm:leading-6 bg-zinc-50"
                   />
                 </div>
                 <div>
@@ -156,7 +156,7 @@ export default function ContactPage() {
                     required
                     value={formData.email}
                     onChange={handleChange}
-                    className="mt-2 block w-full rounded-lg border-0 py-2.5 px-3 text-zinc-900 shadow-sm ring-1 ring-inset ring-zinc-300 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-[#0e7c76] sm:text-sm sm:leading-6 bg-zinc-50"
+                    className="mt-2 block w-full rounded-md border-0 py-2.5 px-3 text-zinc-900 shadow-sm ring-1 ring-inset ring-zinc-300 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-orange-500 sm:text-sm sm:leading-6 bg-zinc-50"
                   />
                 </div>
                 <div>
@@ -172,7 +172,7 @@ export default function ContactPage() {
                     id="company"
                     value={formData.company}
                     onChange={handleChange}
-                    className="mt-2 block w-full rounded-lg border-0 py-2.5 px-3 text-zinc-900 shadow-sm ring-1 ring-inset ring-zinc-300 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-[#0e7c76] sm:text-sm sm:leading-6 bg-zinc-50"
+                    className="mt-2 block w-full rounded-md border-0 py-2.5 px-3 text-zinc-900 shadow-sm ring-1 ring-inset ring-zinc-300 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-orange-500 sm:text-sm sm:leading-6 bg-zinc-50"
                   />
                 </div>
                 <div>
@@ -188,7 +188,7 @@ export default function ContactPage() {
                     id="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    className="mt-2 block w-full rounded-lg border-0 py-2.5 px-3 text-zinc-900 shadow-sm ring-1 ring-inset ring-zinc-300 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-[#0e7c76] sm:text-sm sm:leading-6 bg-zinc-50"
+                    className="mt-2 block w-full rounded-md border-0 py-2.5 px-3 text-zinc-900 shadow-sm ring-1 ring-inset ring-zinc-300 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-orange-500 sm:text-sm sm:leading-6 bg-zinc-50"
                   />
                 </div>
               </div>
@@ -206,7 +206,7 @@ export default function ContactPage() {
                     name="projectType"
                     value={formData.projectType}
                     onChange={handleChange}
-                    className="mt-2 block w-full rounded-lg border-0 py-2.5 px-3 text-zinc-900 shadow-sm ring-1 ring-inset ring-zinc-300 focus:ring-2 focus:ring-inset focus:ring-[#0e7c76] sm:text-sm sm:leading-6 bg-zinc-50"
+                    className="mt-2 block w-full rounded-md border-0 py-2.5 px-3 text-zinc-900 shadow-sm ring-1 ring-inset ring-zinc-300 focus:ring-2 focus:ring-inset focus:ring-orange-500 sm:text-sm sm:leading-6 bg-zinc-50"
                   >
                     <option value="">Select Type...</option>
                     <option value="Structural Supply">Structural Supply</option>
@@ -229,7 +229,7 @@ export default function ContactPage() {
                     name="urgency"
                     value={formData.urgency}
                     onChange={handleChange}
-                    className="mt-2 block w-full rounded-lg border-0 py-2.5 px-3 text-zinc-900 shadow-sm ring-1 ring-inset ring-zinc-300 focus:ring-2 focus:ring-inset focus:ring-[#0e7c76] sm:text-sm sm:leading-6 bg-zinc-50"
+                    className="mt-2 block w-full rounded-md border-0 py-2.5 px-3 text-zinc-900 shadow-sm ring-1 ring-inset ring-zinc-300 focus:ring-2 focus:ring-inset focus:ring-orange-500 sm:text-sm sm:leading-6 bg-zinc-50"
                   >
                     <option value="">Select Urgency...</option>
                     <option value="Critical">Critical (24h)</option>
@@ -254,7 +254,7 @@ export default function ContactPage() {
                     required
                     value={formData.pumpBrand}
                     onChange={handleChange}
-                    className="mt-2 block w-full rounded-md border-0 bg-zinc-50 px-3 py-2.5 text-zinc-900 shadow-sm ring-1 ring-inset ring-zinc-300 focus:ring-2 focus:ring-inset focus:ring-[#0e7c76] sm:text-sm sm:leading-6"
+                    className="mt-2 block w-full rounded-md border-0 bg-zinc-50 px-3 py-2.5 text-zinc-900 shadow-sm ring-1 ring-inset ring-zinc-300 focus:ring-2 focus:ring-inset focus:ring-orange-500 sm:text-sm sm:leading-6"
                   >
                     <option value="">Select Pump Brand...</option>
                     <option value="Dosivac">Dosivac</option>
@@ -276,7 +276,7 @@ export default function ContactPage() {
                   rows={4}
                   value={formData.message}
                   onChange={handleChange}
-                  className="mt-2 block w-full rounded-lg border-0 py-2.5 px-3 text-zinc-900 shadow-sm ring-1 ring-inset ring-zinc-300 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-[#0e7c76] sm:text-sm sm:leading-6 bg-zinc-50"
+                  className="mt-2 block w-full rounded-md border-0 py-2.5 px-3 text-zinc-900 shadow-sm ring-1 ring-inset ring-zinc-300 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-orange-500 sm:text-sm sm:leading-6 bg-zinc-50"
                   placeholder="Please describe your specific needs, part numbers, or volume requirements..."
                 />
               </div>
@@ -285,7 +285,7 @@ export default function ContactPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="btn btn-primary w-full sm:w-auto disabled:cursor-not-allowed disabled:opacity-60"
+                  className="rounded-md bg-[#1A1A1B] px-8 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 disabled:cursor-not-allowed disabled:bg-zinc-400"
                 >
                   {isSubmitting ? "Submitting..." : "Submit Request"}
                 </button>
@@ -315,7 +315,7 @@ export default function ContactPage() {
           <div className="space-y-6">
             {/* Corporate Sales Card */}
             <div className="bg-[#1A1A1B] rounded-2xl p-6 text-white shadow-xl relative overflow-hidden group">
-              <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-[#39d9cd] rounded-full opacity-15 blur-xl group-hover:opacity-30 transition-opacity"></div>
+              <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-orange-500 rounded-full opacity-20 blur-xl group-hover:opacity-30 transition-opacity"></div>
               <h3 className="text-xl font-bold mb-4 border-b border-zinc-700 pb-2">
                 Corporate Sales
               </h3>
@@ -328,7 +328,7 @@ export default function ContactPage() {
                 </div>
                 <div className="flex items-center gap-3 text-zinc-300">
                   <svg
-                    className="h-5 w-5 text-[#39d9cd]"
+                    className="h-5 w-5 text-orange-500"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -349,7 +349,7 @@ export default function ContactPage() {
                 </div>
                 <div className="flex items-center gap-3 text-zinc-300">
                   <svg
-                    className="h-5 w-5 text-[#39d9cd]"
+                    className="h-5 w-5 text-orange-500"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -457,7 +457,7 @@ export default function ContactPage() {
               {googleBusinessProfileUrl ? (
                 <a
                   href={googleBusinessProfileUrl}
-                  className="mt-4 inline-flex text-sm font-semibold text-[#0e7c76] transition hover:text-[#0b1420]"
+                  className="mt-4 inline-flex text-sm font-semibold text-red-600 transition hover:text-red-700"
                   rel="noopener noreferrer"
                   target="_blank"
                 >

@@ -8,7 +8,6 @@ import { SiteHeader } from "@/app/components/SiteHeader";
 import { SiteFooter } from "@/app/components/SiteFooter";
 
 const heroImages = [
-  "/images/hero-industrial-marine.png",
   "/images/Shore_base.png",
   "/images/TGU.webp",
   "/images/Proman_industrial.webp",
@@ -120,6 +119,13 @@ const featuredIndustrialBrands = [
     href: "/products/safety",
     description: "Insulating rubber gloves for electrical safety, maintenance crews, and utility work.",
   },
+  {
+    name: "RIDGID Pipe Wrench",
+    image: "/images/Ridgid_Straight_Pipe_Wrenches.webp",
+    logo: "/images/brands/ridgid.png",
+    href: "/products?search=pipe%20wrench",
+    description: "Straight pipe wrenches for mechanical crews, pipefitters, maintenance, and repair work.",
+  },
 ];
 
 const procurementTrustCards = [
@@ -145,13 +151,150 @@ const procurementTrustCards = [
   },
 ];
 
+type HeroIconName = "box" | "quote" | "book" | "quality" | "expertise" | "delivery" | "award" | "clients" | "range" | "shield";
+
+const heroTrustHighlights: {
+  title: string;
+  description: string;
+  icon: HeroIconName;
+}[] = [
+  {
+    title: "Trusted Quality",
+    description: "World-class brands selected for demanding industrial work.",
+    icon: "quality",
+  },
+  {
+    title: "Technical Expertise",
+    description: "Decades of experience matching crews with the right products.",
+    icon: "expertise",
+  },
+  {
+    title: "Reliable Delivery",
+    description: "Coordinated support across Trinidad and the Caribbean.",
+    icon: "delivery",
+  },
+];
+
+const heroStats: {
+  value: string;
+  label: string;
+  icon: HeroIconName;
+}[] = [
+  { value: "25+", label: "Years of excellence", icon: "award" },
+  { value: "Thousands", label: "Satisfied clients", icon: "clients" },
+  { value: "Wide range", label: "Ready to deliver", icon: "range" },
+  { value: "Quality", label: "Built on trust", icon: "shield" },
+];
+
+const haulageHighlights: {
+  label: string;
+  icon: HeroIconName;
+}[] = [
+  { label: "Safe & Reliable", icon: "shield" },
+  { label: "On-Time Delivery", icon: "delivery" },
+  { label: "Nationwide Coverage", icon: "quality" },
+  { label: "Experienced Professionals", icon: "expertise" },
+];
+
+function HeroLineIcon({ name, className = "h-6 w-6" }: { name: HeroIconName; className?: string }) {
+  const paths: Record<HeroIconName, React.ReactNode> = {
+    box: (
+      <>
+        <path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z" />
+        <path d="m4 7.5 8 4.5 8-4.5" />
+        <path d="M12 12v9" />
+      </>
+    ),
+    quote: (
+      <>
+        <path d="M7 7h8l3 3v7H7V7Z" />
+        <path d="M15 7v4h4" />
+        <path d="M9.5 14.5h5" />
+      </>
+    ),
+    book: (
+      <>
+        <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21V5.5Z" />
+        <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20" />
+        <path d="M8 7h8" />
+        <path d="M8 11h8" />
+      </>
+    ),
+    quality: (
+      <>
+        <path d="M8 12.5 11 15l5-6" />
+        <path d="M4 12a8 8 0 0 1 15.5-2.8" />
+        <path d="M20 12a8 8 0 0 1-15.5 2.8" />
+      </>
+    ),
+    expertise: (
+      <>
+        <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" />
+        <path d="M4 21a8 8 0 0 1 16 0" />
+        <path d="M17.5 6.5 20 4" />
+      </>
+    ),
+    delivery: (
+      <>
+        <path d="M3 7h11v8H3V7Z" />
+        <path d="M14 10h4l3 3v2h-7v-5Z" />
+        <path d="M7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" />
+        <path d="M18 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" />
+      </>
+    ),
+    award: (
+      <>
+        <path d="M12 14a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z" />
+        <path d="m9 13-2 8 5-3 5 3-2-8" />
+      </>
+    ),
+    clients: (
+      <>
+        <path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" />
+        <path d="M17 11a3 3 0 1 0 0-6" />
+        <path d="M3 21a6 6 0 0 1 12 0" />
+        <path d="M15 16a5 5 0 0 1 6 5" />
+      </>
+    ),
+    range: (
+      <>
+        <path d="M3 7h11v9H3V7Z" />
+        <path d="M14 10h4l3 3v3h-7v-6Z" />
+        <path d="M6.5 19a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6Z" />
+        <path d="M17.5 19a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6Z" />
+      </>
+    ),
+    shield: (
+      <>
+        <path d="M12 3 20 6v6c0 5-3.4 7.8-8 9-4.6-1.2-8-4-8-9V6l8-3Z" />
+        <path d="m8.5 12 2.3 2.3 4.7-5" />
+      </>
+    ),
+  };
+
+  return (
+    <svg
+      aria-hidden="true"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={1.9}
+      viewBox="0 0 24 24"
+    >
+      {paths[name]}
+    </svg>
+  );
+}
+
 function NewsEventsSection() {
   return (
-    <section className="border-t border-zinc-200 bg-[#f5f8fb] py-18 sm:py-24">
+    <section className="border-t border-zinc-200 bg-[linear-gradient(180deg,#f8fbff_0%,#eef5fb_100%)] py-18 sm:py-24">
       <div className="mx-auto max-w-[1440px] px-6 sm:px-8 lg:px-10">
         <div className="flex flex-col gap-3 text-center sm:flex-row sm:items-end sm:justify-between sm:text-left">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#0e7c76]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-700">
               News & Events
             </p>
             <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
@@ -160,7 +303,7 @@ function NewsEventsSection() {
           </div>
           <Link
             href="/news"
-            className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.16em] text-[#0e7c76] transition hover:text-slate-950"
+            className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.16em] text-cyan-800 transition hover:text-slate-950"
           >
             View all news
             <span aria-hidden="true">→</span>
@@ -171,7 +314,7 @@ function NewsEventsSection() {
           {latestArticles.map((article) => (
             <article
               key={article.id}
-              className="group overflow-hidden rounded-xl border border-slate-200 bg-white text-left shadow-[0_22px_50px_-36px_rgba(15,23,42,0.55)] transition hover:border-cyan-300 hover:shadow-[0_24px_55px_-30px_rgba(8,47,73,0.35)]"
+              className="group overflow-hidden rounded-[1.25rem] border border-slate-200 bg-white text-left shadow-[0_22px_50px_-36px_rgba(15,23,42,0.55)] transition hover:-translate-y-1 hover:border-cyan-300 hover:shadow-[0_24px_55px_-30px_rgba(8,47,73,0.35)]"
             >
               <Link href={`/news/${article.slug}`} className="block">
                 <div className="relative h-44 overflow-hidden">
@@ -185,11 +328,11 @@ function NewsEventsSection() {
                 </div>
               </Link>
               <div className="p-6">
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#0e7c76]">
+                <p className="text-xs font-semibold uppercase tracking-wide text-cyan-700">
                   {article.sector}
                 </p>
                 <h3 className="mt-2 text-lg font-semibold text-slate-950">
-                  <Link href={`/news/${article.slug}`} className="transition hover:text-[#0e7c76]">
+                  <Link href={`/news/${article.slug}`} className="transition hover:text-cyan-800">
                     {article.title}
                   </Link>
                 </h3>
@@ -204,7 +347,7 @@ function NewsEventsSection() {
                 <div className="mt-5 flex flex-wrap gap-4 text-sm font-semibold">
                   <Link
                     href={`/news/${article.slug}`}
-                    className="text-slate-950 transition hover:text-[#0e7c76]"
+                    className="text-slate-950 transition hover:text-cyan-800"
                   >
                     Read update
                   </Link>
@@ -213,7 +356,7 @@ function NewsEventsSection() {
                       href={article.eventUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[#0e7c76] transition hover:text-slate-950"
+                      className="text-cyan-800 transition hover:text-slate-950"
                     >
                       {article.eventLabel ?? "Visit event"}
                       <span aria-hidden="true"> →</span>
@@ -235,7 +378,7 @@ function IndustryCardsSection() {
       <div className="mx-auto max-w-[1440px] px-6 sm:px-8 lg:px-10">
         <div className="flex flex-col gap-4 text-center sm:flex-row sm:items-end sm:justify-between sm:text-left">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#0e7c76]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-700">
               Industries We Serve
             </p>
             <h2 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
@@ -244,7 +387,7 @@ function IndustryCardsSection() {
           </div>
           <Link
             href="/products"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-[#0e7c76] transition hover:text-slate-950"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-cyan-800 transition hover:text-slate-950"
           >
             View product catalog
             <span aria-hidden="true">→</span>
@@ -256,7 +399,7 @@ function IndustryCardsSection() {
             <Link
               key={industry.name}
               href={industry.href}
-              className="group overflow-hidden rounded-xl border border-slate-200 bg-white text-left shadow-[0_22px_50px_-36px_rgba(15,23,42,0.55)] transition hover:border-cyan-300 hover:shadow-[0_24px_55px_-30px_rgba(8,47,73,0.35)]"
+              className="group overflow-hidden rounded-[1.25rem] border border-slate-200 bg-white text-left shadow-[0_22px_50px_-36px_rgba(15,23,42,0.55)] transition hover:-translate-y-1 hover:border-cyan-300 hover:shadow-[0_24px_55px_-30px_rgba(8,47,73,0.35)]"
             >
               <div className="relative h-48 overflow-hidden bg-slate-900">
                 <Image
@@ -274,7 +417,7 @@ function IndustryCardsSection() {
               <div className="p-5">
                 <h3 className="text-lg font-semibold text-slate-950">{industry.name}</h3>
                 <p className="mt-3 text-sm leading-6 text-slate-600">{industry.description}</p>
-                <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#0e7c76]">
+                <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-cyan-800">
                   View relevant products
                   <span aria-hidden="true">→</span>
                 </span>
@@ -289,26 +432,16 @@ function IndustryCardsSection() {
 
 export default function Home() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isSlideshowPaused, setIsSlideshowPaused] = useState(false);
-  const [activeBrandIndex, setActiveBrandIndex] = useState(0);
+  const [activeBrandIndex, setActiveBrandIndex] = useState(6);
   const industriesMapRef = useRef<HTMLDivElement>(null);
   const activeBrand = featuredIndustrialBrands[activeBrandIndex];
 
   useEffect(() => {
-    if (isSlideshowPaused) {
-      return;
-    }
-
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (reducedMotion.matches) {
-      return;
-    }
-
     const interval = setInterval(() => {
       setCurrentImageIndex((prevIndex) => (prevIndex + 1) % heroImages.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, [isSlideshowPaused]);
+  }, []);
 
   useEffect(() => {
     const mapLayer = industriesMapRef.current;
@@ -387,7 +520,7 @@ export default function Home() {
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.18),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(6,182,212,0.13),transparent_28%)]" />
             <div className="relative flex w-full flex-col gap-3 lg:flex-row lg:items-center lg:gap-4">
               <div className="hidden w-[260px] shrink-0 flex-col gap-1 md:flex">
-                <p className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-200">
+                <p className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.28em] text-cyan-200">
                   Quick Product Shortcuts
                 </p>
                 <p className="truncate text-xs text-cyan-50/75">
@@ -414,132 +547,170 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Hero Section */}
       <section
-        className="relative flex min-h-[62vh] items-center overflow-hidden bg-brand-charcoal pt-20 pb-20 sm:pt-24 sm:pb-24 lg:pt-28 lg:pb-28"
+        className="relative isolate overflow-hidden bg-[#07121f] text-white"
         aria-label="AMCOL Industrial homepage banner"
-        aria-roledescription="carousel"
       >
-        {/* Background Slideshow */}
-        <div className="absolute inset-0 z-0" aria-live="off">
-          {heroImages.map((image, index) => (
-            <div
-              key={image}
-              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                index === currentImageIndex ? "opacity-100" : "opacity-0"
-              }`}
-              aria-hidden={index !== currentImageIndex}
-            >
-              <Image
-                src={image}
-                alt=""
-                fill
-                priority={index === 0}
-                sizes="100vw"
-                className="object-cover object-center"
-              />
-            </div>
-          ))}
-          <div className="absolute inset-0 bg-[linear-gradient(100deg,rgba(11,20,32,0.88)_0%,rgba(11,20,32,0.72)_45%,rgba(11,20,32,0.45)_100%)]" />
-        </div>
+        <div className="relative flex min-h-[670px] items-center overflow-hidden py-20 sm:py-24 lg:min-h-[610px] lg:py-28">
+          <div className="absolute inset-0 -z-20">
+            {heroImages.map((image, index) => (
+              <div
+                key={image}
+                className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                  index === currentImageIndex ? "opacity-100" : "opacity-0"
+                }`}
+                aria-hidden={index !== currentImageIndex}
+              >
+                <Image
+                  src={image}
+                  alt=""
+                  fill
+                  priority={index === 0}
+                  sizes="100vw"
+                  className="object-cover object-center"
+                />
+              </div>
+            ))}
+          </div>
 
-        {/* Hero Content Overlay */}
-        <div className="relative z-10 mx-auto w-full max-w-[1440px] px-6 sm:px-8 lg:px-10">
-          <div className="max-w-[46rem]">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#39d9cd]">
-              Penal, Trinidad &amp; Tobago
-            </p>
-            <h1 className="mt-4 text-[2rem] font-bold leading-[1.12] tracking-[-0.025em] text-white sm:text-5xl lg:text-[3.25rem]">
-              Industrial, Marine &amp; Safety Supply for Trinidad &amp; Tobago
-            </h1>
-            <p className="mt-5 max-w-2xl text-base leading-7 text-[#e6edf5] sm:text-lg">
-              One supplier for MRO, PPE, abrasives, lubricants, sealants and fire
-              protection — stocked in Penal, delivered across T&amp;T and the wider
-              Caribbean.
-            </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link href="/products" className="btn btn-primary">
-                Browse Products
-                <svg className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
-              </Link>
-              <Link href="/contact" className="btn btn-secondary-dark">
-                Request a Quote
-              </Link>
+          <div aria-hidden="true" className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(45,8,15,0.62)_0%,rgba(7,18,31,0.68)_34%,rgba(7,18,31,0.42)_60%,rgba(6,22,42,0.7)_100%)]" />
+          <div aria-hidden="true" className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_0%_18%,rgba(220,38,38,0.18),transparent_35%),radial-gradient(circle_at_100%_26%,rgba(37,99,235,0.18),transparent_34%),linear-gradient(180deg,rgba(3,7,18,0.14)_0%,rgba(3,7,18,0.66)_100%)]" />
+          <div aria-hidden="true" className="absolute inset-y-0 left-0 -z-10 w-[28%] bg-[linear-gradient(135deg,rgba(220,38,38,0.1)_0%,transparent_70%)]" />
+          <div aria-hidden="true" className="absolute right-0 top-0 -z-10 h-full w-[34%] bg-[linear-gradient(135deg,transparent_0%,rgba(59,130,246,0.08)_48%,rgba(14,165,233,0.1)_100%)]" />
+
+          <div className="z-10 mx-auto grid w-full max-w-[1440px] gap-10 px-6 sm:px-8 lg:grid-cols-[1fr_360px] lg:items-center lg:px-10 xl:grid-cols-[1fr_410px]">
+            <div className="max-w-4xl">
+              <p className="text-[11px] font-black uppercase tracking-[0.34em] text-red-100/85">
+                Industrial Supply Partner Across the Caribbean
+              </p>
+              <h1 className="mt-5 max-w-3xl text-5xl font-black uppercase leading-[0.95] tracking-normal text-white drop-shadow-[0_4px_18px_rgba(0,0,0,0.62)] sm:text-6xl lg:text-7xl xl:text-[5.4rem]">
+                Industrial Solutions.
+                <span className="mt-1 block text-red-400">Delivered.</span>
+              </h1>
+              <div className="mt-5 h-1 w-24 bg-red-400/85" />
+              <p className="mt-5 max-w-2xl text-base leading-7 text-slate-100 sm:text-lg">
+                Supplying the Caribbean&apos;s construction, energy, marine, and industrial sectors with quality products and technical expertise you can rely on.
+              </p>
+
+              <div className="mt-8 grid gap-3 sm:grid-cols-3">
+                <Link
+                  href="/products"
+                  className="group flex min-h-[84px] items-center gap-4 rounded-sm border border-red-200/30 bg-[linear-gradient(135deg,rgba(185,28,28,0.76)_0%,rgba(88,28,36,0.72)_100%)] px-4 py-4 text-left shadow-[0_18px_35px_-28px_rgba(127,29,29,0.75)] backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-red-100/80 hover:bg-red-700/72 focus:outline-none focus:ring-2 focus:ring-red-200 focus:ring-offset-2 focus:ring-offset-[#07121f]"
+                >
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-sm border border-white/25 bg-white/10 text-white">
+                    <HeroLineIcon name="box" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[12px] font-black uppercase tracking-[0.08em] text-white">
+                      View Product Lines
+                    </span>
+                    <span className="mt-1 block text-xs leading-5 text-red-50">
+                      Explore our full range
+                    </span>
+                  </span>
+                  <span className="text-2xl leading-none transition group-hover:translate-x-1" aria-hidden="true">-&gt;</span>
+                </Link>
+                <Link
+                  href="/contact"
+                  className="group flex min-h-[84px] items-center gap-4 rounded-sm border border-blue-200/25 bg-[linear-gradient(135deg,rgba(30,64,120,0.68)_0%,rgba(15,39,78,0.7)_100%)] px-4 py-4 text-left shadow-[0_18px_35px_-28px_rgba(30,64,175,0.65)] backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-blue-100/75 hover:bg-blue-900/60 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:ring-offset-2 focus:ring-offset-[#07121f]"
+                >
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-sm border border-white/25 bg-white/10 text-blue-100">
+                    <HeroLineIcon name="quote" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[12px] font-black uppercase tracking-[0.08em] text-white">
+                      Request Quote/Service
+                    </span>
+                    <span className="mt-1 block text-xs leading-5 text-blue-50">
+                      Get a fast response
+                    </span>
+                  </span>
+                  <span className="text-2xl leading-none transition group-hover:translate-x-1" aria-hidden="true">-&gt;</span>
+                </Link>
+                <Link
+                  href="/knowledge"
+                  className="group flex min-h-[84px] items-center gap-4 rounded-sm border border-cyan-200/25 bg-[linear-gradient(135deg,rgba(15,78,118,0.62)_0%,rgba(13,50,86,0.68)_100%)] px-4 py-4 text-left shadow-[0_18px_35px_-28px_rgba(8,145,178,0.58)] backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-cyan-100/75 hover:bg-cyan-950/58 focus:outline-none focus:ring-2 focus:ring-cyan-200 focus:ring-offset-2 focus:ring-offset-[#07121f]"
+                >
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-sm border border-white/25 bg-white/10 text-cyan-100">
+                    <HeroLineIcon name="book" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[12px] font-black uppercase tracking-[0.08em] text-white">
+                      Read Buying Guides
+                    </span>
+                    <span className="mt-1 block text-xs leading-5 text-cyan-50">
+                      Expert advice and resources
+                    </span>
+                  </span>
+                  <span className="text-2xl leading-none transition group-hover:translate-x-1" aria-hidden="true">-&gt;</span>
+                </Link>
+              </div>
             </div>
-            <Link
-              href="/knowledge"
-              className="mt-5 inline-flex items-center gap-1 text-sm text-white/80 underline-offset-4 transition hover:text-white hover:underline"
-            >
-              Or read our buying guides
-              <span aria-hidden="true">→</span>
-            </Link>
+
+            <aside className="rounded-md border border-white/14 bg-[#08182b]/72 p-5 shadow-[0_24px_60px_-32px_rgba(0,0,0,0.82)] backdrop-blur-md lg:absolute lg:right-10 lg:top-8 lg:w-[360px] xl:right-16 xl:top-10 xl:w-[410px]">
+              <div className="space-y-5">
+                {heroTrustHighlights.map((item, index) => (
+                  <div
+                    key={item.title}
+                    className={index === 0 ? "flex gap-4" : "flex gap-4 border-t border-white/12 pt-5"}
+                  >
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-red-300/45 bg-red-500/10 text-white shadow-[0_0_26px_-18px_rgba(239,30,48,0.82)]">
+                      <HeroLineIcon name={item.icon} />
+                    </span>
+                    <span>
+                      <span className="block text-sm font-black uppercase tracking-[0.08em] text-white">
+                        {item.title}
+                      </span>
+                      <span className="mt-1 block text-xs leading-5 text-slate-300">
+                        {item.description}
+                      </span>
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </aside>
+          </div>
+
+          <div className="absolute bottom-5 left-0 right-0 z-20 flex justify-center gap-3 lg:bottom-6">
+            {heroImages.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentImageIndex(index)}
+                className={`h-2.5 rounded-full transition-all duration-300 ${
+                  index === currentImageIndex ? "w-9 bg-red-400/90" : "w-2.5 bg-white/50 hover:bg-white/75"
+                }`}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
           </div>
         </div>
 
-        {/* Carousel Controls */}
-        <div className="absolute bottom-6 left-0 right-0 z-20 flex items-center justify-center gap-1">
-          <button
-            type="button"
-            onClick={() => setIsSlideshowPaused((paused) => !paused)}
-            aria-pressed={isSlideshowPaused}
-            aria-label={isSlideshowPaused ? "Play background slideshow" : "Pause background slideshow"}
-            className="mr-2 inline-flex h-7 w-7 items-center justify-center rounded-md bg-black/40 text-white transition hover:bg-black/60"
-          >
-            {isSlideshowPaused ? (
-              <svg aria-hidden="true" viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-current">
-                <path d="M8 5v14l11-7z" />
-              </svg>
-            ) : (
-              <svg aria-hidden="true" viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-current">
-                <path d="M6 5h4v14H6zM14 5h4v14h-4z" />
-              </svg>
-            )}
-          </button>
-          {heroImages.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentImageIndex(index)}
-              aria-current={index === currentImageIndex}
-              className="group flex h-11 items-center px-1.5"
-              aria-label={`Go to slide ${index + 1}`}
-            >
-              <span
-                className={`h-2.5 rounded-full transition-all duration-300 ${
-                  index === currentImageIndex
-                    ? "w-8 bg-[#39d9cd]"
-                    : "w-2.5 bg-white/50 group-hover:bg-white/70"
-                }`}
-              />
-            </button>
-          ))}
+        <div className="relative z-10 border-t border-slate-200 bg-white text-slate-950 shadow-[0_-10px_35px_-28px_rgba(15,23,42,0.7)]">
+          <div className="mx-auto grid max-w-[1120px] grid-cols-2 divide-y divide-slate-200 px-6 sm:px-8 md:grid-cols-4 md:divide-x md:divide-y-0">
+            {heroStats.map((stat) => (
+              <div key={stat.label} className="flex min-h-[76px] items-center justify-center gap-4 py-4 text-left">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center text-slate-900">
+                  <HeroLineIcon name={stat.icon} className="h-8 w-8" />
+                </span>
+                <span>
+                  <span className="block text-sm font-black uppercase tracking-[0.12em] text-red-600">
+                    {stat.value}
+                  </span>
+                  <span className="block text-[11px] font-black uppercase tracking-[0.14em] text-slate-700">
+                    {stat.label}
+                  </span>
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
-
-      {/* Trust Strip */}
-      <div className="bg-brand-charcoal py-5">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-10 gap-y-3 px-4 text-center sm:px-6 lg:px-8">
-          {[
-            "Industrial, marine, safety & maintenance supply",
-            "Direct procurement support for enterprise projects",
-            "One supplier for structural, facility & fleet needs",
-          ].map((item) => (
-            <span
-              key={item}
-              className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-300"
-            >
-              {item}
-            </span>
-          ))}
-        </div>
-      </div>
 
       <NewsEventsSection />
 
       <section
         id="industries"
-        className="relative isolate overflow-hidden border-y border-cyan-900/15 bg-[#f5f8fb] py-20 sm:py-28"
+        className="relative isolate overflow-hidden border-y border-cyan-900/15 bg-[#e8f6f9] py-20 sm:py-28"
       >
         <div
           ref={industriesMapRef}
@@ -557,20 +728,20 @@ export default function Home() {
         <div className="mx-auto max-w-[1440px] px-6 sm:px-8 lg:px-10">
           <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-end">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#0e7c76]">
-                Regional Coverage
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-700">
+                Industries We Serve
               </p>
-              <h2 className="mt-4 text-2xl font-semibold tracking-tight text-slate-950 sm:text-[2rem]">
+              <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl lg:text-[2.7rem]">
                 Industrial Supply Partner Across the Caribbean
-              </h2>
+              </h1>
               <p className="mt-5 max-w-xl text-base leading-7 text-slate-600 sm:text-lg">
                 AMCOL Industrial supplies safety, MRO, marine, construction, and facility maintenance products for worksites across Trinidad & Tobago and the wider Caribbean.
               </p>
             </div>
-            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-[0_18px_44px_-34px_rgba(15,23,42,0.55)] sm:p-6">
+            <div className="rounded-[1.25rem] border border-slate-200 bg-white p-5 shadow-[0_18px_44px_-34px_rgba(15,23,42,0.55)] sm:p-6">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#0e7c76]">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-cyan-700">
                     Knowledge Base
                   </p>
                   <h3 className="mt-3 text-xl font-semibold tracking-tight text-slate-950">
@@ -579,7 +750,7 @@ export default function Home() {
                 </div>
                 <Link
                   href="/knowledge"
-                  className="inline-flex shrink-0 items-center gap-2 text-sm font-semibold text-[#0e7c76] transition hover:text-slate-950"
+                  className="inline-flex shrink-0 items-center gap-2 text-sm font-semibold text-cyan-800 transition hover:text-slate-950"
                 >
                   View guides
                   <span aria-hidden="true">→</span>
@@ -590,9 +761,9 @@ export default function Home() {
                   <Link
                     key={guide.href}
                     href={guide.href}
-                    className="group border border-slate-200 bg-slate-50 px-4 py-4 transition hover:border-cyan-300 hover:bg-white hover:shadow-[0_16px_34px_-28px_rgba(8,47,73,0.5)]"
+                    className="group border border-slate-200 bg-slate-50 px-4 py-4 transition hover:-translate-y-0.5 hover:border-cyan-300 hover:bg-white hover:shadow-[0_16px_34px_-28px_rgba(8,47,73,0.5)]"
                   >
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#0e7c76]">
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-700">
                       {guide.label}
                     </span>
                     <span className="mt-2 block text-sm font-semibold leading-5 text-slate-900 transition group-hover:text-cyan-900">
@@ -610,7 +781,7 @@ export default function Home() {
         <div className="mx-auto max-w-[1440px] px-6 sm:px-8 lg:px-10">
           <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#0e7c76]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-700">
                 Procurement Support
               </p>
               <h2 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
@@ -625,7 +796,7 @@ export default function Home() {
               {procurementTrustCards.map((card) => (
                 <article
                   key={card.title}
-                  className="rounded-xl border border-slate-200 bg-slate-50 p-6 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.45)]"
+                  className="rounded-[1.25rem] border border-slate-200 bg-slate-50 p-6 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.45)]"
                 >
                   <h3 className="text-lg font-semibold text-slate-950">
                     {card.title}
@@ -641,32 +812,74 @@ export default function Home() {
       </section>
 
       <section className="border-t border-zinc-200 bg-white py-16 sm:py-24">
-        <div className="mx-auto max-w-[1440px] px-6 sm:px-8 lg:px-10">
-          <div className="overflow-hidden rounded-xl border border-slate-200 bg-[linear-gradient(135deg,#0f1b2d_0%,#16273e_58%,#0f766e_100%)] shadow-[0_24px_70px_-42px_rgba(15,23,42,0.55)]">
-            <div className="grid gap-8 px-6 py-10 sm:px-8 sm:py-12 lg:grid-cols-[1fr_auto] lg:items-center lg:px-12">
-              <div className="max-w-3xl">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-copper">
-                  Affiliated Transportation Support
-                </p>
-                <h2 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-                  Haulage & Transportation Services
-                </h2>
-                <p className="mt-5 text-base leading-7 text-slate-200 sm:text-lg">
-                  Need reliable transportation for heavy equipment, industrial materials or oversized cargo? Our affiliated company, Amcol Haulage, provides professional haulage and cargo transportation services across Trinidad and Tobago.
-                </p>
+        <div className="mx-auto max-w-[1380px] px-6 sm:px-8 lg:px-10">
+          <div className="relative overflow-hidden rounded-[1rem] border border-slate-900/10 bg-[#07111f] text-white shadow-[0_26px_70px_-38px_rgba(15,23,42,0.78)]">
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 bg-cover bg-[position:68%_45%] opacity-95 sm:bg-[position:70%_45%] lg:bg-[position:72%_46%]"
+              style={{
+                backgroundImage:
+                  "url('/images/Nighttime truck with office building.png'), url('/images/Cargo ship.webp')",
+              }}
+            />
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(3,8,20,0.98)_0%,rgba(5,12,25,0.94)_33%,rgba(34,8,16,0.56)_45%,rgba(3,7,18,0.12)_64%,rgba(3,7,18,0.34)_100%)]" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_17%_28%,rgba(220,38,38,0.2),transparent_34%),linear-gradient(180deg,rgba(3,7,18,0.08)_0%,rgba(3,7,18,0.5)_100%)]" />
+            <div
+              aria-hidden="true"
+              className="absolute bottom-0 left-[43%] top-0 hidden w-3 -skew-x-[20deg] bg-red-600/90 shadow-[0_0_34px_rgba(220,38,38,0.34)] lg:block"
+            />
+
+            <div className="relative grid min-h-[390px] lg:grid-rows-[1fr_auto]">
+              <div className="grid gap-8 px-6 py-8 sm:px-8 sm:py-10 lg:grid-cols-[0.58fr_0.42fr] lg:px-10 xl:px-12">
+                <div className="max-w-[700px] self-center">
+                  <p className="text-[11px] font-black uppercase tracking-[0.3em] text-red-400">
+                    Affiliated Transportation Support
+                  </p>
+                  <div className="mt-3 h-px w-full max-w-[240px] bg-red-500/85" />
+                  <h2 className="mt-4 max-w-3xl text-4xl font-black leading-[1.02] tracking-normal text-white sm:text-5xl lg:text-[3.35rem]">
+                    Haulage &amp;
+                    <span className="block text-red-500">Transportation Services</span>
+                  </h2>
+                  <p className="mt-5 max-w-[640px] text-sm leading-7 text-slate-100 sm:text-base">
+                    Need reliable transportation for heavy equipment, industrial materials or oversized cargo?
+                  </p>
+                  <p className="mt-3 max-w-[660px] text-sm leading-7 text-slate-100 sm:text-base">
+                    Our affiliated company, Amcol Haulage, provides professional haulage and cargo transportation services across <span className="font-black text-red-400">Trinidad and Tobago.</span>
+                  </p>
+                </div>
               </div>
-              <div className="flex lg:justify-end">
-                <a
-                  href="https://www.caribbeantransportservices.com/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-copper w-full sm:w-auto"
-                >
-                  Visit Amcol Haulage
-                  <span className="ml-2" aria-hidden="true">
-                    →
-                  </span>
-                </a>
+
+              <div className="relative border-t border-white/14 bg-[#07111f]/82 px-6 py-5 backdrop-blur-[2px] sm:px-8 lg:px-10 xl:px-12">
+                <div className="grid gap-5 lg:grid-cols-[1fr_340px] lg:items-center xl:grid-cols-[1fr_380px]">
+                  <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    {haulageHighlights.map((item, index) => (
+                      <div
+                        key={item.label}
+                        className={`flex min-h-12 items-center gap-3 ${index === 0 ? "" : "sm:border-l sm:border-white/18 sm:pl-5"}`}
+                      >
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center text-red-500">
+                          <HeroLineIcon name={item.icon} className="h-7 w-7" />
+                        </span>
+                        <span className="text-xs font-black uppercase leading-5 text-white">
+                          {item.label}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <a
+                    href="https://www.caribbeantransportservices.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex min-h-16 w-full items-center justify-center gap-4 rounded-md bg-[linear-gradient(135deg,#ef1f30_0%,#c91520_100%)] px-7 py-4 text-lg font-black text-white shadow-[0_20px_45px_-28px_rgba(239,31,48,0.9)] transition hover:-translate-y-0.5 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-200 focus:ring-offset-2 focus:ring-offset-[#07111f]"
+                  >
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-red-600">
+                      <HeroLineIcon name="delivery" />
+                    </span>
+                    Visit Amcol Haulage
+                    <span aria-hidden="true">-&gt;</span>
+                  </a>
+                </div>
               </div>
             </div>
           </div>
@@ -679,7 +892,7 @@ export default function Home() {
         <div className="mx-auto max-w-[1440px] px-6 sm:px-8 lg:px-10">
           <div className="flex flex-col gap-4 text-center sm:flex-row sm:items-end sm:justify-between sm:text-left">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#39d9cd]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-sky-400">
                 Featured Industrial Brands
               </p>
               <h2 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
@@ -709,7 +922,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="mt-12 overflow-hidden rounded-xl border border-slate-700 bg-[#101b25] shadow-[0_28px_80px_-48px_rgba(0,0,0,0.95)]">
+          <div className="mt-12 overflow-hidden rounded-[1.25rem] border border-slate-700 bg-[#101b25] shadow-[0_28px_80px_-48px_rgba(0,0,0,0.95)]">
             <div className="grid gap-0 lg:grid-cols-[1.08fr_0.92fr]">
               <Link
                 href={activeBrand.href}
@@ -718,7 +931,7 @@ export default function Home() {
                 <div className="absolute inset-y-0 right-0 w-[46%] bg-[#101b25]" />
                 <div className="absolute inset-x-0 bottom-0 h-44 bg-[linear-gradient(180deg,transparent_0%,rgba(3,9,14,0.88)_100%)]" />
                 <div className="relative z-10 flex max-w-[58%] flex-1 flex-col sm:max-w-[50%]">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#39d9cd]">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-sky-400">
                     Featured Brand
                   </p>
                   <h3 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -733,7 +946,7 @@ export default function Home() {
                     <p>Trusted by maintenance and field crews.</p>
                     <p>Reliable performance when it matters.</p>
                   </div>
-                  <span className="btn btn-primary mt-8 w-fit">
+                  <span className="mt-8 inline-flex w-fit items-center gap-3 rounded-md bg-[#2879ce] px-5 py-3 text-sm font-semibold text-white transition group-hover:bg-[#3a8fe3]">
                     View products <span aria-hidden="true">→</span>
                   </span>
                 </div>
@@ -748,14 +961,14 @@ export default function Home() {
                   />
                 </div>
                 <div className="relative z-10 mt-auto rounded-lg border border-slate-700/80 bg-slate-900/80 px-4 py-4 backdrop-blur-sm">
-                  <span className="text-sm font-semibold text-[#39d9cd]">Applications:</span>
+                  <span className="text-sm font-semibold text-sky-400">Applications:</span>
                   <span className="ml-3 text-sm text-slate-300">Mechanical crews&nbsp; • &nbsp;Pipefitters&nbsp; • &nbsp;Maintenance&nbsp; • &nbsp;Repair work</span>
                 </div>
               </Link>
 
               <div className="flex flex-col justify-between bg-[#101b25] p-6 sm:p-8 lg:p-9">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#39d9cd]">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-sky-400">
                     Browse Brands
                   </p>
                   <h3 className="mt-3 text-2xl font-semibold tracking-tight text-white">
@@ -792,7 +1005,7 @@ export default function Home() {
                           <span className="block text-sm font-semibold text-white">
                             {brand.name}
                           </span>
-                          <span className={`mt-1 block text-xs leading-5 ${isActive ? "text-[#39d9cd]" : "text-slate-400"}`}>
+                          <span className={`mt-1 block text-xs leading-5 ${isActive ? "text-sky-400" : "text-slate-400"}`}>
                             {isActive ? "Currently featured" : "View spotlight"}
                           </span>
                         </span>
