@@ -36,6 +36,11 @@ export type AdminCategoryInput = {
   image?: string;
 };
 
+export type AdminCategoryUpdateInput = AdminCategoryInput & {
+  id?: string;
+  currentSlug?: string;
+};
+
 export type DeleteAdminCategoryResult = {
   category: AdminCategoryRecord;
 };
@@ -275,6 +280,16 @@ export async function deleteAdminCategory(
   return deleteFileAdminCategory(id);
 }
 
+export async function updateAdminCategory(
+  input: AdminCategoryUpdateInput,
+): Promise<AdminCategoryRecord> {
+  if (hasSupabaseAdminConfig()) {
+    return updateSupabaseAdminCategory(input);
+  }
+
+  return updateFileAdminCategory(input);
+}
+
 export async function getAdminProductById(
   id: string,
 ): Promise<AdminProductRecord | null> {
@@ -447,18 +462,16 @@ async function deleteFileAdminCategory(
 
   const category = existingCategories[categoryIndex];
 
-  if (category.source !== "admin") {
-    throw new Error("Only admin-created categories can be deleted here.");
-  }
-
   const assignedProducts = await getAdminProducts();
-  const hasProducts = assignedProducts.some(
+  const productCount = assignedProducts.filter(
     (product) => product.categorySlug === category.slug,
-  );
+  ).length;
 
-  if (hasProducts) {
+  if (productCount > 0) {
     throw new Error(
-      "Remove or move the products in this category before deleting it.",
+      `Cannot delete this category because ${productCount} product${
+        productCount === 1 ? " is" : "s are"
+      } assigned to it.`,
     );
   }
 
@@ -522,10 +535,6 @@ async function deleteSupabaseAdminCategory(
     throw new Error("Unable to find the selected category.");
   }
 
-  if (productCategoryData[category.slug]) {
-    throw new Error("Only admin-created categories can be deleted here.");
-  }
-
   const { count, error: countError } = await supabase
     .from("products")
     .select("id", { count: "exact", head: true })
@@ -538,7 +547,9 @@ async function deleteSupabaseAdminCategory(
 
   if ((count ?? 0) > 0) {
     throw new Error(
-      "Remove or move the products in this category before deleting it.",
+      `Cannot delete this category because ${count} product${
+        count === 1 ? " is" : "s are"
+      } assigned to it.`,
     );
   }
 
@@ -737,6 +748,128 @@ async function createSupabaseAdminCategory(
   }
 
   return mapSupabaseCategory(category);
+}
+
+async function updateFileAdminCategory(
+  input: AdminCategoryUpdateInput,
+): Promise<AdminCategoryRecord> {
+  const name = input.name.trim();
+  const currentSlug = createCategorySlug(input.currentSlug || input.slug || name);
+
+  if (!name || !currentSlug) {
+    throw new Error("Category name and current slug are required.");
+  }
+
+  const existingAdminCategories = await getFileAdminCategories();
+  const categoryIndex = existingAdminCategories.findIndex(
+    (category) =>
+      (input.id && category.id === input.id) || category.slug === currentSlug,
+  );
+  const existingSeedCategory = productCategoryData[currentSlug];
+
+  if (categoryIndex === -1 && !existingSeedCategory) {
+    throw new Error("Unable to find the selected category.");
+  }
+
+  const currentCategory =
+    categoryIndex >= 0
+      ? existingAdminCategories[categoryIndex]
+      : {
+          id: input.id || `category-${Date.now()}`,
+          slug: currentSlug,
+          name: existingSeedCategory.name,
+          description: existingSeedCategory.description,
+          image: existingSeedCategory.image,
+          createdAt: new Date().toISOString(),
+          source: "admin" as const,
+        };
+
+  const updatedCategory: AdminCategoryRecord = {
+    ...currentCategory,
+    slug: currentCategory.slug,
+    name,
+    description: normalizeCategoryDescription(input.description, name),
+    image: input.image?.trim() || currentCategory.image,
+    source: currentCategory.source === "seed" ? "seed" : "admin",
+  };
+
+  if (categoryIndex >= 0) {
+    existingAdminCategories[categoryIndex] = updatedCategory;
+  } else {
+    existingAdminCategories.unshift(updatedCategory);
+  }
+
+  await writeFile(
+    adminCategoriesFile,
+    JSON.stringify(existingAdminCategories, null, 2),
+    "utf8",
+  );
+
+  return updatedCategory;
+}
+
+async function updateSupabaseAdminCategory(
+  input: AdminCategoryUpdateInput,
+): Promise<AdminCategoryRecord> {
+  if (!input.id) {
+    throw new Error("A category id is required to save edits.");
+  }
+
+  const name = input.name.trim();
+
+  if (!name) {
+    throw new Error("A category name is required.");
+  }
+
+  const supabase = createSupabaseAdminClient();
+  const existingCategory = await getSupabaseCategoryById(supabase, input.id);
+
+  if (!existingCategory) {
+    throw new Error("Unable to find the selected category.");
+  }
+
+  const baseCategoryInput = {
+    name,
+    description: normalizeCategoryDescription(input.description, name),
+  };
+
+  const updatePayload = input.image?.trim()
+    ? { ...baseCategoryInput, image_url: input.image.trim() }
+    : baseCategoryInput;
+
+  const categoryUpdateResult = await supabase
+    .from("product_categories")
+    .update(updatePayload)
+    .eq("id", input.id)
+    .eq("is_active", true)
+    .select(categorySelectQuery)
+    .maybeSingle();
+
+  let data = categoryUpdateResult.data as ProductCategoryRow | null;
+  let error = categoryUpdateResult.error;
+
+  if (error && isMissingCategoryImageColumnError(error)) {
+    const fallbackResult = await supabase
+      .from("product_categories")
+      .update(baseCategoryInput)
+      .eq("id", input.id)
+      .eq("is_active", true)
+      .select(legacyCategorySelectQuery)
+      .maybeSingle();
+
+    data = fallbackResult.data as ProductCategoryRow | null;
+    error = fallbackResult.error;
+  }
+
+  if (error) {
+    throw new Error(`Unable to update category: ${error.message}`);
+  }
+
+  if (!data) {
+    throw new Error("Unable to find the selected category.");
+  }
+
+  return mapSupabaseCategory(data);
 }
 
 async function updateFileAdminProduct(
