@@ -1,7 +1,5 @@
-import path from "node:path";
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
-import { del, put } from "@vercel/blob";
 import {
   createAdminProduct,
   deleteAdminProduct,
@@ -11,21 +9,11 @@ import {
   updateAdminProduct,
 } from "@/lib/catalog-store";
 import {
-  getSupabaseStorageHostname,
-  hasSupabaseAdminConfig,
-  PRODUCT_IMAGES_BUCKET,
-} from "@/lib/supabase/config";
-import { createSupabaseAdminClient } from "@/lib/supabase/server";
+  removeCatalogImages,
+  uploadCatalogImage,
+} from "@/lib/catalog-images";
 
 export const runtime = "nodejs";
-
-function sanitizeSegment(value: string) {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 60);
-}
 
 type ProductFormValues = {
   id: string;
@@ -75,87 +63,22 @@ function parseProductFormData(formData: FormData): ProductFormValues {
   };
 }
 
-async function uploadProductImage(
-  imageFile: File,
+async function uploadGalleryImages(
+  formData: FormData,
   name: string,
-): Promise<{ publicUrl: string; path: string }> {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    throw new Error(
-      "Vercel Blob is not configured. Add BLOB_READ_WRITE_TOKEN before saving product images.",
-    );
-  }
-
-  const extension = path.extname(imageFile.name) || ".png";
-  const fileName = `${Date.now()}-${sanitizeSegment(name)}${extension.toLowerCase()}`;
-  const uploadedPath = `products/${fileName}`;
-  const blob = await put(uploadedPath, imageFile, {
-    access: "public",
-    contentType: imageFile.type || undefined,
-  });
-
-  return {
-    publicUrl: blob.url,
-    path: blob.url,
-  };
-}
-
-function getStoragePathFromPublicUrl(publicUrl: string): string | null {
-  const expectedHostname = getSupabaseStorageHostname();
-
-  if (!expectedHostname) {
-    return null;
-  }
-
-  try {
-    const url = new URL(publicUrl);
-
-    if (url.hostname !== expectedHostname) {
-      return null;
-    }
-
-    const marker = `/storage/v1/object/public/${PRODUCT_IMAGES_BUCKET}/`;
-    const markerIndex = url.pathname.indexOf(marker);
-
-    if (markerIndex === -1) {
-      return null;
-    }
-
-    return decodeURIComponent(url.pathname.slice(markerIndex + marker.length));
-  } catch {
-    return null;
-  }
-}
-
-async function removeStoredImage(publicUrl: string) {
-  if (publicUrl.includes(".public.blob.vercel-storage.com")) {
-    await del(publicUrl);
-    return;
-  }
-
-  const storagePath = getStoragePathFromPublicUrl(publicUrl);
-
-  if (!storagePath || !hasSupabaseAdminConfig()) {
-    return;
-  }
-
-  const supabase = createSupabaseAdminClient();
-  await supabase.storage.from(PRODUCT_IMAGES_BUCKET).remove([storagePath]);
-}
-
-async function removeStoredImages(publicUrls: string[]) {
-  await Promise.all(publicUrls.map((publicUrl) => removeStoredImage(publicUrl)));
-}
-
-async function uploadGalleryImages(formData: FormData, name: string) {
+  uploadedImageUrls: string[],
+) {
   const galleryFiles = formData
     .getAll("galleryImageFiles")
     .filter(
       (file): file is File => file instanceof File && file.size > 0,
     );
-  const uploads: { publicUrl: string; path: string }[] = [];
+  const uploads: string[] = [];
 
   for (const file of galleryFiles) {
-    uploads.push(await uploadProductImage(file, `${name}-gallery`));
+    const publicUrl = await uploadCatalogImage(file, "products", `${name}-gallery`);
+    uploads.push(publicUrl);
+    uploadedImageUrls.push(publicUrl);
   }
 
   return uploads;
@@ -178,12 +101,18 @@ function revalidateCatalogPaths(categorySlugs: string[]) {
 }
 
 export async function GET() {
-  const [products, categories] = await Promise.all([
-    getAdminProducts(),
-    getCategoryOptions(),
-  ]);
+  try {
+    const [products, categories] = await Promise.all([
+      getAdminProducts(),
+      getCategoryOptions(),
+    ]);
 
-  return NextResponse.json({ products, categories });
+    return NextResponse.json({ products, categories });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Unable to load products.";
+    return NextResponse.json({ error: message }, { status: 503 });
+  }
 }
 
 export async function POST(request: Request) {
@@ -210,13 +139,16 @@ export async function POST(request: Request) {
       );
     }
 
-    const upload = await uploadProductImage(imageFile, values.name);
-    uploadedImageUrls.push(upload.path);
-    const galleryUploads = await uploadGalleryImages(formData, values.name);
-    uploadedImageUrls.push(...galleryUploads.map((item) => item.path));
+    const imageUrl = await uploadCatalogImage(imageFile, "products", values.name);
+    uploadedImageUrls.push(imageUrl);
+    const galleryUploads = await uploadGalleryImages(
+      formData,
+      values.name,
+      uploadedImageUrls,
+    );
     const galleryImages = [
       ...values.galleryImages,
-      ...galleryUploads.map((item) => item.publicUrl),
+      ...galleryUploads,
     ];
 
     const savedProduct = await createAdminProduct({
@@ -232,19 +164,20 @@ export async function POST(request: Request) {
       sku: values.sku,
       unit: values.unit,
       stockStatus: values.stockStatus,
-      image: upload.publicUrl,
+      image: imageUrl,
       imageAlt: values.imageAlt,
       galleryImages,
       specifications: values.specifications,
       featured: values.featured,
     });
+    uploadedImageUrls.length = 0;
 
     revalidateCatalogPaths([values.categorySlug]);
 
     return NextResponse.json({ product: savedProduct }, { status: 201 });
   } catch (error) {
     if (uploadedImageUrls.length > 0) {
-      await removeStoredImages(uploadedImageUrls);
+      await removeCatalogImages(uploadedImageUrls);
     }
 
     const message =
@@ -291,9 +224,9 @@ export async function PUT(request: Request) {
     let shouldRemovePreviousImage = false;
 
     if (imageFile instanceof File && imageFile.size > 0) {
-      const upload = await uploadProductImage(imageFile, values.name);
-      uploadedImageUrls.push(upload.path);
-      imageUrl = upload.publicUrl;
+      const uploadUrl = await uploadCatalogImage(imageFile, "products", values.name);
+      uploadedImageUrls.push(uploadUrl);
+      imageUrl = uploadUrl;
       shouldRemovePreviousImage = imageUrl !== existingProduct.image;
     }
 
@@ -304,11 +237,14 @@ export async function PUT(request: Request) {
       );
     }
 
-    const galleryUploads = await uploadGalleryImages(formData, values.name);
-    uploadedImageUrls.push(...galleryUploads.map((item) => item.path));
+    const galleryUploads = await uploadGalleryImages(
+      formData,
+      values.name,
+      uploadedImageUrls,
+    );
     const galleryImages = [
       ...values.galleryImages,
-      ...galleryUploads.map((item) => item.publicUrl),
+      ...galleryUploads,
     ];
 
     const updatedProduct = await updateAdminProduct({
@@ -331,15 +267,16 @@ export async function PUT(request: Request) {
       specifications: values.specifications,
       featured: values.featured,
     });
+    uploadedImageUrls.length = 0;
 
     if (shouldRemovePreviousImage) {
-      await removeStoredImage(existingProduct.image);
+      await removeCatalogImages([existingProduct.image]);
     }
 
     const removedGalleryImages = (existingProduct.galleryImages ?? []).filter(
       (image) => !galleryImages.includes(image),
     );
-    await removeStoredImages(removedGalleryImages);
+    await removeCatalogImages(removedGalleryImages);
 
     revalidateCatalogPaths([
       existingProduct.categorySlug,
@@ -351,7 +288,7 @@ export async function PUT(request: Request) {
     return NextResponse.json({ product: updatedProduct });
   } catch (error) {
     if (uploadedImageUrls.length > 0) {
-      await removeStoredImages(uploadedImageUrls);
+      await removeCatalogImages(uploadedImageUrls);
     }
 
     const message =
@@ -373,8 +310,10 @@ export async function DELETE(request: Request) {
     }
 
     const deletedProduct = await deleteAdminProduct(id);
-    await removeStoredImage(deletedProduct.image);
-    await removeStoredImages(deletedProduct.galleryImages ?? []);
+    await removeCatalogImages([
+      deletedProduct.image,
+      ...(deletedProduct.galleryImages ?? []),
+    ]);
     revalidateCatalogPaths([deletedProduct.categorySlug]);
 
     return NextResponse.json({ product: deletedProduct });

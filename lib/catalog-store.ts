@@ -219,11 +219,6 @@ const categorySelectQuery = `
   image_url,
   is_featured,
   parent_id,
-  parent:product_categories!product_categories_parent_id_fkey (
-    id,
-    slug,
-    name
-  ),
   created_at
 `;
 
@@ -450,6 +445,10 @@ export async function getLandingCategories(): Promise<ProductCategoryPageData[]>
 export async function getAdminProducts(): Promise<AdminProductRecord[]> {
   noStore();
 
+  if (hasSupabaseAdminConfig()) {
+    return getSupabaseAdminProducts(true);
+  }
+
   if (hasSupabaseReadConfig()) {
     try {
       return await getSupabaseAdminProducts();
@@ -466,6 +465,10 @@ export async function getAdminProducts(): Promise<AdminProductRecord[]> {
 
 export async function getAdminCategories(): Promise<AdminCategoryRecord[]> {
   noStore();
+
+  if (hasSupabaseAdminConfig()) {
+    return getSupabaseAdminCategories(true);
+  }
 
   if (hasSupabaseReadConfig()) {
     try {
@@ -515,6 +518,10 @@ export async function getAdminProductById(
   id: string,
 ): Promise<AdminProductRecord | null> {
   noStore();
+
+  if (hasSupabaseAdminConfig()) {
+    return getSupabaseAdminProductById(id, true);
+  }
 
   if (hasSupabaseReadConfig()) {
     try {
@@ -607,8 +614,10 @@ async function getFileAdminCategories(): Promise<AdminCategoryRecord[]> {
   }
 }
 
-async function getSupabaseAdminProducts(): Promise<AdminProductRecord[]> {
-  const supabase = createSupabaseReadClient();
+async function getSupabaseAdminProducts(useAdminClient = false): Promise<AdminProductRecord[]> {
+  const supabase = useAdminClient
+    ? createSupabaseAdminClient()
+    : createSupabaseReadClient();
   const { data, error } = await supabase
     .from("products")
     .select(productSelectQuery)
@@ -616,17 +625,21 @@ async function getSupabaseAdminProducts(): Promise<AdminProductRecord[]> {
     .order("created_at", { ascending: false });
 
   if (error) {
-    throw new Error(`Unable to load Supabase products: ${error.message}`);
+    throw new Error(formatCatalogSchemaError("Unable to load Supabase products", error));
   }
 
   return (data ?? []).map(mapSupabaseProduct);
 }
 
-async function getSupabaseAdminCategories(): Promise<AdminCategoryRecord[]> {
-  const supabase = createSupabaseReadClient();
+async function getSupabaseAdminCategories(
+  useAdminClient = false,
+): Promise<AdminCategoryRecord[]> {
+  const supabase = useAdminClient
+    ? createSupabaseAdminClient()
+    : createSupabaseReadClient();
   const categories = await listSupabaseCategories(supabase);
 
-  return categories.map(mapSupabaseCategory);
+  return categories.map((category) => mapSupabaseCategory(category, categories));
 }
 
 async function getFileAdminProductById(
@@ -638,8 +651,11 @@ async function getFileAdminProductById(
 
 async function getSupabaseAdminProductById(
   id: string,
+  useAdminClient = false,
 ): Promise<AdminProductRecord | null> {
-  const supabase = createSupabaseReadClient();
+  const supabase = useAdminClient
+    ? createSupabaseAdminClient()
+    : createSupabaseReadClient();
   const { data, error } = await supabase
     .from("products")
     .select(productSelectQuery)
@@ -650,7 +666,7 @@ async function getSupabaseAdminProductById(
   const product = data as ProductRow | null;
 
   if (error) {
-    throw new Error(`Unable to load product: ${error.message}`);
+    throw new Error(formatCatalogSchemaError("Unable to load product", error));
   }
 
   return product ? mapSupabaseProduct(product) : null;
@@ -688,8 +704,13 @@ function mapSupabaseProduct(row: ProductRow): AdminProductRecord {
   };
 }
 
-function mapSupabaseCategory(row: ProductCategoryRow): AdminCategoryRecord {
-  const parentRecord = Array.isArray(row.parent) ? row.parent[0] : row.parent;
+function mapSupabaseCategory(
+  row: ProductCategoryRow,
+  categories: ProductCategoryRow[] = [],
+): AdminCategoryRecord {
+  const embeddedParent = Array.isArray(row.parent) ? row.parent[0] : row.parent;
+  const parentRecord =
+    embeddedParent ?? categories.find((category) => category.id === row.parent_id);
 
   return {
     id: row.id,
@@ -873,7 +894,10 @@ async function deleteSupabaseAdminCategory(
   }
 
   return {
-    category: mapSupabaseCategory(category),
+    category: mapSupabaseCategory(
+      category,
+      await listSupabaseCategories(supabase),
+    ),
   };
 }
 
@@ -1130,7 +1154,10 @@ async function createSupabaseAdminCategory(
     throw new Error(message);
   }
 
-  return mapSupabaseCategory(category);
+  return mapSupabaseCategory(
+    category,
+    await listSupabaseCategories(supabase),
+  );
 }
 
 async function updateFileAdminCategory(
@@ -1309,7 +1336,10 @@ async function updateSupabaseAdminCategory(
     throw new Error("Unable to find the selected category.");
   }
 
-  return mapSupabaseCategory(data);
+  return mapSupabaseCategory(
+    data,
+    await listSupabaseCategories(supabase),
+  );
 }
 
 async function updateFileAdminCategoryFeatured(
@@ -1397,7 +1427,10 @@ async function updateSupabaseAdminCategoryFeatured(
     throw new Error("Unable to find the selected category.");
   }
 
-  return mapSupabaseCategory(data as ProductCategoryRow);
+  return mapSupabaseCategory(
+    data as ProductCategoryRow,
+    await listSupabaseCategories(supabase),
+  );
 }
 
 async function updateFileAdminProduct(
@@ -1510,7 +1543,7 @@ async function getSupabaseCategoryBySlug(
   const category = data as ProductCategoryRow | null;
 
   if (error) {
-    throw new Error(`Unable to load product category: ${error.message}`);
+    throw new Error(formatCatalogSchemaError("Unable to load product category", error));
   }
 
   return category;
@@ -1532,7 +1565,7 @@ async function listSupabaseCategories(
   }
 
   if (!isMissingCategoryImageColumnError(error)) {
-    throw new Error(`Unable to load product categories: ${error.message}`);
+    throw new Error(formatCatalogSchemaError("Unable to load product categories", error));
   }
 
   const fallbackResult = await supabase
@@ -1566,7 +1599,7 @@ async function getSupabaseCategoryById(
   }
 
   if (!isMissingCategoryImageColumnError(error)) {
-    throw new Error(`Unable to load category: ${error.message}`);
+    throw new Error(formatCatalogSchemaError("Unable to load category", error));
   }
 
   const fallbackResult = await supabase
@@ -1604,13 +1637,34 @@ function isMissingCategoryImageColumnError(
     .toLowerCase();
 
   return (
-    error.code === "42703" ||
-    error.code === "PGRST204" ||
-    combinedMessage.includes("image_url") ||
-    combinedMessage.includes("is_featured") ||
-    combinedMessage.includes("parent_id") ||
-    combinedMessage.includes("subcategory_id")
+    (error.code === "42703" || error.code === "PGRST204") &&
+    combinedMessage.includes("image_url")
   );
+}
+
+function formatCatalogSchemaError(
+  prefix: string,
+  error: {
+    code?: string;
+    details?: string | null;
+    hint?: string | null;
+    message?: string;
+  },
+) {
+  const combinedMessage = [error.message, error.details, error.hint]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  if (
+    (error.code === "42703" || error.code === "PGRST204") &&
+    (combinedMessage.includes("parent_id") ||
+      combinedMessage.includes("subcategory_id"))
+  ) {
+    return `${prefix}: the Supabase catalog hierarchy migration has not been applied.`;
+  }
+
+  return `${prefix}: ${error.message ?? "Unknown Supabase error."}`;
 }
 
 function normalizeCategoryDescription(description: string | null | undefined, name: string) {

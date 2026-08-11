@@ -1,7 +1,9 @@
-import { Buffer } from "node:buffer";
-import path from "node:path";
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
+import {
+  removeCatalogImages,
+  uploadCatalogImage,
+} from "@/lib/catalog-images";
 import {
   createAdminCategory,
   deleteAdminCategory,
@@ -9,72 +11,22 @@ import {
   updateAdminCategory,
   updateAdminCategoryFeatured,
 } from "@/lib/catalog-store";
-import {
-  getSupabaseStorageHostname,
-  hasSupabaseAdminConfig,
-  PRODUCT_IMAGES_BUCKET,
-} from "@/lib/supabase/config";
-import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
-function sanitizeSegment(value: string) {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 60);
-}
-
-function getStoragePathFromPublicUrl(publicUrl: string): string | null {
-  const expectedHostname = getSupabaseStorageHostname();
-
-  if (!expectedHostname) {
-    return null;
-  }
-
-  try {
-    const url = new URL(publicUrl);
-
-    if (url.hostname !== expectedHostname) {
-      return null;
-    }
-
-    const marker = `/storage/v1/object/public/${PRODUCT_IMAGES_BUCKET}/`;
-    const markerIndex = url.pathname.indexOf(marker);
-
-    if (markerIndex === -1) {
-      return null;
-    }
-
-    return decodeURIComponent(url.pathname.slice(markerIndex + marker.length));
-  } catch {
-    return null;
-  }
-}
-
-async function removeStoredImage(publicUrl: string | undefined) {
-  if (!publicUrl || !hasSupabaseAdminConfig()) {
-    return;
-  }
-
-  const storagePath = getStoragePathFromPublicUrl(publicUrl);
-
-  if (!storagePath) {
-    return;
-  }
-
-  const supabase = createSupabaseAdminClient();
-  await supabase.storage.from(PRODUCT_IMAGES_BUCKET).remove([storagePath]);
-}
-
 export async function GET() {
-  const categories = await getAdminCategories();
-  return NextResponse.json({ categories });
+  try {
+    const categories = await getAdminCategories();
+    return NextResponse.json({ categories });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Unable to load categories.";
+    return NextResponse.json({ error: message }, { status: 503 });
+  }
 }
 
 export async function POST(request: Request) {
-  let uploadedImagePath: string | null = null;
+  let uploadedImageUrl: string | undefined;
 
   try {
     const formData = await request.formData();
@@ -93,57 +45,28 @@ export async function POST(request: Request) {
       );
     }
 
-    let image: string | undefined;
-
     if (imageFile instanceof File && imageFile.size > 0) {
-      if (!hasSupabaseAdminConfig()) {
-        return NextResponse.json(
-          {
-            error:
-              "Supabase admin access is not configured. Add SUPABASE_SERVICE_ROLE_KEY before uploading category images.",
-          },
-          { status: 500 },
-        );
-      }
-
-      const supabase = createSupabaseAdminClient();
-      const extension = path.extname(imageFile.name) || ".png";
-      const fileName = `${Date.now()}-${sanitizeSegment(slug || name)}${extension.toLowerCase()}`;
-      uploadedImagePath = `categories/${fileName}`;
-      const bytes = await imageFile.arrayBuffer();
-      const { error: uploadError } = await supabase.storage
-        .from(PRODUCT_IMAGES_BUCKET)
-        .upload(uploadedImagePath, Buffer.from(bytes), {
-          contentType: imageFile.type || undefined,
-          upsert: false,
-        });
-
-      if (uploadError) {
-        throw new Error(`Unable to upload category image: ${uploadError.message}`);
-      }
-
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from(PRODUCT_IMAGES_BUCKET).getPublicUrl(uploadedImagePath);
-
-      image = publicUrl;
+      uploadedImageUrl = await uploadCatalogImage(
+        imageFile,
+        "categories",
+        slug || name,
+      );
     }
 
     const category = await createAdminCategory({
       name,
       slug,
       description,
-      image,
+      image: uploadedImageUrl,
       isFeatured,
       parentId: parentId || null,
       parentSlug,
     });
 
-    if (uploadedImagePath && image && !category.image && hasSupabaseAdminConfig()) {
-      const supabase = createSupabaseAdminClient();
-      await supabase.storage.from(PRODUCT_IMAGES_BUCKET).remove([uploadedImagePath]);
-      uploadedImagePath = null;
+    if (uploadedImageUrl && !category.image) {
+      await removeCatalogImages([uploadedImageUrl]);
     }
+    uploadedImageUrl = undefined;
 
     revalidatePath("/products");
     revalidatePath("/");
@@ -155,9 +78,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ category }, { status: 201 });
   } catch (error) {
-    if (uploadedImagePath && hasSupabaseAdminConfig()) {
-      const supabase = createSupabaseAdminClient();
-      await supabase.storage.from(PRODUCT_IMAGES_BUCKET).remove([uploadedImagePath]);
+    if (uploadedImageUrl) {
+      await removeCatalogImages([uploadedImageUrl]);
     }
 
     const message =
@@ -168,7 +90,7 @@ export async function POST(request: Request) {
 }
 
 export async function PUT(request: Request) {
-  let uploadedImagePath: string | null = null;
+  let uploadedImageUrl: string | undefined;
 
   try {
     const formData = await request.formData();
@@ -195,40 +117,25 @@ export async function PUT(request: Request) {
       );
     }
 
-    let image: string | undefined;
+    const existingCategory = (await getAdminCategories()).find(
+      (category) =>
+        (id && category.id === id) ||
+        (currentSlug && category.slug === currentSlug),
+    );
+
+    if (!existingCategory) {
+      return NextResponse.json(
+        { error: "Unable to find the selected category." },
+        { status: 404 },
+      );
+    }
 
     if (imageFile instanceof File && imageFile.size > 0) {
-      if (!hasSupabaseAdminConfig()) {
-        return NextResponse.json(
-          {
-            error:
-              "Supabase admin access is not configured. Add SUPABASE_SERVICE_ROLE_KEY before uploading category images.",
-          },
-          { status: 500 },
-        );
-      }
-
-      const supabase = createSupabaseAdminClient();
-      const extension = path.extname(imageFile.name) || ".png";
-      const fileName = `${Date.now()}-${sanitizeSegment(currentSlug || name)}${extension.toLowerCase()}`;
-      uploadedImagePath = `categories/${fileName}`;
-      const bytes = await imageFile.arrayBuffer();
-      const { error: uploadError } = await supabase.storage
-        .from(PRODUCT_IMAGES_BUCKET)
-        .upload(uploadedImagePath, Buffer.from(bytes), {
-          contentType: imageFile.type || undefined,
-          upsert: false,
-        });
-
-      if (uploadError) {
-        throw new Error(`Unable to upload category image: ${uploadError.message}`);
-      }
-
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from(PRODUCT_IMAGES_BUCKET).getPublicUrl(uploadedImagePath);
-
-      image = publicUrl;
+      uploadedImageUrl = await uploadCatalogImage(
+        imageFile,
+        "categories",
+        currentSlug || name,
+      );
     }
 
     const category = await updateAdminCategory({
@@ -236,11 +143,16 @@ export async function PUT(request: Request) {
       currentSlug,
       name,
       description,
-      image,
+      image: uploadedImageUrl,
       isFeatured,
       parentId: parentId || null,
       parentSlug,
     });
+
+    if (uploadedImageUrl && existingCategory.image !== uploadedImageUrl) {
+      await removeCatalogImages([existingCategory.image]);
+    }
+    uploadedImageUrl = undefined;
 
     revalidatePath("/");
     revalidatePath("/products");
@@ -252,9 +164,8 @@ export async function PUT(request: Request) {
 
     return NextResponse.json({ category });
   } catch (error) {
-    if (uploadedImagePath && hasSupabaseAdminConfig()) {
-      const supabase = createSupabaseAdminClient();
-      await supabase.storage.from(PRODUCT_IMAGES_BUCKET).remove([uploadedImagePath]);
+    if (uploadedImageUrl) {
+      await removeCatalogImages([uploadedImageUrl]);
     }
 
     const message =
@@ -326,7 +237,7 @@ export async function DELETE(request: Request) {
 
     const { category } = await deleteAdminCategory(id);
 
-    await removeStoredImage(category.image);
+    await removeCatalogImages([category.image]);
 
     revalidatePath("/");
     revalidatePath("/products");

@@ -224,19 +224,19 @@ export default function AdminDashboardPage() {
         ]);
 
         if (!productsResponse.ok) {
-          await readJsonResponse<{ error?: string }>(
+          const productError = await readJsonResponse<{ error?: string }>(
             productsResponse,
             "Unable to load products.",
           );
-          throw new Error("Unable to load products.");
+          throw new Error(productError.error || "Unable to load products.");
         }
 
         if (!categoriesResponse.ok) {
-          await readJsonResponse<{ error?: string }>(
+          const categoryError = await readJsonResponse<{ error?: string }>(
             categoriesResponse,
             "Unable to load categories.",
           );
-          throw new Error("Unable to load categories.");
+          throw new Error(categoryError.error || "Unable to load categories.");
         }
 
         const productData = await readJsonResponse<DashboardResponse>(
