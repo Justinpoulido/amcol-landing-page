@@ -1,7 +1,7 @@
+import { Buffer } from "node:buffer";
 import path from "node:path";
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
-import { del, put } from "@vercel/blob";
 import {
   createAdminProduct,
   deleteAdminProduct,
@@ -77,23 +77,35 @@ async function uploadProductImage(
   imageFile: File,
   name: string,
 ): Promise<{ publicUrl: string; path: string }> {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+  if (!hasSupabaseAdminConfig()) {
     throw new Error(
-      "Vercel Blob is not configured. Add BLOB_READ_WRITE_TOKEN before saving product images.",
+      "Supabase admin access is not configured. Add SUPABASE_SERVICE_ROLE_KEY before saving product images.",
     );
   }
 
   const extension = path.extname(imageFile.name) || ".png";
   const fileName = `${Date.now()}-${sanitizeSegment(name)}${extension.toLowerCase()}`;
   const uploadedPath = `products/${fileName}`;
-  const blob = await put(uploadedPath, imageFile, {
-    access: "public",
-    contentType: imageFile.type || undefined,
-  });
+  const bytes = await imageFile.arrayBuffer();
+  const supabase = createSupabaseAdminClient();
+  const { error: uploadError } = await supabase.storage
+    .from(PRODUCT_IMAGES_BUCKET)
+    .upload(uploadedPath, Buffer.from(bytes), {
+      contentType: imageFile.type || undefined,
+      upsert: false,
+    });
+
+  if (uploadError) {
+    throw new Error(`Unable to upload product image: ${uploadError.message}`);
+  }
+
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from(PRODUCT_IMAGES_BUCKET).getPublicUrl(uploadedPath);
 
   return {
-    publicUrl: blob.url,
-    path: blob.url,
+    publicUrl,
+    path: uploadedPath,
   };
 }
 
@@ -125,11 +137,6 @@ function getStoragePathFromPublicUrl(publicUrl: string): string | null {
 }
 
 async function removeStoredImage(publicUrl: string) {
-  if (publicUrl.includes(".public.blob.vercel-storage.com")) {
-    await del(publicUrl);
-    return;
-  }
-
   const storagePath = getStoragePathFromPublicUrl(publicUrl);
 
   if (!storagePath || !hasSupabaseAdminConfig()) {

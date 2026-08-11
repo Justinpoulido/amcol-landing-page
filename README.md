@@ -46,6 +46,30 @@ vercel env pull .env.local --yes
 If `ADMIN_USERNAME` or `ADMIN_PASSWORD` is missing, the admin login page disables
 sign-in instead of exposing admin access.
 
+## Product image storage
+
+Product and category images are stored in the public `product-images` Supabase
+Storage bucket. Apply the existing `create_product_image_bucket` migration, then
+set these variables locally and in Vercel:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+```
+
+`SUPABASE_SERVICE_ROLE_KEY` is server-only and must never be prefixed with
+`NEXT_PUBLIC_`. To copy product images that were previously stored in Vercel
+Blob and update their database URLs, run:
+
+```bash
+node scripts/migrate-vercel-blob-images.mjs
+```
+
+The script requires the same Supabase variables and can be safely re-run. It
+does not delete the original Blob files; delete them only after checking the
+updated product pages.
+
 ## Contact Request Email Notifications
 
 Contact form submissions are saved to Supabase first, then the server attempts to
