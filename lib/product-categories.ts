@@ -5,6 +5,10 @@ export type ProductItem = {
   price: string;
   image: string;
   category: string;
+  categorySlug?: string;
+  categoryName?: string;
+  subcategorySlug?: string;
+  subcategoryName?: string;
   summary?: string;
   description?: string;
   specifications?: string[];
@@ -31,6 +35,9 @@ export type ProductCategoryPageData = {
   description: string;
   products: ProductItem[];
   isFeatured?: boolean;
+  parentSlug?: string;
+  parentName?: string;
+  subcategories?: ProductCategoryPageData[];
 };
 
 export const productCategoryData: Record<string, ProductCategoryPageData> = {

@@ -82,6 +82,8 @@ export async function POST(request: Request) {
     const slug = String(formData.get("slug") ?? "").trim();
     const description = String(formData.get("description") ?? "").trim();
     const isFeatured = String(formData.get("isFeatured") ?? "") === "true";
+    const parentId = String(formData.get("parentId") ?? "").trim();
+    const parentSlug = String(formData.get("parentSlug") ?? "").trim();
     const imageFile = formData.get("image");
 
     if (!name) {
@@ -133,6 +135,8 @@ export async function POST(request: Request) {
       description,
       image,
       isFeatured,
+      parentId: parentId || null,
+      parentSlug,
     });
 
     if (uploadedImagePath && image && !category.image && hasSupabaseAdminConfig()) {
@@ -144,6 +148,10 @@ export async function POST(request: Request) {
     revalidatePath("/products");
     revalidatePath("/");
     revalidatePath(`/products/${category.slug}`);
+    if (category.parentSlug) {
+      revalidatePath(`/products/${category.parentSlug}`);
+      revalidatePath(`/products/${category.parentSlug}/${category.slug}`);
+    }
 
     return NextResponse.json({ category }, { status: 201 });
   } catch (error) {
@@ -169,6 +177,8 @@ export async function PUT(request: Request) {
     const name = String(formData.get("name") ?? "").trim();
     const description = String(formData.get("description") ?? "").trim();
     const isFeatured = String(formData.get("isFeatured") ?? "") === "true";
+    const parentId = String(formData.get("parentId") ?? "").trim();
+    const parentSlug = String(formData.get("parentSlug") ?? "").trim();
     const imageFile = formData.get("image");
 
     if (!id && !currentSlug) {
@@ -228,11 +238,17 @@ export async function PUT(request: Request) {
       description,
       image,
       isFeatured,
+      parentId: parentId || null,
+      parentSlug,
     });
 
     revalidatePath("/");
     revalidatePath("/products");
     revalidatePath(`/products/${category.slug}`);
+    if (category.parentSlug) {
+      revalidatePath(`/products/${category.parentSlug}`);
+      revalidatePath(`/products/${category.parentSlug}/${category.slug}`);
+    }
 
     return NextResponse.json({ category });
   } catch (error) {
@@ -281,6 +297,9 @@ export async function PATCH(request: Request) {
     revalidatePath("/");
     revalidatePath("/products");
     revalidatePath(`/products/${category.slug}`);
+    if (category.parentSlug) {
+      revalidatePath(`/products/${category.parentSlug}`);
+    }
 
     return NextResponse.json({ category });
   } catch (error) {
@@ -312,6 +331,9 @@ export async function DELETE(request: Request) {
     revalidatePath("/");
     revalidatePath("/products");
     revalidatePath(`/products/${category.slug}`);
+    if (category.parentSlug) {
+      revalidatePath(`/products/${category.parentSlug}`);
+    }
 
     return NextResponse.json({ category });
   } catch (error) {

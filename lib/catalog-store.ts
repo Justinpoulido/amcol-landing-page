@@ -17,6 +17,8 @@ import { createCategorySlug, createProductSlug } from "@/lib/catalog-utils";
 export type CategoryOption = {
   slug: string;
   name: string;
+  parentSlug?: string;
+  parentName?: string;
 };
 
 export type AdminCategoryRecord = {
@@ -26,6 +28,9 @@ export type AdminCategoryRecord = {
   description: string;
   image?: string;
   isFeatured: boolean;
+  parentId?: string | null;
+  parentSlug?: string;
+  parentName?: string;
   createdAt: string;
   source: "seed" | "admin";
 };
@@ -36,6 +41,8 @@ export type AdminCategoryInput = {
   description?: string;
   image?: string;
   isFeatured?: boolean;
+  parentId?: string | null;
+  parentSlug?: string;
 };
 
 export type AdminCategoryUpdateInput = AdminCategoryInput & {
@@ -56,6 +63,8 @@ export type DeleteAdminCategoryResult = {
 export type AdminProductRecord = ProductItem & {
   id: string;
   categorySlug: string;
+  subcategorySlug?: string;
+  subcategoryName?: string;
   description: string;
   createdAt: string;
   source: "admin";
@@ -66,6 +75,7 @@ export type AdminProductInput = {
   slug?: string;
   categorySlug: string;
   category: string;
+  subcategorySlug?: string;
   price: string;
   summary?: string;
   description: string;
@@ -91,6 +101,7 @@ export type ProductCatalogFilters = {
   brand?: string;
   availability?: string;
   type?: string;
+  subcategory?: string;
 };
 
 export type PaginatedProductsResult = {
@@ -112,6 +123,8 @@ type ProductCategoryRow = {
   description?: string | null;
   image_url?: string | null;
   is_featured?: boolean | null;
+  parent_id?: string | null;
+  parent?: ProductCategoryRow | ProductCategoryRow[] | null;
   created_at?: string;
 };
 
@@ -132,7 +145,8 @@ type ProductRow = {
   specifications: string[] | string | null;
   featured: boolean;
   created_at: string;
-  product_categories: ProductCategoryRow | ProductCategoryRow[] | null;
+  category: ProductCategoryRow | ProductCategoryRow[] | null;
+  subcategory: ProductCategoryRow | ProductCategoryRow[] | null;
 };
 
 function normalizeStringList(value: string[] | string | null | undefined) {
@@ -183,10 +197,17 @@ const productSelectQuery = `
   specifications,
   featured,
   created_at,
-  product_categories!inner (
+  category:product_categories!products_category_id_fkey (
     id,
     slug,
-    name
+    name,
+    parent_id
+  ),
+  subcategory:product_categories!products_subcategory_id_fkey (
+    id,
+    slug,
+    name,
+    parent_id
   )
 `;
 
@@ -197,6 +218,12 @@ const categorySelectQuery = `
   description,
   image_url,
   is_featured,
+  parent_id,
+  parent:product_categories!product_categories_parent_id_fkey (
+    id,
+    slug,
+    name
+  ),
   created_at
 `;
 
@@ -224,6 +251,12 @@ const categoryImageOverrides: Record<string, string> = {
   "pipe-valves-and-fittings": "/images/pipes-valves-fittings.webp",
 };
 
+const seededSubcategorySlugOverrides = new Map<string, string>([
+  ["sprayers-pumps::Pressure Sprayer", "pressure-sprayer"],
+  ["sprayers-pumps::Transfer Pump", "transfer-pump"],
+  ["sprayers-pumps::Chemical Handling", "chemical-handling"],
+]);
+
 const dataDirectory = path.join(process.cwd(), "data");
 const adminProductsFile = path.join(dataDirectory, "admin-products.json");
 const adminCategoriesFile = path.join(dataDirectory, "admin-categories.json");
@@ -244,13 +277,132 @@ async function ensureDataFile() {
   }
 }
 
-export async function getCategoryOptions(): Promise<CategoryOption[]> {
-  const categories = await getBaseCategoryData();
+function getSeededSubcategorySlug(parentSlug: string, name: string) {
+  const override = seededSubcategorySlugOverrides.get(`${parentSlug}::${name}`);
 
-  return Object.values(categories)
+  if (override) {
+    return override;
+  }
+
+  const baseSlug = createCategorySlug(name);
+  const isDuplicate = Object.values(productCategoryData).some(
+    (category) =>
+      category.slug !== parentSlug &&
+      category.products.some((product) => product.category === name),
+  );
+
+  return isDuplicate ? `${parentSlug}-${baseSlug}` : baseSlug;
+}
+
+function getSeededSubcategoryRecords(): AdminCategoryRecord[] {
+  const records: AdminCategoryRecord[] = [];
+
+  for (const category of Object.values(productCategoryData)) {
+    const seenNames = new Set<string>();
+
+    for (const product of category.products) {
+      if (!product.category || seenNames.has(product.category)) {
+        continue;
+      }
+
+      seenNames.add(product.category);
+      records.push({
+        id: `seed-subcategory-${category.slug}-${getSeededSubcategorySlug(
+          category.slug,
+          product.category,
+        )}`,
+        slug: getSeededSubcategorySlug(category.slug, product.category),
+        name: product.category,
+        description: `Browse ${product.category} products within ${category.name}.`,
+        image: product.image || category.image,
+        isFeatured: false,
+        parentId: `seed-${category.slug}`,
+        parentSlug: category.slug,
+        parentName: category.name,
+        createdAt: new Date().toISOString(),
+        source: "seed",
+      });
+    }
+  }
+
+  return records;
+}
+
+function getSeededSubcategoryForProduct(
+  parentSlug: string,
+  product: Pick<ProductItem, "category">,
+) {
+  if (!product.category) {
+    return undefined;
+  }
+
+  return {
+    slug: getSeededSubcategorySlug(parentSlug, product.category),
+    name: product.category,
+  };
+}
+
+async function resolveFileCategoryParent(input: AdminCategoryInput) {
+  const parentSlug = input.parentSlug?.trim();
+  const parentId = input.parentId?.trim();
+
+  if (!parentSlug && !parentId) {
+    return null;
+  }
+
+  const categories = await getAdminCategories();
+  const parent = categories.find(
+    (category) =>
+      (parentId && category.id === parentId) ||
+      (parentSlug && category.slug === parentSlug),
+  );
+
+  if (!parent) {
+    throw new Error("Please select a valid parent category.");
+  }
+
+  if (parent.parentId || parent.parentSlug) {
+    throw new Error("A subcategory cannot be used as a parent category.");
+  }
+
+  return parent;
+}
+
+async function resolveSupabaseCategoryParent(
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  input: AdminCategoryInput,
+) {
+  const parentId = input.parentId?.trim();
+  const parentSlug = input.parentSlug?.trim();
+
+  if (!parentId && !parentSlug) {
+    return null;
+  }
+
+  const parent = parentId
+    ? await getSupabaseCategoryById(supabase, parentId)
+    : await getSupabaseCategoryBySlug(supabase, parentSlug ?? "");
+
+  if (!parent) {
+    throw new Error("Please select a valid parent category.");
+  }
+
+  if (parent.parent_id) {
+    throw new Error("A subcategory cannot be used as a parent category.");
+  }
+
+  return parent;
+}
+
+export async function getCategoryOptions(): Promise<CategoryOption[]> {
+  const categories = await getAdminCategories();
+
+  return categories
     .map((category) => ({
       slug: category.slug,
       name: category.name,
+      parentSlug: category.parentSlug,
+      parentName: category.parentName,
     }))
     .sort((left, right) => left.name.localeCompare(right.name));
 }
@@ -259,7 +411,7 @@ export async function getFeaturedCategories() {
   const categories = await getBaseCategoryData();
 
   return Object.values(categories)
-    .filter((category) => category.isFeatured)
+    .filter((category) => category.isFeatured && !category.parentSlug)
     .sort((left, right) => {
       const leftOrder = initialFeaturedCategoryOrder.get(left.slug);
       const rightOrder = initialFeaturedCategoryOrder.get(right.slug);
@@ -289,7 +441,7 @@ export async function getLandingCategories(): Promise<ProductCategoryPageData[]>
     .filter((category): category is ProductCategoryPageData => Boolean(category));
 
   const adminCategories = Object.values(categories)
-    .filter((category) => !productCategoryData[category.slug])
+    .filter((category) => !productCategoryData[category.slug] && !category.parentSlug)
     .sort((left, right) => left.name.localeCompare(right.name));
 
   return [...seededCategories, ...adminCategories];
@@ -404,15 +556,54 @@ async function getFileAdminCategories(): Promise<AdminCategoryRecord[]> {
   try {
     const fileContents = await readFile(adminCategoriesFile, "utf8");
     const parsed = JSON.parse(fileContents);
-    return Array.isArray(parsed)
+    const storedCategories = Array.isArray(parsed)
       ? (parsed as AdminCategoryRecord[]).map((category) => ({
           ...category,
+          parentId: category.parentId ?? null,
           isFeatured:
-            category.isFeatured ?? initialFeaturedCategorySlugs.has(category.slug),
+            category.parentSlug || category.parentId
+              ? false
+              : category.isFeatured ?? initialFeaturedCategorySlugs.has(category.slug),
         }))
       : [];
+    const storedSlugs = new Set(storedCategories.map((category) => category.slug));
+    const seededTopLevelCategories = Object.values(productCategoryData)
+      .filter((category) => !storedSlugs.has(category.slug))
+      .map(
+        (category): AdminCategoryRecord => ({
+          id: `seed-${category.slug}`,
+          slug: category.slug,
+          name: category.name,
+          description: category.description,
+          image: category.image,
+          isFeatured: category.isFeatured ?? initialFeaturedCategorySlugs.has(category.slug),
+          parentId: null,
+          createdAt: new Date().toISOString(),
+          source: "seed",
+        }),
+      );
+    const seededSubcategories = getSeededSubcategoryRecords().filter(
+      (category) => !storedSlugs.has(category.slug),
+    );
+
+    return [...storedCategories, ...seededTopLevelCategories, ...seededSubcategories];
   } catch {
-    return [];
+    return [
+      ...Object.values(productCategoryData).map(
+        (category): AdminCategoryRecord => ({
+          id: `seed-${category.slug}`,
+          slug: category.slug,
+          name: category.name,
+          description: category.description,
+          image: category.image,
+          isFeatured: category.isFeatured ?? initialFeaturedCategorySlugs.has(category.slug),
+          parentId: null,
+          createdAt: new Date().toISOString(),
+          source: "seed",
+        }),
+      ),
+      ...getSeededSubcategoryRecords(),
+    ];
   }
 }
 
@@ -466,16 +657,20 @@ async function getSupabaseAdminProductById(
 }
 
 function mapSupabaseProduct(row: ProductRow): AdminProductRecord {
-  const categoryRecord = Array.isArray(row.product_categories)
-    ? row.product_categories[0]
-    : row.product_categories;
+  const categoryRecord = Array.isArray(row.category) ? row.category[0] : row.category;
+  const subcategoryRecord = Array.isArray(row.subcategory)
+    ? row.subcategory[0]
+    : row.subcategory;
 
   return {
     id: row.id,
     name: row.name,
     slug: row.slug ?? undefined,
     categorySlug: categoryRecord?.slug ?? "",
-    category: categoryRecord?.name ?? "Uncategorized",
+    category: subcategoryRecord?.name ?? categoryRecord?.name ?? "Uncategorized",
+    categoryName: categoryRecord?.name ?? "Uncategorized",
+    subcategorySlug: subcategoryRecord?.slug ?? undefined,
+    subcategoryName: subcategoryRecord?.name ?? undefined,
     price: row.price,
     summary: row.summary ?? undefined,
     description: row.description,
@@ -494,13 +689,18 @@ function mapSupabaseProduct(row: ProductRow): AdminProductRecord {
 }
 
 function mapSupabaseCategory(row: ProductCategoryRow): AdminCategoryRecord {
+  const parentRecord = Array.isArray(row.parent) ? row.parent[0] : row.parent;
+
   return {
     id: row.id,
     slug: row.slug,
     name: row.name,
     description: normalizeCategoryDescription(row.description, row.name),
     image: row.image_url ?? undefined,
-    isFeatured: Boolean(row.is_featured),
+    isFeatured: row.parent_id ? false : Boolean(row.is_featured),
+    parentId: row.parent_id ?? null,
+    parentSlug: parentRecord?.slug,
+    parentName: parentRecord?.name,
     createdAt: row.created_at ?? new Date().toISOString(),
     source: productCategoryData[row.slug] ? "seed" : "admin",
   };
@@ -537,10 +737,23 @@ async function deleteFileAdminCategory(
   }
 
   const category = existingCategories[categoryIndex];
+  const childCategories = existingCategories.filter(
+    (item) => item.parentId === category.id || item.parentSlug === category.slug,
+  );
+
+  if (childCategories.length > 0) {
+    throw new Error(
+      `Cannot delete this category because ${childCategories.length} subcategor${
+        childCategories.length === 1 ? "y is" : "ies are"
+      } assigned to it.`,
+    );
+  }
 
   const assignedProducts = await getAdminProducts();
   const productCount = assignedProducts.filter(
-    (product) => product.categorySlug === category.slug,
+    (product) =>
+      product.categorySlug === category.slug ||
+      product.subcategorySlug === category.slug,
   ).length;
 
   if (productCount > 0) {
@@ -611,11 +824,32 @@ async function deleteSupabaseAdminCategory(
     throw new Error("Unable to find the selected category.");
   }
 
-  const { count, error: countError } = await supabase
+  const { count: childCount, error: childCountError } = await supabase
+    .from("product_categories")
+    .select("id", { count: "exact", head: true })
+    .eq("parent_id", id)
+    .eq("is_active", true);
+
+  if (childCountError) {
+    throw new Error(`Unable to check subcategory usage: ${childCountError.message}`);
+  }
+
+  if ((childCount ?? 0) > 0) {
+    throw new Error(
+      `Cannot delete this category because ${childCount} subcategor${
+        childCount === 1 ? "y is" : "ies are"
+      } assigned to it.`,
+    );
+  }
+
+  let productQuery = supabase
     .from("products")
     .select("id", { count: "exact", head: true })
-    .eq("category_id", id)
     .eq("is_active", true);
+  productQuery = category.parent_id
+    ? productQuery.eq("subcategory_id", id)
+    : productQuery.eq("category_id", id);
+  const { count, error: countError } = await productQuery;
 
   if (countError) {
     throw new Error(`Unable to check category usage: ${countError.message}`);
@@ -643,6 +877,68 @@ async function deleteSupabaseAdminCategory(
   };
 }
 
+async function resolveFileProductCategorySelection(input: {
+  categorySlug: string;
+  subcategorySlug?: string;
+}) {
+  const categories = await getAdminCategories();
+  const category = categories.find(
+    (item) => item.slug === input.categorySlug && !item.parentSlug && !item.parentId,
+  );
+
+  if (!category) {
+    throw new Error("Please select a valid general product category.");
+  }
+
+  const subcategorySlug = input.subcategorySlug?.trim();
+  const subcategory = subcategorySlug
+    ? categories.find((item) => item.slug === subcategorySlug)
+    : undefined;
+
+  if (subcategorySlug && !subcategory) {
+    throw new Error("Please select a valid product subcategory.");
+  }
+
+  if (
+    subcategory &&
+    subcategory.parentSlug !== category.slug &&
+    subcategory.parentId !== category.id
+  ) {
+    throw new Error("The selected subcategory does not belong to the selected category.");
+  }
+
+  return { category, subcategory };
+}
+
+async function resolveSupabaseProductCategorySelection(
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  input: {
+    categorySlug: string;
+    subcategorySlug?: string;
+  },
+) {
+  const category = await getSupabaseCategoryBySlug(supabase, input.categorySlug);
+
+  if (!category || category.parent_id) {
+    throw new Error("Please select a valid general product category.");
+  }
+
+  const subcategorySlug = input.subcategorySlug?.trim();
+  const subcategory = subcategorySlug
+    ? await getSupabaseCategoryBySlug(supabase, subcategorySlug)
+    : null;
+
+  if (subcategorySlug && !subcategory) {
+    throw new Error("Please select a valid product subcategory.");
+  }
+
+  if (subcategory && subcategory.parent_id !== category.id) {
+    throw new Error("The selected subcategory does not belong to the selected category.");
+  }
+
+  return { category, subcategory };
+}
+
 export async function updateAdminProduct(
   input: AdminProductUpdateInput,
 ): Promise<AdminProductRecord> {
@@ -656,19 +952,17 @@ export async function updateAdminProduct(
 async function createFileAdminProduct(
   input: AdminProductInput,
 ): Promise<AdminProductRecord> {
-  const categories = await getBaseCategoryData();
-  const category = categories[input.categorySlug];
-
-  if (!category) {
-    throw new Error("Please select a valid product category.");
-  }
+  const { category, subcategory } = await resolveFileProductCategorySelection(input);
 
   const nextProduct: AdminProductRecord = {
     id: `admin-${Date.now()}`,
     name: input.name.trim(),
     slug: createProductSlug(input.slug?.trim() || input.name),
     categorySlug: category.slug,
-    category: input.category.trim() || category.name,
+    category: subcategory?.name ?? (input.category.trim() || category.name),
+    categoryName: category.name,
+    subcategorySlug: subcategory?.slug,
+    subcategoryName: subcategory?.name,
     price: input.price.trim(),
     summary: input.summary?.trim() || undefined,
     description: input.description.trim(),
@@ -700,16 +994,16 @@ async function createSupabaseAdminProduct(
   input: AdminProductInput,
 ): Promise<AdminProductRecord> {
   const supabase = createSupabaseAdminClient();
-  const category = await getSupabaseCategoryBySlug(supabase, input.categorySlug);
-
-  if (!category) {
-    throw new Error("Please select a valid product category.");
-  }
+  const { category, subcategory } = await resolveSupabaseProductCategorySelection(
+    supabase,
+    input,
+  );
 
   const { data: productData, error } = await supabase
     .from("products")
     .insert({
       category_id: category.id,
+      subcategory_id: subcategory?.id ?? null,
       name: input.name.trim(),
       slug: createProductSlug(input.slug?.trim() || input.name),
       price: input.price.trim(),
@@ -743,6 +1037,7 @@ async function createFileAdminCategory(
 ): Promise<AdminCategoryRecord> {
   const existingCategories = await getBaseCategoryData();
   const slug = createCategorySlug(input.slug?.trim() || input.name);
+  const parent = await resolveFileCategoryParent(input);
 
   if (!slug) {
     throw new Error("Please provide a category name or slug.");
@@ -758,7 +1053,10 @@ async function createFileAdminCategory(
     name: input.name.trim(),
     description: normalizeCategoryDescription(input.description, input.name),
     image: input.image?.trim() || undefined,
-    isFeatured: Boolean(input.isFeatured),
+    isFeatured: parent ? false : Boolean(input.isFeatured),
+    parentId: parent?.id ?? null,
+    parentSlug: parent?.slug,
+    parentName: parent?.name,
     createdAt: new Date().toISOString(),
     source: "admin",
   };
@@ -779,6 +1077,7 @@ async function createSupabaseAdminCategory(
 ): Promise<AdminCategoryRecord> {
   const supabase = createSupabaseAdminClient();
   const slug = createCategorySlug(input.slug?.trim() || input.name);
+  const parent = await resolveSupabaseCategoryParent(supabase, input);
 
   if (!slug) {
     throw new Error("Please provide a category name or slug.");
@@ -788,7 +1087,8 @@ async function createSupabaseAdminCategory(
     slug,
     name: input.name.trim(),
     description: normalizeCategoryDescription(input.description, input.name),
-    is_featured: Boolean(input.isFeatured),
+    is_featured: parent ? false : Boolean(input.isFeatured),
+    parent_id: parent?.id ?? null,
   };
   const legacyBaseCategoryInput = {
     slug: baseCategoryInput.slug,
@@ -844,6 +1144,7 @@ async function updateFileAdminCategory(
   }
 
   const existingAdminCategories = await getFileAdminCategories();
+  const parent = await resolveFileCategoryParent(input);
   const categoryIndex = existingAdminCategories.findIndex(
     (category) =>
       (input.id && category.id === input.id) || category.slug === currentSlug,
@@ -869,13 +1170,35 @@ async function updateFileAdminCategory(
           source: "admin" as const,
         };
 
+  if (parent && parent.slug === currentCategory.slug) {
+    throw new Error("A category cannot be its own parent.");
+  }
+
+  const childCategories = existingAdminCategories.filter(
+    (category) =>
+      category.slug !== currentCategory.slug &&
+      (category.parentSlug === currentCategory.slug ||
+        category.parentId === currentCategory.id),
+  );
+
+  if (parent && childCategories.length > 0) {
+    throw new Error(
+      `Cannot convert this category to a subcategory because ${childCategories.length} subcategor${
+        childCategories.length === 1 ? "y is" : "ies are"
+      } assigned to it.`,
+    );
+  }
+
   const updatedCategory: AdminCategoryRecord = {
     ...currentCategory,
     slug: currentCategory.slug,
     name,
     description: normalizeCategoryDescription(input.description, name),
     image: input.image?.trim() || currentCategory.image,
-    isFeatured: Boolean(input.isFeatured),
+    isFeatured: parent ? false : Boolean(input.isFeatured),
+    parentId: parent?.id ?? null,
+    parentSlug: parent?.slug,
+    parentName: parent?.name,
     source: currentCategory.source === "seed" ? "seed" : "admin",
   };
 
@@ -909,15 +1232,41 @@ async function updateSupabaseAdminCategory(
 
   const supabase = createSupabaseAdminClient();
   const existingCategory = await getSupabaseCategoryById(supabase, input.id);
+  const parent = await resolveSupabaseCategoryParent(supabase, input);
 
   if (!existingCategory) {
     throw new Error("Unable to find the selected category.");
   }
 
+  if (parent && parent.id === existingCategory.id) {
+    throw new Error("A category cannot be its own parent.");
+  }
+
+  if (parent) {
+    const { count, error: childCountError } = await supabase
+      .from("product_categories")
+      .select("id", { count: "exact", head: true })
+      .eq("parent_id", existingCategory.id)
+      .eq("is_active", true);
+
+    if (childCountError) {
+      throw new Error(`Unable to check subcategories: ${childCountError.message}`);
+    }
+
+    if ((count ?? 0) > 0) {
+      throw new Error(
+        `Cannot convert this category to a subcategory because ${count} subcategor${
+          count === 1 ? "y is" : "ies are"
+        } assigned to it.`,
+      );
+    }
+  }
+
   const baseCategoryInput = {
     name,
     description: normalizeCategoryDescription(input.description, name),
-    is_featured: Boolean(input.isFeatured),
+    is_featured: parent ? false : Boolean(input.isFeatured),
+    parent_id: parent?.id ?? null,
   };
   const legacyBaseCategoryInput = {
     name: baseCategoryInput.name,
@@ -1001,7 +1350,8 @@ async function updateFileAdminCategoryFeatured(
 
   const updatedCategory = {
     ...currentCategory,
-    isFeatured: input.isFeatured,
+    isFeatured:
+      currentCategory.parentId || currentCategory.parentSlug ? false : input.isFeatured,
   };
 
   if (categoryIndex >= 0) {
@@ -1023,9 +1373,14 @@ async function updateSupabaseAdminCategoryFeatured(
   input: AdminCategoryFeaturedInput,
 ): Promise<AdminCategoryRecord> {
   const supabase = createSupabaseAdminClient();
+  const existingCategory = input.id
+    ? await getSupabaseCategoryById(supabase, input.id)
+    : input.currentSlug
+      ? await getSupabaseCategoryBySlug(supabase, input.currentSlug)
+      : null;
   const query = supabase
     .from("product_categories")
-    .update({ is_featured: input.isFeatured })
+    .update({ is_featured: existingCategory?.parent_id ? false : input.isFeatured })
     .eq("is_active", true);
   const scopedQuery = input.id
     ? query.eq("id", input.id)
@@ -1048,12 +1403,7 @@ async function updateSupabaseAdminCategoryFeatured(
 async function updateFileAdminProduct(
   input: AdminProductUpdateInput,
 ): Promise<AdminProductRecord> {
-  const categories = await getBaseCategoryData();
-  const category = categories[input.categorySlug];
-
-  if (!category) {
-    throw new Error("Please select a valid product category.");
-  }
+  const { category, subcategory } = await resolveFileProductCategorySelection(input);
 
   const existingProducts = await getFileAdminProducts();
   const productIndex = existingProducts.findIndex(
@@ -1070,7 +1420,10 @@ async function updateFileAdminProduct(
     name: input.name.trim(),
     slug: createProductSlug(input.slug?.trim() || input.name),
     categorySlug: category.slug,
-    category: input.category.trim() || category.name,
+    category: subcategory?.name ?? (input.category.trim() || category.name),
+    categoryName: category.name,
+    subcategorySlug: subcategory?.slug,
+    subcategoryName: subcategory?.name,
     price: input.price.trim(),
     summary: input.summary?.trim() || undefined,
     description: input.description.trim(),
@@ -1100,16 +1453,16 @@ async function updateSupabaseAdminProduct(
   input: AdminProductUpdateInput,
 ): Promise<AdminProductRecord> {
   const supabase = createSupabaseAdminClient();
-  const category = await getSupabaseCategoryBySlug(supabase, input.categorySlug);
-
-  if (!category) {
-    throw new Error("Please select a valid product category.");
-  }
+  const { category, subcategory } = await resolveSupabaseProductCategorySelection(
+    supabase,
+    input,
+  );
 
   const { data: productData, error } = await supabase
     .from("products")
     .update({
       category_id: category.id,
+      subcategory_id: subcategory?.id ?? null,
       name: input.name.trim(),
       slug: createProductSlug(input.slug?.trim() || input.name),
       price: input.price.trim(),
@@ -1149,7 +1502,7 @@ async function getSupabaseCategoryBySlug(
 ): Promise<ProductCategoryRow | null> {
   const { data, error } = await supabase
     .from("product_categories")
-    .select("id, slug, name")
+    .select("id, slug, name, parent_id")
     .eq("slug", slug)
     .eq("is_active", true)
     .maybeSingle();
@@ -1254,7 +1607,9 @@ function isMissingCategoryImageColumnError(
     error.code === "42703" ||
     error.code === "PGRST204" ||
     combinedMessage.includes("image_url") ||
-    combinedMessage.includes("is_featured")
+    combinedMessage.includes("is_featured") ||
+    combinedMessage.includes("parent_id") ||
+    combinedMessage.includes("subcategory_id")
   );
 }
 
@@ -1275,19 +1630,29 @@ function buildCategorySubtitle(name: string) {
 function buildDynamicCategoryPageData(
   category: Pick<
     AdminCategoryRecord,
-    "slug" | "name" | "description" | "image" | "isFeatured"
+    | "slug"
+    | "name"
+    | "description"
+    | "image"
+    | "isFeatured"
+    | "parentSlug"
+    | "parentName"
   >,
 ): ProductCategoryPageData {
   return {
     slug: category.slug,
     name: category.name,
-    href: `/products/${category.slug}`,
+    href: category.parentSlug
+      ? `/products/${category.parentSlug}/${category.slug}`
+      : `/products/${category.slug}`,
     image: categoryImageOverrides[category.slug] || category.image || defaultCategoryImage,
     banner: defaultCategoryBanner,
     title: category.name,
     subtitle: buildCategorySubtitle(category.name),
     description: category.description,
     isFeatured: category.isFeatured,
+    parentSlug: category.parentSlug,
+    parentName: category.parentName,
     products: [],
   };
 }
@@ -1356,12 +1721,32 @@ async function getBaseCategoryData(): Promise<Record<string, ProductCategoryPage
           seededCategory.image,
         title: category.name,
         description: category.description || seededCategory.description,
-        isFeatured: category.isFeatured,
+        isFeatured: category.parentSlug ? false : category.isFeatured,
+        parentSlug: category.parentSlug,
+        parentName: category.parentName,
       };
       continue;
     }
 
     baseCategories[category.slug] = buildDynamicCategoryPageData(category);
+  }
+
+  for (const category of Object.values(baseCategories)) {
+    category.subcategories = [];
+  }
+
+  for (const category of Object.values(baseCategories)) {
+    if (!category.parentSlug) {
+      continue;
+    }
+
+    const parent = baseCategories[category.parentSlug];
+
+    if (parent) {
+      parent.subcategories = [...(parent.subcategories ?? []), category].sort(
+        (left, right) => left.name.localeCompare(right.name),
+      );
+    }
   }
 
   return baseCategories;
@@ -1382,7 +1767,17 @@ export async function getMergedCategoryData(): Promise<
         ...category,
         products: [
           ...adminProducts.filter((product) => product.categorySlug === slug),
-          ...category.products,
+          ...category.products.map((product) => {
+            const seededSubcategory = getSeededSubcategoryForProduct(slug, product);
+
+            return {
+              ...product,
+              categorySlug: slug,
+              categoryName: category.name,
+              subcategorySlug: seededSubcategory?.slug,
+              subcategoryName: seededSubcategory?.name,
+            };
+          }),
         ],
       },
     ]),
@@ -1397,6 +1792,8 @@ export async function getMergedCategoryData(): Promise<
             ? product.categorySlug
             : category.slug,
         categoryName: category.name,
+        subcategorySlug: product.subcategorySlug,
+        subcategoryName: product.subcategoryName,
       })),
     ),
   );
@@ -1413,6 +1810,26 @@ export async function getMergedCategoryData(): Promise<
 export async function getCategoryBySlug(slug: string) {
   const categories = await getMergedCategoryData();
   return categories[slug];
+}
+
+export async function getSubcategoryBySlugs(categorySlug: string, subcategorySlug: string) {
+  const categories = await getMergedCategoryData();
+  const category = categories[categorySlug];
+  const subcategory = categories[subcategorySlug];
+
+  if (!category || !subcategory || subcategory.parentSlug !== category.slug) {
+    return null;
+  }
+
+  return {
+    category,
+    subcategory: {
+      ...subcategory,
+      products: category.products.filter(
+        (product) => product.subcategorySlug === subcategory.slug,
+      ),
+    },
+  };
 }
 
 export async function getAllProducts() {
@@ -1465,6 +1882,14 @@ function productMatchesCatalogFilters<
     product.categorySlug !== filters.category &&
     (product.categoryName || product.category).toLowerCase() !==
       filters.category.toLowerCase()
+  ) {
+    return false;
+  }
+
+  if (
+    filters.subcategory &&
+    product.subcategorySlug !== filters.subcategory &&
+    product.subcategoryName?.toLowerCase() !== filters.subcategory.toLowerCase()
   ) {
     return false;
   }
@@ -1537,9 +1962,18 @@ async function getSupabasePaginatedProducts(
     const categoryValue = filters.category.trim();
     const categoryField =
       createCategorySlug(categoryValue) === categoryValue
-        ? "product_categories.slug"
-        : "product_categories.name";
+        ? "category.slug"
+        : "category.name";
     query = query.eq(categoryField, categoryValue);
+  }
+
+  if (filters.subcategory) {
+    const subcategoryValue = filters.subcategory.trim();
+    const subcategoryField =
+      createCategorySlug(subcategoryValue) === subcategoryValue
+        ? "subcategory.slug"
+        : "subcategory.name";
+    query = query.eq(subcategoryField, subcategoryValue);
   }
 
   if (filters.brand) {
@@ -1551,7 +1985,7 @@ async function getSupabasePaginatedProducts(
   }
 
   if (filters.type) {
-    query = query.eq("product_categories.name", filters.type);
+    query = query.eq("subcategory.name", filters.type);
   }
 
   const from = (page - 1) * pageSize;
@@ -1620,7 +2054,10 @@ export async function getProductFilterOptions(): Promise<ProductFilterOptions> {
           `
             brand,
             stock_status,
-            product_categories!inner (
+            category:product_categories!products_category_id_fkey (
+              name
+            ),
+            subcategory:product_categories!products_subcategory_id_fkey (
               name
             )
           `,
@@ -1634,14 +2071,20 @@ export async function getProductFilterOptions(): Promise<ProductFilterOptions> {
       const rows = (data ?? []) as Array<{
         brand?: string | null;
         stock_status?: string | null;
-        product_categories?: ProductCategoryRow | ProductCategoryRow[] | null;
+        category?: ProductCategoryRow | ProductCategoryRow[] | null;
+        subcategory?: ProductCategoryRow | ProductCategoryRow[] | null;
       }>;
       const categoryNames = rows.map((row) => {
-        const category = Array.isArray(row.product_categories)
-          ? row.product_categories[0]
-          : row.product_categories;
+        const category = Array.isArray(row.category) ? row.category[0] : row.category;
 
         return category?.name;
+      });
+      const productTypeNames = rows.map((row) => {
+        const subcategory = Array.isArray(row.subcategory)
+          ? row.subcategory[0]
+          : row.subcategory;
+
+        return subcategory?.name;
       });
 
       return {
@@ -1650,7 +2093,7 @@ export async function getProductFilterOptions(): Promise<ProductFilterOptions> {
         availability: uniqueSorted(
           rows.map((row) => row.stock_status ?? undefined),
         ),
-        productTypes: uniqueSorted(categoryNames),
+        productTypes: uniqueSorted(productTypeNames),
       };
     } catch (error) {
       console.warn(
@@ -1668,7 +2111,9 @@ export async function getProductFilterOptions(): Promise<ProductFilterOptions> {
     ),
     brands: uniqueSorted(products.map((product) => product.brand)),
     availability: uniqueSorted(products.map((product) => product.stockStatus)),
-    productTypes: uniqueSorted(products.map((product) => product.category)),
+    productTypes: uniqueSorted(
+      products.map((product) => product.subcategoryName || product.category),
+    ),
   };
 }
 

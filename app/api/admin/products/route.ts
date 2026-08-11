@@ -32,6 +32,7 @@ type ProductFormValues = {
   name: string;
   slug: string;
   categorySlug: string;
+  subcategorySlug: string;
   category: string;
   price: string;
   summary: string;
@@ -52,6 +53,7 @@ function parseProductFormData(formData: FormData): ProductFormValues {
     name: String(formData.get("name") ?? "").trim(),
     slug: String(formData.get("slug") ?? "").trim(),
     categorySlug: String(formData.get("categorySlug") ?? "").trim(),
+    subcategorySlug: String(formData.get("subcategorySlug") ?? "").trim(),
     category: String(formData.get("category") ?? "").trim(),
     price: String(formData.get("price") ?? "").trim(),
     summary: String(formData.get("summary") ?? "").trim(),
@@ -221,6 +223,7 @@ export async function POST(request: Request) {
       name: values.name,
       slug: values.slug,
       categorySlug: values.categorySlug,
+      subcategorySlug: values.subcategorySlug,
       category: values.category,
       price: values.price,
       summary: values.summary,
@@ -313,6 +316,7 @@ export async function PUT(request: Request) {
       name: values.name,
       slug: values.slug,
       categorySlug: values.categorySlug,
+      subcategorySlug: values.subcategorySlug,
       category: values.category,
       price: values.price,
       summary: values.summary,
@@ -340,6 +344,8 @@ export async function PUT(request: Request) {
     revalidateCatalogPaths([
       existingProduct.categorySlug,
       updatedProduct.categorySlug,
+      existingProduct.subcategorySlug ?? "",
+      updatedProduct.subcategorySlug ?? "",
     ]);
 
     return NextResponse.json({ product: updatedProduct });
