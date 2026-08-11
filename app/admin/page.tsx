@@ -6,8 +6,10 @@ import {
   type ChangeEvent,
   type DragEvent,
   type FormEvent,
+  type MouseEvent,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { createCategorySlug, createProductSlug } from "@/lib/catalog-utils";
@@ -52,6 +54,8 @@ type ProductResponse = { product: DashboardProduct } | { error: string };
 type CategoryResponse = { category: CategoryOption } | { error: string };
 type CategoriesResponse = { categories: CategoryOption[] };
 type AdminSection = "dashboard" | "products" | "categories" | "media";
+type SortOption = "recent" | "name-asc" | "name-desc" | "category";
+type MediaFilter = "all" | "with-images" | "missing-images";
 
 type GalleryUploadPreview = {
   id: string;
@@ -114,12 +118,14 @@ const initialCategoryFormState: CategoryFormState = {
   description: "",
 };
 
-const sections: { id: AdminSection; label: string }[] = [
-  { id: "dashboard", label: "Dashboard" },
-  { id: "products", label: "Products" },
-  { id: "categories", label: "Categories" },
-  { id: "media", label: "Media" },
+const sections: { id: AdminSection; label: string; icon: string }[] = [
+  { id: "dashboard", label: "View Dashboard", icon: "D" },
+  { id: "products", label: "Edit Products", icon: "P" },
+  { id: "categories", label: "Edit Categories", icon: "C" },
+  { id: "media", label: "View Media", icon: "M" },
 ];
+
+const pageSizeOptions = [25, 50, 100];
 
 function splitGalleryImages(value: string) {
   return value
@@ -145,6 +151,9 @@ async function readJsonResponse<T>(response: Response, fallbackMessage: string) 
 }
 
 export default function AdminDashboardPage() {
+  const categoryEditFormRef = useRef<HTMLDivElement>(null);
+  const categoryNameInputRef = useRef<HTMLInputElement>(null);
+  const shouldScrollToCategoryFormRef = useRef(false);
   const [activeSection, setActiveSection] = useState<AdminSection>("products");
   const [categories, setCategories] = useState<CategoryOption[]>(fallbackCategories);
   const [products, setProducts] = useState<DashboardProduct[]>([]);
@@ -152,6 +161,7 @@ export default function AdminDashboardPage() {
   const [categoryForm, setCategoryForm] = useState<CategoryFormState>(
     initialCategoryFormState,
   );
+  const [editingCategorySlug, setEditingCategorySlug] = useState<string | null>(null);
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -164,6 +174,15 @@ export default function AdminDashboardPage() {
   const [selectedCategoryImage, setSelectedCategoryImage] = useState<File | null>(null);
   const [categoryImagePreview, setCategoryImagePreview] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [sortOption, setSortOption] = useState<SortOption>("recent");
+  const [pageSize, setPageSize] = useState(50);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
+  const [openActionMenuId, setOpenActionMenuId] = useState<string | null>(null);
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const [mediaFilter, setMediaFilter] = useState<MediaFilter>("all");
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deletingProductId, setDeletingProductId] = useState<string | null>(null);
@@ -306,15 +325,83 @@ export default function AdminDashboardPage() {
   ).length;
   const missingImageCount = products.filter((product) => !product.image).length;
 
+  const statusOptions = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          products
+            .map((product) => getStatusLabel(product.stockStatus))
+            .filter(Boolean),
+        ),
+      ).sort((left, right) => left.localeCompare(right)),
+    [products],
+  );
+  const hasProductFormChanges = useMemo(() => {
+    if (!isDrawerOpen) {
+      return false;
+    }
+
+    if (selectedImage || selectedGalleryImages.length > 0) {
+      return true;
+    }
+
+    if (isEditMode && editingProduct) {
+      return (
+        form.name !== editingProduct.name ||
+        form.slug !== (editingProduct.slug ?? createProductSlug(editingProduct.name)) ||
+        form.categorySlug !== editingProduct.categorySlug ||
+        form.price !== editingProduct.price ||
+        form.summary !== (editingProduct.summary ?? "") ||
+        form.description !== (editingProduct.description ?? "") ||
+        form.brand !== (editingProduct.brand ?? "") ||
+        form.sku !== (editingProduct.sku ?? "") ||
+        form.unit !== (editingProduct.unit ?? "") ||
+        form.stockStatus !== (editingProduct.stockStatus ?? "In stock") ||
+        form.imageAlt !== (editingProduct.imageAlt ?? "") ||
+        form.galleryImages !== "" ||
+        form.specifications !== (editingProduct.specifications ?? []).join("\n") ||
+        form.featured !== Boolean(editingProduct.featured) ||
+        currentImageUrl !== editingProduct.image ||
+        currentGalleryImages.join("\n") !== (editingProduct.galleryImages ?? []).join("\n")
+      );
+    }
+
+    return (
+      form.name !== initialFormState.name ||
+      form.slug !== initialFormState.slug ||
+      form.categorySlug !== (categories[0]?.slug || defaultCategorySlug) ||
+      form.price !== initialFormState.price ||
+      form.summary !== initialFormState.summary ||
+      form.description !== initialFormState.description ||
+      form.brand !== initialFormState.brand ||
+      form.sku !== initialFormState.sku ||
+      form.unit !== initialFormState.unit ||
+      form.stockStatus !== initialFormState.stockStatus ||
+      form.imageAlt !== initialFormState.imageAlt ||
+      form.galleryImages !== initialFormState.galleryImages ||
+      form.specifications !== initialFormState.specifications ||
+      form.featured !== initialFormState.featured ||
+      Boolean(currentImageUrl)
+    );
+  }, [
+    categories,
+    currentGalleryImages,
+    currentImageUrl,
+    editingProduct,
+    form,
+    isDrawerOpen,
+    isEditMode,
+    selectedGalleryImages.length,
+    selectedImage,
+  ]);
+
   const filteredProducts = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
 
-    if (!query) {
-      return products;
-    }
-
-    return products.filter((product) =>
-      [
+    const matchingProducts = products.filter((product) => {
+      const matchesQuery =
+        !query ||
+        [
         product.name,
         product.slug,
         product.category,
@@ -324,9 +411,196 @@ export default function AdminDashboardPage() {
         product.sku,
       ]
         .filter(Boolean)
-        .some((value) => String(value).toLowerCase().includes(query)),
+          .some((value) => String(value).toLowerCase().includes(query));
+      const matchesCategory =
+        categoryFilter === "all" || product.categorySlug === categoryFilter;
+      const matchesStatus =
+        statusFilter === "all" || getStatusLabel(product.stockStatus) === statusFilter;
+
+      return matchesQuery && matchesCategory && matchesStatus;
+    });
+
+    return [...matchingProducts].sort((left, right) => {
+      if (sortOption === "name-asc") {
+        return left.name.localeCompare(right.name);
+      }
+
+      if (sortOption === "name-desc") {
+        return right.name.localeCompare(left.name);
+      }
+
+      if (sortOption === "category") {
+        return (
+          left.category.localeCompare(right.category) ||
+          left.name.localeCompare(right.name)
+        );
+      }
+
+      return (
+        new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
+      );
+    });
+  }, [categoryFilter, products, searchQuery, sortOption, statusFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / pageSize));
+  const paginatedProducts = filteredProducts.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
+  );
+  const visibleProductIds = paginatedProducts.map((product) => product.id);
+  const selectedVisibleCount = visibleProductIds.filter((id) =>
+    selectedProductIds.includes(id),
+  ).length;
+  const isAllVisibleSelected =
+    visibleProductIds.length > 0 && selectedVisibleCount === visibleProductIds.length;
+  const isSomeVisibleSelected =
+    selectedVisibleCount > 0 && selectedVisibleCount < visibleProductIds.length;
+  const firstVisibleProduct = filteredProducts.length
+    ? (currentPage - 1) * pageSize + 1
+    : 0;
+  const lastVisibleProduct = Math.min(currentPage * pageSize, filteredProducts.length);
+  const productCountLabel =
+    filteredProducts.length === products.length
+      ? `${formatProductCount(products.length)} products`
+      : `${formatProductCount(filteredProducts.length)} of ${formatProductCount(
+          products.length,
+        )} products`;
+  const mediaProducts = useMemo(() => {
+    if (mediaFilter === "with-images") {
+      return products.filter((product) => product.image);
+    }
+
+    if (mediaFilter === "missing-images") {
+      return products.filter((product) => !product.image);
+    }
+
+    return products;
+  }, [mediaFilter, products]);
+  const paginationPages = useMemo(() => {
+    const pages = new Set([1, totalPages, currentPage]);
+
+    for (let page = currentPage - 1; page <= currentPage + 1; page += 1) {
+      if (page > 1 && page < totalPages) {
+        pages.add(page);
+      }
+    }
+
+    if (currentPage <= 3) {
+      pages.add(2);
+      pages.add(3);
+      pages.add(4);
+    }
+
+    if (currentPage >= totalPages - 2) {
+      pages.add(totalPages - 1);
+      pages.add(totalPages - 2);
+      pages.add(totalPages - 3);
+    }
+
+    return Array.from(pages)
+      .filter((page) => page >= 1 && page <= totalPages)
+      .sort((left, right) => left - right);
+  }, [currentPage, totalPages]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [categoryFilter, pageSize, searchQuery, sortOption, statusFilter]);
+
+  useEffect(() => {
+    setCurrentPage((page) => Math.min(page, totalPages));
+  }, [totalPages]);
+
+  useEffect(() => {
+    setSelectedProductIds((current) =>
+      current.filter((id) => products.some((product) => product.id === id)),
     );
-  }, [products, searchQuery]);
+  }, [products]);
+
+  useEffect(() => {
+    if (!successMessage && !categorySuccessMessage) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setSuccessMessage("");
+      setCategorySuccessMessage("");
+    }, 4200);
+
+    return () => window.clearTimeout(timeout);
+  }, [categorySuccessMessage, successMessage]);
+
+  useEffect(() => {
+    if (!hasProductFormChanges) {
+      return;
+    }
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [hasProductFormChanges]);
+
+  useEffect(() => {
+    if (!editingCategorySlug || !shouldScrollToCategoryFormRef.current) {
+      return;
+    }
+
+    shouldScrollToCategoryFormRef.current = false;
+    const animationFrame = window.requestAnimationFrame(() => {
+      categoryEditFormRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+      categoryNameInputRef.current?.focus({ preventScroll: true });
+    });
+
+    return () => window.cancelAnimationFrame(animationFrame);
+  }, [editingCategorySlug, categoryForm.name]);
+
+  const confirmDiscardProductChanges = () =>
+    !hasProductFormChanges ||
+    window.confirm("You have unsaved changes. Leave without saving?");
+
+  const goToSection = (section: AdminSection) => {
+    if (isDrawerOpen && !confirmDiscardProductChanges()) {
+      return;
+    }
+
+    setIsDrawerOpen(false);
+    resetProductForm();
+    setActiveSection(section);
+  };
+
+  const toggleProductSelection = (productId: string) => {
+    setSelectedProductIds((current) =>
+      current.includes(productId)
+        ? current.filter((id) => id !== productId)
+        : [...current, productId],
+    );
+  };
+
+  const toggleVisibleSelection = () => {
+    setSelectedProductIds((current) => {
+      if (isAllVisibleSelected) {
+        return current.filter((id) => !visibleProductIds.includes(id));
+      }
+
+      return Array.from(new Set([...current, ...visibleProductIds]));
+    });
+  };
+
+  const viewProduct = (product: DashboardProduct) => {
+    window.open(`/products/${product.slug || createProductSlug(product.name)}`, "_blank");
+  };
+
+  const handleActionMenuClick = (event: MouseEvent<HTMLButtonElement>, id: string) => {
+    event.stopPropagation();
+    setOpenActionMenuId((current) => (current === id ? null : id));
+  };
 
   const handleChange = <K extends keyof FormState>(field: K, value: FormState[K]) => {
     setForm((current) => {
@@ -390,17 +664,29 @@ export default function AdminDashboardPage() {
   };
 
   const openAddProduct = () => {
+    if (isDrawerOpen && !confirmDiscardProductChanges()) {
+      return;
+    }
+
     resetProductForm();
     setIsDrawerOpen(true);
     setActiveSection("products");
   };
 
-  const closeDrawer = () => {
+  const closeDrawer = (options?: { skipUnsavedCheck?: boolean }) => {
+    if (!options?.skipUnsavedCheck && !confirmDiscardProductChanges()) {
+      return;
+    }
+
     setIsDrawerOpen(false);
     resetProductForm();
   };
 
   const startEditingProduct = (product: DashboardProduct) => {
+    if (isDrawerOpen && !confirmDiscardProductChanges()) {
+      return;
+    }
+
     setErrorMessage("");
     setSuccessMessage("");
     setEditingProductId(product.id);
@@ -604,7 +890,7 @@ export default function AdminDashboardPage() {
       setSuccessMessage(
         isEditMode ? "Product updated successfully." : "Product added successfully.",
       );
-      closeDrawer();
+      closeDrawer({ skipUnsavedCheck: true });
     } catch (error) {
       setErrorMessage(
         error instanceof Error ? error.message : "Unable to save product.",
@@ -655,6 +941,22 @@ export default function AdminDashboardPage() {
   const resetCategoryForm = () => {
     setCategoryForm(initialCategoryFormState);
     setSelectedCategoryImage(null);
+    setCategoryImagePreview("");
+    setEditingCategorySlug(null);
+  };
+
+  const startEditingCategory = (category: CategoryOption) => {
+    shouldScrollToCategoryFormRef.current = true;
+    setCategoryErrorMessage("");
+    setCategorySuccessMessage("");
+    setEditingCategorySlug(category.slug);
+    setSelectedCategoryImage(null);
+    setCategoryImagePreview("");
+    setCategoryForm({
+      name: category.name,
+      slug: category.slug,
+      description: category.description ?? "",
+    });
   };
 
   const handleCategorySubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -667,37 +969,63 @@ export default function AdminDashboardPage() {
       const payload = new FormData();
       payload.append("name", categoryForm.name);
       payload.append("slug", categoryForm.slug);
+      payload.append("currentSlug", editingCategorySlug ?? categoryForm.slug);
       payload.append("description", categoryForm.description);
+
+      const editingCategory = categories.find(
+        (category) => category.slug === editingCategorySlug,
+      );
+
+      if (editingCategory?.id) {
+        payload.append("id", editingCategory.id);
+      }
 
       if (selectedCategoryImage) {
         payload.append("image", selectedCategoryImage);
       }
 
       const response = await fetch("/api/admin/categories", {
-        method: "POST",
+        method: editingCategorySlug ? "PUT" : "POST",
         body: payload,
       });
 
       const data = await readJsonResponse<CategoryResponse>(
         response,
-        "Unable to create category.",
+        editingCategorySlug ? "Unable to update category." : "Unable to create category.",
       );
 
       if (!response.ok || !("category" in data)) {
-        throw new Error("error" in data ? data.error : "Unable to create category.");
+        throw new Error(
+          "error" in data
+            ? data.error
+            : editingCategorySlug
+              ? "Unable to update category."
+              : "Unable to create category.",
+        );
       }
 
       setCategories((current) =>
-        [...current, data.category].sort((left, right) =>
-          left.name.localeCompare(right.name),
-        ),
+        (editingCategorySlug
+          ? current.map((category) =>
+              category.slug === editingCategorySlug ? data.category : category,
+            )
+          : [...current, data.category]
+        ).sort((left, right) => left.name.localeCompare(right.name)),
       );
       setForm((current) => ({ ...current, categorySlug: data.category.slug }));
       resetCategoryForm();
-      setCategorySuccessMessage(`${data.category.name} was created.`);
+      setCategorySuccessMessage(
+        editingCategorySlug
+          ? `${data.category.name} was updated.`
+          : `${data.category.name} was created.`,
+      );
     } catch (error) {
       setCategoryErrorMessage(
-        error instanceof Error ? error.message : "Unable to create category.",
+        error instanceof Error
+          ? error.message
+          : editingCategorySlug
+            ? "Unable to update category."
+            : "Unable to create category.",
       );
     } finally {
       setIsCategorySubmitting(false);
@@ -705,7 +1033,29 @@ export default function AdminDashboardPage() {
   };
 
   const handleDeleteCategory = async (category: CategoryOption) => {
+    const productCount = products.filter(
+      (product) => product.categorySlug === category.slug,
+    ).length;
+
+    if (productCount > 0) {
+      setCategoryErrorMessage(
+        `Cannot delete this category because ${productCount} product${
+          productCount === 1 ? " is" : "s are"
+        } assigned to it.`,
+      );
+      return;
+    }
+
     if (!category.id) {
+      setCategoryErrorMessage("Cannot delete this category because its live category id is unavailable.");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Delete "${category.name}"?\n\nThis action cannot be undone.`,
+    );
+
+    if (!confirmed) {
       return;
     }
 
@@ -743,60 +1093,71 @@ export default function AdminDashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,#eef4f7_0%,#f8fbfd_34%,#ffffff_100%)] text-slate-950">
-      <header className="border-b border-slate-800 bg-[#0b1c2d] px-6 py-7 text-white sm:px-8 lg:px-10">
-        <div className="mx-auto flex max-w-7xl flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <p className="inline-flex rounded-full border border-cyan-300/30 bg-cyan-300/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-100">
-              Product Admin
+    <div className="min-h-screen overflow-x-hidden bg-[#f4f7fa] text-slate-950">
+      <header className="border-b border-slate-800 bg-[#0b1c2d] px-4 py-4 text-white sm:px-6 lg:px-8">
+        <div className="mx-auto flex min-h-[88px] w-full max-w-[1600px] flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-cyan-200">
+              AMCOL Product Admin
             </p>
-            <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
+            <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
               Catalog Management
             </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-200 sm:text-base">
-              Manage product records, summaries, full descriptions, images, and catalog categories from one focused workspace.
+            <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-300">
+              Manage records, categories, imagery, and catalog publishing.
             </p>
           </div>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap items-center gap-2">
             <Link
               href="/products"
-              className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/15"
+              className="inline-flex min-h-10 items-center rounded-lg border border-white/15 bg-white/10 px-4 text-sm font-semibold text-white transition hover:bg-white/15"
             >
-              View products
+              View Site
             </Link>
-            <form action="/api/admin/logout" method="post">
+            <div className="relative">
               <button
-                type="submit"
-                className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/15"
+                type="button"
+                onClick={() => setIsAccountMenuOpen((current) => !current)}
+                className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-white/15 bg-white/10 px-4 text-sm font-semibold text-white transition hover:bg-white/15"
+                aria-expanded={isAccountMenuOpen}
               >
-                Sign out
+                Admin User
+                <span className="text-cyan-200">v</span>
               </button>
-            </form>
-            <button
-              type="button"
-              onClick={openAddProduct}
-              className="inline-flex items-center rounded-full bg-cyan-300 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-200"
-            >
-              Add product
-            </button>
+              {isAccountMenuOpen ? (
+                <div className="absolute right-0 z-20 mt-2 w-44 overflow-hidden rounded-xl border border-slate-200 bg-white p-2 text-slate-950 shadow-[0_18px_44px_-24px_rgba(15,23,42,0.65)]">
+                  <form action="/api/admin/logout" method="post">
+                    <button
+                      type="submit"
+                      className="w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+                    >
+                      Sign out
+                    </button>
+                  </form>
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-7xl gap-6 px-6 py-8 sm:px-8 lg:grid-cols-[240px_minmax(0,1fr)] lg:px-10">
-        <aside className="h-fit rounded-[1.5rem] border border-slate-200 bg-white p-3 shadow-[0_20px_60px_-46px_rgba(15,23,42,0.55)]">
+      <div className="mx-auto grid w-full max-w-[1600px] gap-5 px-4 py-6 sm:px-6 lg:grid-cols-[230px_minmax(0,1fr)] lg:px-8">
+        <aside className="h-fit rounded-xl border border-slate-200 bg-white p-2 shadow-[0_14px_42px_-34px_rgba(15,23,42,0.55)] lg:sticky lg:top-5">
           <nav className="grid gap-1">
             {sections.map((section) => (
               <button
                 key={section.id}
                 type="button"
-                onClick={() => setActiveSection(section.id)}
-                className={`rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${
+                onClick={() => goToSection(section.id)}
+                className={`inline-flex items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold transition ${
                   activeSection === section.id
-                    ? "bg-slate-950 text-white"
+                    ? "bg-slate-950 text-white shadow-sm"
                     : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
                 }`}
               >
+                <span className="grid h-7 w-7 place-items-center rounded-md bg-white/10 text-sm">
+                  {section.icon}
+                </span>
                 {section.label}
               </button>
             ))}
@@ -804,16 +1165,21 @@ export default function AdminDashboardPage() {
         </aside>
 
         <main className="min-w-0">
-          {(errorMessage || successMessage) && !isDrawerOpen ? (
-            <div className="mb-5 grid gap-3">
+          {(errorMessage || successMessage || categorySuccessMessage) && !isDrawerOpen ? (
+            <div className="fixed right-4 top-4 z-50 grid max-w-sm gap-3">
               {errorMessage ? (
-                <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 shadow-lg">
                   {errorMessage}
                 </div>
               ) : null}
               {successMessage ? (
-                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700 shadow-lg">
                   {successMessage}
+                </div>
+              ) : null}
+              {categorySuccessMessage ? (
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700 shadow-lg">
+                  {categorySuccessMessage}
                 </div>
               ) : null}
             </div>
@@ -845,38 +1211,110 @@ export default function AdminDashboardPage() {
           ) : null}
 
           {activeSection === "products" ? (
-            <section className="rounded-[1.5rem] border border-slate-200 bg-white shadow-[0_20px_60px_-46px_rgba(15,23,42,0.55)]">
-              <div className="flex flex-col gap-4 border-b border-slate-200 p-5 lg:flex-row lg:items-center lg:justify-between">
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-cyan-700">
-                    Products
+            <section className="w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_14px_42px_-34px_rgba(15,23,42,0.55)]">
+              <div className="border-b border-slate-200 p-4 lg:p-5">
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-700">
+                      Products
+                    </p>
+                    <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
+                      Products
+                    </h2>
+                  </div>
+                  <p className="text-sm font-semibold text-slate-500">
+                    {productCountLabel}
                   </p>
-                  <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
-                    Product list
-                  </h2>
                 </div>
-                <div className="flex flex-col gap-3 sm:flex-row">
+                <div className="mt-4 grid gap-3 xl:grid-cols-[minmax(220px,1fr)_180px_170px_170px_auto]">
                   <input
                     type="search"
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
-                    className="min-w-0 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-cyan-400 focus:bg-white sm:min-w-80"
-                    placeholder="Search by name, category, SKU, status..."
+                    className="min-h-11 min-w-0 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-cyan-400 focus:bg-white"
+                    placeholder="Search products..."
                   />
+                  <select
+                    value={categoryFilter}
+                    onChange={(event) => setCategoryFilter(event.target.value)}
+                    className="min-h-11 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-700 outline-none transition focus:border-cyan-400 focus:bg-white"
+                  >
+                    <option value="all">All categories</option>
+                    {categories.map((category) => (
+                      <option key={category.slug} value={category.slug}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    value={statusFilter}
+                    onChange={(event) => setStatusFilter(event.target.value)}
+                    className="min-h-11 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-700 outline-none transition focus:border-cyan-400 focus:bg-white"
+                  >
+                    <option value="all">All statuses</option>
+                    {statusOptions.map((status) => (
+                      <option key={status} value={status}>
+                        {status}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    value={sortOption}
+                    onChange={(event) => setSortOption(event.target.value as SortOption)}
+                    className="min-h-11 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-700 outline-none transition focus:border-cyan-400 focus:bg-white"
+                  >
+                    <option value="recent">Newest first</option>
+                    <option value="name-asc">Name A-Z</option>
+                    <option value="name-desc">Name Z-A</option>
+                    <option value="category">Category</option>
+                  </select>
                   <button
                     type="button"
                     onClick={openAddProduct}
-                    className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+                    className="inline-flex min-h-11 items-center justify-center rounded-lg bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800"
                   >
-                    Add product
+                    + Add Product
                   </button>
                 </div>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="min-w-[900px] w-full border-separate border-spacing-0 text-left text-sm">
-                  <thead className="bg-slate-50 text-[11px] uppercase tracking-[0.22em] text-slate-500">
+              {selectedProductIds.length > 0 ? (
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-cyan-100 bg-cyan-50 px-4 py-3 text-sm">
+                  <p className="font-semibold text-cyan-900">
+                    {selectedProductIds.length} selected
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedProductIds([])}
+                    className="rounded-lg border border-cyan-200 bg-white px-3 py-2 text-sm font-semibold text-cyan-800 transition hover:bg-cyan-50"
+                  >
+                    Clear selection
+                  </button>
+                </div>
+              ) : null}
+
+              <div className="max-h-[68vh] overflow-auto">
+                <table className="w-full min-w-[980px] table-fixed border-separate border-spacing-0 text-left text-sm">
+                  <colgroup>
+                    <col className="w-[4%]" />
+                    <col className="w-[27%]" />
+                    <col className="w-[14%]" />
+                    <col className="w-[12%]" />
+                    <col className="w-[11%]" />
+                    <col className="w-[22%]" />
+                    <col className="w-[10%]" />
+                  </colgroup>
+                  <thead className="sticky top-0 z-10 bg-slate-50 text-[11px] uppercase tracking-[0.16em] text-slate-500 shadow-[inset_0_-1px_0_#e2e8f0]">
                     <tr>
+                      <th className="px-4 py-3 font-semibold">
+                        <input
+                          type="checkbox"
+                          checked={isAllVisibleSelected}
+                          aria-checked={isSomeVisibleSelected ? "mixed" : isAllVisibleSelected}
+                          onChange={toggleVisibleSelection}
+                          className="h-4 w-4 rounded border-slate-300"
+                        />
+                      </th>
                       <th className="px-5 py-4 font-semibold">Product</th>
                       <th className="px-5 py-4 font-semibold">Category</th>
                       <th className="px-5 py-4 font-semibold">Price</th>
@@ -888,7 +1326,7 @@ export default function AdminDashboardPage() {
                   <tbody>
                     {isLoading ? (
                       <tr>
-                        <td className="px-5 py-10 text-center text-slate-500" colSpan={6}>
+                        <td className="px-5 py-10 text-center text-slate-500" colSpan={7}>
                           Loading products...
                         </td>
                       </tr>
@@ -896,70 +1334,123 @@ export default function AdminDashboardPage() {
 
                     {!isLoading && filteredProducts.length === 0 ? (
                       <tr>
-                        <td className="px-5 py-10 text-center text-slate-500" colSpan={6}>
-                          No products match your search.
+                        <td className="px-5 py-10 text-center text-slate-500" colSpan={7}>
+                          No products match the current view.
                         </td>
                       </tr>
                     ) : null}
 
-                    {filteredProducts.map((product) => (
-                      <tr key={product.id} className="border-b border-slate-200">
-                        <td className="border-t border-slate-100 px-5 py-4">
-                          <div className="flex items-center gap-4">
-                            <div className="relative h-16 w-16 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+                    {paginatedProducts.map((product) => (
+                      <tr
+                        key={product.id}
+                        className="group border-b border-slate-200 transition hover:bg-slate-50/80"
+                      >
+                        <td className="border-t border-slate-100 px-4 py-4">
+                          <input
+                            type="checkbox"
+                            checked={selectedProductIds.includes(product.id)}
+                            onChange={() => toggleProductSelection(product.id)}
+                            className="h-4 w-4 rounded border-slate-300"
+                          />
+                        </td>
+                        <td className="min-w-0 border-t border-slate-100 px-5 py-4">
+                          <div className="flex min-w-0 items-center gap-4">
+                            <button
+                              type="button"
+                              onClick={() => startEditingProduct(product)}
+                              className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-50 transition hover:border-cyan-300"
+                              aria-label={`Edit ${product.name}`}
+                            >
                               {product.image ? (
                                 <Image
                                   src={product.image}
                                   alt={product.imageAlt || product.name}
                                   fill
-                                  sizes="64px"
-                                  className="object-cover"
+                                  sizes="56px"
+                                  className="object-contain p-1"
                                 />
                               ) : null}
-                            </div>
+                            </button>
                             <div className="min-w-0">
-                              <p className="max-w-xs truncate font-semibold text-slate-950">
+                              <button
+                                type="button"
+                                onClick={() => startEditingProduct(product)}
+                                className="block max-w-full truncate text-left font-semibold text-slate-950 transition hover:text-cyan-800"
+                              >
                                 {product.name}
-                              </p>
-                              <p className="mt-1 text-xs text-slate-500">
-                                /products/{product.slug || createProductSlug(product.name)}
+                              </button>
+                              <p className="mt-1 truncate text-xs text-slate-500">
+                                {getProductIdentifier(product)}
                               </p>
                             </div>
                           </div>
                         </td>
-                        <td className="border-t border-slate-100 px-5 py-4 text-slate-600">
-                          {product.category}
-                        </td>
-                        <td className="border-t border-slate-100 px-5 py-4 font-semibold text-red-600">
-                          {product.price}
-                        </td>
-                        <td className="border-t border-slate-100 px-5 py-4">
-                          <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
-                            {product.stockStatus || "Available on request"}
+                        <td className="min-w-0 border-t border-slate-100 px-5 py-4 text-slate-600">
+                          <span className="block truncate">
+                            {product.category}
                           </span>
                         </td>
                         <td className="border-t border-slate-100 px-5 py-4">
-                          <p className="product-card-summary max-w-sm text-sm leading-6 text-slate-600">
+                          <span className="inline-flex whitespace-nowrap rounded-md border border-red-100 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700">
+                            {normalizePriceLabel(product.price)}
+                          </span>
+                        </td>
+                        <td className="min-w-0 border-t border-slate-100 px-5 py-4">
+                          <span
+                            className={`inline-flex max-w-full rounded-md border px-2.5 py-1 text-xs font-semibold ${getStatusTone(
+                              product.stockStatus,
+                            )}`}
+                          >
+                            <span className="truncate">{getStatusLabel(product.stockStatus)}</span>
+                          </span>
+                        </td>
+                        <td className="min-w-0 border-t border-slate-100 px-5 py-4">
+                          <p className="line-clamp-2 text-sm leading-6 text-slate-600">
                             {product.summary || product.description || "No summary yet."}
                           </p>
                         </td>
                         <td className="border-t border-slate-100 px-5 py-4">
-                          <div className="flex justify-end gap-2">
+                          <div className="relative flex min-w-max justify-end gap-2">
                             <button
                               type="button"
                               onClick={() => startEditingProduct(product)}
-                              className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-cyan-300 hover:text-cyan-800"
+                              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-cyan-300 hover:text-cyan-800"
                             >
                               Edit
                             </button>
                             <button
                               type="button"
-                              disabled={deletingProductId === product.id}
-                              onClick={() => handleDeleteProduct(product)}
-                              className="rounded-full border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 transition hover:border-red-300 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+                              onClick={(event) => handleActionMenuClick(event, product.id)}
+                              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-cyan-300 hover:text-cyan-800"
+                              aria-label={`Open actions for ${product.name}`}
                             >
-                              {deletingProductId === product.id ? "Deleting" : "Delete"}
+                              ...
                             </button>
+                            {openActionMenuId === product.id ? (
+                              <div className="absolute right-0 top-10 z-20 w-40 overflow-hidden rounded-xl border border-slate-200 bg-white p-1 shadow-[0_18px_44px_-24px_rgba(15,23,42,0.65)]">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    viewProduct(product);
+                                    setOpenActionMenuId(null);
+                                  }}
+                                  className="w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+                                >
+                                  View product
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={deletingProductId === product.id}
+                                  onClick={() => {
+                                    setOpenActionMenuId(null);
+                                    handleDeleteProduct(product);
+                                  }}
+                                  className="w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:text-slate-400"
+                                >
+                                  {deletingProductId === product.id ? "Deleting" : "Delete"}
+                                </button>
+                              </div>
+                            ) : null}
                           </div>
                         </td>
                       </tr>
@@ -967,22 +1458,86 @@ export default function AdminDashboardPage() {
                   </tbody>
                 </table>
               </div>
+              <div className="flex flex-col gap-3 border-t border-slate-200 px-4 py-3 text-sm text-slate-600 md:flex-row md:items-center md:justify-between">
+                <div className="flex flex-wrap items-center gap-3">
+                  <span>
+                    Showing {formatProductCount(firstVisibleProduct)}-
+                    {formatProductCount(lastVisibleProduct)} of{" "}
+                    {formatProductCount(filteredProducts.length)}
+                  </span>
+                  <select
+                    value={pageSize}
+                    onChange={(event) => setPageSize(Number(event.target.value))}
+                    className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm font-medium text-slate-700"
+                    aria-label="Products per page"
+                  >
+                    {pageSizeOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                    className="rounded-lg border border-slate-200 bg-white px-3 py-2 font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-300"
+                  >
+                    Previous
+                  </button>
+                  {paginationPages.map((page, index) => (
+                    <div key={page} className="flex items-center gap-2">
+                      {index > 0 && page - paginationPages[index - 1] > 1 ? (
+                        <span className="text-slate-400">...</span>
+                      ) : null}
+                      <button
+                        type="button"
+                        onClick={() => setCurrentPage(page)}
+                        className={`min-w-9 rounded-lg border px-3 py-2 font-semibold transition ${
+                          page === currentPage
+                            ? "border-slate-950 bg-slate-950 text-white"
+                            : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                        }`}
+                        aria-current={page === currentPage ? "page" : undefined}
+                      >
+                        {page}
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    disabled={currentPage === totalPages}
+                    onClick={() =>
+                      setCurrentPage((page) => Math.min(totalPages, page + 1))
+                    }
+                    className="rounded-lg border border-slate-200 bg-white px-3 py-2 font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-300"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
             </section>
           ) : null}
 
           {activeSection === "categories" ? (
             <section className="grid gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-              <div className="rounded-[1.5rem] border border-slate-200 bg-white p-6 shadow-[0_20px_60px_-46px_rgba(15,23,42,0.55)]">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-cyan-700">
-                  Categories
+              <div
+                ref={categoryEditFormRef}
+                className="scroll-mt-28 rounded-xl border border-slate-200 bg-white p-6 shadow-[0_14px_42px_-34px_rgba(15,23,42,0.55)]"
+              >
+                <p className="text-xs font-semibold text-slate-500">
+                  Admin / Categories / {editingCategorySlug ? "Edit Category" : "Add Category"}
                 </p>
                 <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
-                  Add category
+                  {editingCategorySlug ? "Edit category" : "Add category"}
                 </h2>
                 <form className="mt-6 space-y-5" onSubmit={handleCategorySubmit}>
                   <label className="block space-y-2">
                     <span className="text-sm font-semibold text-slate-800">Name</span>
                     <input
+                      ref={categoryNameInputRef}
                       type="text"
                       value={categoryForm.name}
                       onChange={(event) =>
@@ -1000,8 +1555,14 @@ export default function AdminDashboardPage() {
                       onChange={(event) =>
                         handleCategoryChange("slug", event.target.value)
                       }
-                      className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-cyan-400 focus:bg-white"
+                      disabled={Boolean(editingCategorySlug)}
+                      className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-cyan-400 focus:bg-white disabled:cursor-not-allowed disabled:text-slate-500"
                     />
+                    {editingCategorySlug ? (
+                      <span className="block text-xs leading-5 text-slate-500">
+                        Slug is preserved while editing to avoid changing public category URLs.
+                      </span>
+                    ) : null}
                   </label>
                   <label className="block space-y-2">
                     <span className="text-sm font-semibold text-slate-800">
@@ -1053,14 +1614,20 @@ export default function AdminDashboardPage() {
                     <button
                       type="submit"
                       disabled={isCategorySubmitting}
-                      className="rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+                      className="rounded-lg bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
                     >
-                      {isCategorySubmitting ? "Creating..." : "Create category"}
+                      {isCategorySubmitting
+                        ? editingCategorySlug
+                          ? "Saving..."
+                          : "Creating..."
+                        : editingCategorySlug
+                          ? "Save category"
+                          : "Create category"}
                     </button>
                     <button
                       type="button"
                       onClick={resetCategoryForm}
-                      className="rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-400"
+                      className="rounded-lg border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-400"
                     >
                       Reset
                     </button>
@@ -1068,7 +1635,7 @@ export default function AdminDashboardPage() {
                 </form>
               </div>
 
-              <div className="rounded-[1.5rem] border border-slate-200 bg-white p-6 shadow-[0_20px_60px_-46px_rgba(15,23,42,0.55)]">
+              <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-[0_14px_42px_-34px_rgba(15,23,42,0.55)]">
                 <h2 className="text-2xl font-semibold tracking-tight text-slate-950">
                   Category list
                 </h2>
@@ -1078,7 +1645,15 @@ export default function AdminDashboardPage() {
                       (product) => product.categorySlug === category.slug,
                     ).length;
                     const isSeeded = category.source === "seed";
-                    const isDisabled = isSeeded || productCount > 0 || !category.id;
+                    const deleteDisabledReason =
+                      productCount > 0
+                        ? `${productCount} product${
+                            productCount === 1 ? "" : "s"
+                          } assigned`
+                        : !category.id
+                          ? "Live category id unavailable"
+                          : "";
+                    const isDeleteDisabled = Boolean(deleteDisabledReason);
 
                     return (
                       <article
@@ -1091,7 +1666,7 @@ export default function AdminDashboardPage() {
                               {category.name}
                             </p>
                             <p className="mt-1 text-xs text-slate-500">
-                              {category.slug} · {productCount} products ·{" "}
+                              {category.slug} / {productCount} products /{" "}
                               {isSeeded ? "Seeded" : "Admin"}
                             </p>
                             {category.description ? (
@@ -1100,14 +1675,39 @@ export default function AdminDashboardPage() {
                               </p>
                             ) : null}
                           </div>
-                          <button
-                            type="button"
-                            disabled={isDisabled || deletingCategoryId === category.id}
-                            onClick={() => handleDeleteCategory(category)}
-                            className="rounded-full border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400"
-                          >
-                            {deletingCategoryId === category.id ? "Deleting" : "Delete"}
-                          </button>
+                          <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                onClick={() => startEditingCategory(category)}
+                                className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-cyan-300 hover:text-cyan-800"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                type="button"
+                                disabled={
+                                  isDeleteDisabled ||
+                                  deletingCategoryId === category.id
+                                }
+                                onClick={() => handleDeleteCategory(category)}
+                                title={
+                                  deleteDisabledReason ||
+                                  `Delete ${category.name}`
+                                }
+                                className="rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400"
+                              >
+                                {deletingCategoryId === category.id
+                                  ? "Deleting"
+                                  : "Delete"}
+                              </button>
+                            </div>
+                            {deleteDisabledReason ? (
+                              <p className="text-xs font-medium text-slate-500">
+                                {deleteDisabledReason}
+                              </p>
+                            ) : null}
+                          </div>
                         </div>
                       </article>
                     );
@@ -1118,40 +1718,92 @@ export default function AdminDashboardPage() {
           ) : null}
 
           {activeSection === "media" ? (
-            <section className="rounded-[1.5rem] border border-slate-200 bg-white p-6 shadow-[0_20px_60px_-46px_rgba(15,23,42,0.55)]">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-cyan-700">
-                Media
-              </p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
-                Product images
-              </h2>
-              <p className="mt-3 text-sm leading-6 text-slate-600">
-                Main product images are uploaded from the product form and stored as URLs on each product record.
-              </p>
+            <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-[0_14px_42px_-34px_rgba(15,23,42,0.55)]">
+              <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-slate-500">
+                    Admin / Media
+                  </p>
+                  <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+                    Product images
+                  </h2>
+                </div>
+                <select
+                  value={mediaFilter}
+                  onChange={(event) => setMediaFilter(event.target.value as MediaFilter)}
+                  className="min-h-10 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-700 outline-none transition focus:border-cyan-400 focus:bg-white"
+                >
+                  <option value="all">All products</option>
+                  <option value="with-images">Products with images</option>
+                  <option value="missing-images">Missing images</option>
+                </select>
+              </div>
+              <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                    With images
+                  </p>
+                  <p className="mt-2 text-2xl font-semibold text-slate-950">
+                    {formatProductCount(products.filter((product) => product.image).length)}
+                  </p>
+                </div>
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                    Missing images
+                  </p>
+                  <p className="mt-2 text-2xl font-semibold text-slate-950">
+                    {formatProductCount(missingImageCount)}
+                  </p>
+                </div>
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                    Vercel Blob
+                  </p>
+                  <p className="mt-2 text-2xl font-semibold text-slate-950">
+                    {formatProductCount(
+                      products.filter((product) => isVercelBlobUrl(product.image)).length,
+                    )}
+                  </p>
+                </div>
+              </div>
               <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                {products
-                  .filter((product) => product.image)
-                  .map((product) => (
-                    <article
-                      key={product.id}
-                      className="overflow-hidden rounded-[1.25rem] border border-slate-200 bg-slate-50"
-                    >
-                      <div className="relative h-40 bg-white">
+                {mediaProducts.map((product) => (
+                  <article
+                    key={product.id}
+                    className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50"
+                  >
+                    <div className="relative h-40 bg-white">
+                      {product.image ? (
                         <Image
                           src={product.image}
                           alt={product.imageAlt || product.name}
                           fill
                           sizes="(min-width: 1280px) 18vw, 50vw"
-                          className="object-cover"
+                          className="object-contain p-3"
                         />
-                      </div>
-                      <div className="p-4">
+                      ) : (
+                        <div className="flex h-full items-center justify-center px-4 text-center text-sm font-medium text-slate-400">
+                          No image assigned
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-4">
+                      <div className="flex items-start justify-between gap-3">
                         <p className="line-clamp-2 text-sm font-semibold text-slate-900">
                           {product.name}
                         </p>
+                        {isVercelBlobUrl(product.image) ? (
+                          <span className="shrink-0 rounded-md border border-cyan-200 bg-cyan-50 px-2 py-1 text-[11px] font-semibold text-cyan-800">
+                            Vercel Blob
+                          </span>
+                        ) : null}
                       </div>
-                    </article>
-                  ))}
+                      <p className="mt-2 truncate text-xs text-slate-500">
+                        {product.image || "Image URL missing"}
+                      </p>
+                    </div>
+                  </article>
+                ))}
               </div>
             </section>
           ) : null}
@@ -1163,8 +1815,8 @@ export default function AdminDashboardPage() {
           <div className="absolute inset-y-0 right-0 flex w-full max-w-4xl flex-col bg-white shadow-2xl">
             <div className="flex items-start justify-between gap-4 border-b border-slate-200 px-6 py-5">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-cyan-700">
-                  {isEditMode ? "Edit product" : "Add product"}
+                <p className="text-xs font-semibold text-slate-500">
+                  Admin / Products / {isEditMode ? "Edit Product" : "Add Product"}
                 </p>
                 <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
                   {isEditMode ? form.name : "New catalog product"}
@@ -1172,8 +1824,8 @@ export default function AdminDashboardPage() {
               </div>
               <button
                 type="button"
-                onClick={closeDrawer}
-                className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-400"
+                onClick={() => closeDrawer()}
+                className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-400"
               >
                 Close
               </button>
@@ -1264,7 +1916,6 @@ export default function AdminDashboardPage() {
                         >
                           <option>In stock</option>
                           <option>Low stock</option>
-                          <option>Available on request</option>
                           <option>Available on request</option>
                         </select>
                       </label>
@@ -1606,15 +2257,15 @@ export default function AdminDashboardPage() {
               <div className="sticky bottom-0 -mx-6 mt-8 flex flex-wrap items-center justify-end gap-3 border-t border-slate-200 bg-white px-6 py-4">
                 <button
                   type="button"
-                  onClick={closeDrawer}
-                  className="rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-400"
+                  onClick={() => closeDrawer()}
+                  className="rounded-lg border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-400"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="rounded-full bg-slate-950 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+                  className="rounded-lg bg-slate-950 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
                 >
                   {isSubmitting
                     ? "Saving..."
@@ -1631,3 +2282,54 @@ export default function AdminDashboardPage() {
   );
 }
 
+function formatProductCount(count: number) {
+  return new Intl.NumberFormat("en-US").format(count);
+}
+
+function getProductIdentifier(product: DashboardProduct) {
+  if (product.sku?.trim()) {
+    return `SKU: ${product.sku.trim()}`;
+  }
+
+  if (product.id?.trim()) {
+    return `ID: ${product.id.trim()}`;
+  }
+
+  return product.slug ? `Slug: ${product.slug}` : createProductSlug(product.name);
+}
+
+function normalizePriceLabel(price: string) {
+  const normalized = price.trim();
+
+  if (/call\s*for/i.test(normalized) || /request/i.test(normalized)) {
+    return "Call for Price";
+  }
+
+  return normalized || "Call for Price";
+}
+
+function getStatusTone(status: string | undefined) {
+  const normalized = (status || "Available on request").toLowerCase();
+
+  if (normalized.includes("low")) {
+    return "border-amber-200 bg-amber-50 text-amber-800";
+  }
+
+  if (normalized.includes("out") || normalized.includes("hidden") || normalized.includes("draft")) {
+    return "border-slate-200 bg-slate-100 text-slate-600";
+  }
+
+  if (normalized.includes("request")) {
+    return "border-cyan-200 bg-cyan-50 text-cyan-800";
+  }
+
+  return "border-emerald-200 bg-emerald-50 text-emerald-800";
+}
+
+function getStatusLabel(status: string | undefined) {
+  return status?.trim() || "Available on request";
+}
+
+function isVercelBlobUrl(url: string | undefined) {
+  return Boolean(url?.includes(".public.blob.vercel-storage.com"));
+}
