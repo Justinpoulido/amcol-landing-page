@@ -115,10 +115,10 @@ const initialCategoryFormState: CategoryFormState = {
 };
 
 const sections: { id: AdminSection; label: string }[] = [
-  { id: "dashboard", label: "Dashboard" },
-  { id: "products", label: "Products" },
-  { id: "categories", label: "Categories" },
-  { id: "media", label: "Media" },
+  { id: "dashboard", label: "View Dashboard" },
+  { id: "products", label: "Edit Products" },
+  { id: "categories", label: "Edit Categories" },
+  { id: "media", label: "View Media" },
 ];
 
 function splitGalleryImages(value: string) {
@@ -745,7 +745,7 @@ export default function AdminDashboardPage() {
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#eef4f7_0%,#f8fbfd_34%,#ffffff_100%)] text-slate-950">
       <header className="border-b border-slate-800 bg-[#0b1c2d] px-6 py-7 text-white sm:px-8 lg:px-10">
-        <div className="mx-auto flex max-w-7xl flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="inline-flex rounded-full border border-cyan-300/30 bg-cyan-300/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-100">
               Product Admin
@@ -779,11 +779,18 @@ export default function AdminDashboardPage() {
             >
               Add product
             </button>
+            <button
+              type="button"
+              onClick={() => setActiveSection("categories")}
+              className="inline-flex items-center rounded-full bg-cyan-300 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-200"
+            >
+              Add category
+            </button>
           </div>
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-7xl gap-6 px-6 py-8 sm:px-8 lg:grid-cols-[240px_minmax(0,1fr)] lg:px-10">
+      <div className="mx-auto grid w-full max-w-[1600px] gap-6 px-6 py-8 sm:px-8 lg:grid-cols-[240px_minmax(0,1fr)] lg:px-10">
         <aside className="h-fit rounded-[1.5rem] border border-slate-200 bg-white p-3 shadow-[0_20px_60px_-46px_rgba(15,23,42,0.55)]">
           <nav className="grid gap-1">
             {sections.map((section) => (
@@ -845,7 +852,7 @@ export default function AdminDashboardPage() {
           ) : null}
 
           {activeSection === "products" ? (
-            <section className="rounded-[1.5rem] border border-slate-200 bg-white shadow-[0_20px_60px_-46px_rgba(15,23,42,0.55)]">
+            <section className="w-full overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white shadow-[0_20px_60px_-46px_rgba(15,23,42,0.55)]">
               <div className="flex flex-col gap-4 border-b border-slate-200 p-5 lg:flex-row lg:items-center lg:justify-between">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-cyan-700">
@@ -874,7 +881,15 @@ export default function AdminDashboardPage() {
               </div>
 
               <div className="overflow-x-auto">
-                <table className="min-w-[900px] w-full border-separate border-spacing-0 text-left text-sm">
+                <table className="w-full min-w-[1080px] table-fixed border-separate border-spacing-0 text-left text-sm">
+                  <colgroup>
+                    <col className="w-[30%]" />
+                    <col className="w-[14%]" />
+                    <col className="w-[9%]" />
+                    <col className="w-[11%]" />
+                    <col className="w-[21%]" />
+                    <col className="w-[15%]" />
+                  </colgroup>
                   <thead className="bg-slate-50 text-[11px] uppercase tracking-[0.22em] text-slate-500">
                     <tr>
                       <th className="px-5 py-4 font-semibold">Product</th>
@@ -904,9 +919,9 @@ export default function AdminDashboardPage() {
 
                     {filteredProducts.map((product) => (
                       <tr key={product.id} className="border-b border-slate-200">
-                        <td className="border-t border-slate-100 px-5 py-4">
-                          <div className="flex items-center gap-4">
-                            <div className="relative h-16 w-16 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+                        <td className="min-w-0 border-t border-slate-100 px-5 py-4">
+                          <div className="flex min-w-0 items-center gap-4">
+                            <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
                               {product.image ? (
                                 <Image
                                   src={product.image}
@@ -918,33 +933,37 @@ export default function AdminDashboardPage() {
                               ) : null}
                             </div>
                             <div className="min-w-0">
-                              <p className="max-w-xs truncate font-semibold text-slate-950">
+                              <p className="truncate font-semibold text-slate-950">
                                 {product.name}
                               </p>
-                              <p className="mt-1 text-xs text-slate-500">
+                              <p className="mt-1 truncate text-xs text-slate-500">
                                 /products/{product.slug || createProductSlug(product.name)}
                               </p>
                             </div>
                           </div>
                         </td>
-                        <td className="border-t border-slate-100 px-5 py-4 text-slate-600">
-                          {product.category}
+                        <td className="min-w-0 border-t border-slate-100 px-5 py-4 text-slate-600">
+                          <span className="block truncate">
+                            {product.category}
+                          </span>
                         </td>
-                        <td className="border-t border-slate-100 px-5 py-4 font-semibold text-red-600">
-                          {product.price}
+                        <td className="min-w-0 border-t border-slate-100 px-5 py-4 font-semibold text-red-600">
+                          <span className="block truncate">
+                            {product.price}
+                          </span>
                         </td>
-                        <td className="border-t border-slate-100 px-5 py-4">
-                          <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
+                        <td className="min-w-0 border-t border-slate-100 px-5 py-4">
+                          <span className="block truncate rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
                             {product.stockStatus || "Available on request"}
                           </span>
                         </td>
-                        <td className="border-t border-slate-100 px-5 py-4">
-                          <p className="product-card-summary max-w-sm text-sm leading-6 text-slate-600">
+                        <td className="min-w-0 border-t border-slate-100 px-5 py-4">
+                          <p className="product-card-summary text-sm leading-6 text-slate-600">
                             {product.summary || product.description || "No summary yet."}
                           </p>
                         </td>
                         <td className="border-t border-slate-100 px-5 py-4">
-                          <div className="flex justify-end gap-2">
+                          <div className="flex min-w-max justify-end gap-2">
                             <button
                               type="button"
                               onClick={() => startEditingProduct(product)}
