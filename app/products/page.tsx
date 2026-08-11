@@ -1,11 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getAllProducts, getFeaturedCategories } from "@/lib/catalog-store";
+import { redirect } from "next/navigation";
 import {
-  landingCategoryRows,
-  type ProductCategoryPageData,
-} from "@/lib/product-categories";
+  getFeaturedCategories,
+  getPaginatedProducts,
+  getProductFilterOptions,
+} from "@/lib/catalog-store";
+import type { ProductCategoryPageData } from "@/lib/product-categories";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { SiteFooter } from "@/app/components/SiteFooter";
 import { Breadcrumbs } from "@/app/components/Breadcrumbs";
@@ -49,41 +51,20 @@ type ProductsPageProps = {
     brand?: string | string[];
     availability?: string | string[];
     type?: string | string[];
+    page?: string | string[];
   }>;
 };
+
+const productsPerPage = 24;
 
 function getSearchValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
 
-function productMatchesSearch(
-  product: Awaited<ReturnType<typeof getAllProducts>>[number],
-  query: string,
-) {
-  const searchableText = [
-    product.name,
-    product.category,
-    product.categoryName,
-    product.brand,
-    product.sku,
-    product.summary,
-    product.description,
-    product.price,
-    product.stockStatus,
-    ...(product.specifications ?? []),
-    ...(product.useCases ?? []),
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
+function getPageValue(value: string | string[] | undefined) {
+  const parsedPage = Number.parseInt(getSearchValue(value) ?? "1", 10);
 
-  return searchableText.includes(query.toLowerCase());
-}
-
-function getUniqueValues(values: Array<string | undefined>) {
-  return Array.from(
-    new Set(values.map((value) => value?.trim()).filter((value): value is string => Boolean(value))),
-  ).sort((left, right) => left.localeCompare(right));
+  return Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1;
 }
 
 function chunkCategories(categories: ProductCategoryPageData[], size: number) {
@@ -96,6 +77,154 @@ function chunkCategories(categories: ProductCategoryPageData[], size: number) {
   return rows;
 }
 
+function buildProductsPageHref(
+  params: {
+    search?: string;
+    category?: string;
+    brand?: string;
+    availability?: string;
+    type?: string;
+  },
+  page: number,
+) {
+  const searchParams = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value) {
+      searchParams.set(key, value);
+    }
+  });
+
+  if (page > 1) {
+    searchParams.set("page", String(page));
+  }
+
+  const queryString = searchParams.toString();
+
+  return queryString ? `/products?${queryString}#product-results` : "/products#product-results";
+}
+
+function getPaginationPages(currentPage: number, totalPages: number) {
+  const pages = new Set([1, totalPages, currentPage]);
+
+  for (let page = currentPage - 2; page <= currentPage + 2; page += 1) {
+    if (page > 1 && page < totalPages) {
+      pages.add(page);
+    }
+  }
+
+  if (currentPage <= 3) {
+    pages.add(2);
+    pages.add(3);
+    pages.add(4);
+    pages.add(5);
+  }
+
+  if (currentPage >= totalPages - 2) {
+    pages.add(totalPages - 1);
+    pages.add(totalPages - 2);
+    pages.add(totalPages - 3);
+    pages.add(totalPages - 4);
+  }
+
+  return Array.from(pages)
+    .filter((page) => page >= 1 && page <= totalPages)
+    .sort((left, right) => left - right);
+}
+
+function ProductPagination({
+  currentPage,
+  totalPages,
+  totalItems,
+  pageSize,
+  filters,
+}: {
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  pageSize: number;
+  filters: {
+    search?: string;
+    category?: string;
+    brand?: string;
+    availability?: string;
+    type?: string;
+  };
+}) {
+  if (totalItems === 0 || totalPages <= 1) {
+    return null;
+  }
+
+  const firstItem = (currentPage - 1) * pageSize + 1;
+  const lastItem = Math.min(currentPage * pageSize, totalItems);
+  const pages = getPaginationPages(currentPage, totalPages);
+  const previousPage = Math.max(1, currentPage - 1);
+  const nextPage = Math.min(totalPages, currentPage + 1);
+
+  return (
+    <nav
+      aria-label="Product pagination"
+      className="mt-10 flex flex-col gap-4 rounded-xl border border-slate-200 bg-white px-4 py-4 text-sm text-slate-600 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.45)] md:flex-row md:items-center md:justify-between"
+    >
+      <p>
+        Showing {firstItem}-{lastItem} of {totalItems} products
+      </p>
+      <div className="flex flex-wrap items-center gap-2">
+        {currentPage === 1 ? (
+          <span className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 font-semibold text-slate-300">
+            Previous
+          </span>
+        ) : (
+          <Link
+            href={buildProductsPageHref(filters, previousPage)}
+            className="rounded-lg border border-slate-200 bg-white px-3 py-2 font-semibold text-slate-700 transition hover:border-cyan-300 hover:text-[#0e7c76]"
+          >
+            Previous
+          </Link>
+        )}
+
+        <span className="px-2 font-semibold text-slate-700 sm:hidden">
+          Page {currentPage} of {totalPages}
+        </span>
+
+        <span className="hidden flex-wrap items-center gap-2 sm:flex">
+          {pages.map((page, index) => (
+            <span key={page} className="flex items-center gap-2">
+              {index > 0 && page - pages[index - 1] > 1 ? (
+                <span className="text-slate-400">...</span>
+              ) : null}
+              <Link
+                href={buildProductsPageHref(filters, page)}
+                aria-current={page === currentPage ? "page" : undefined}
+                className={`min-w-10 rounded-lg border px-3 py-2 text-center font-semibold transition ${
+                  page === currentPage
+                    ? "border-[#0e7c76] bg-[#0e7c76] text-white"
+                    : "border-slate-200 bg-white text-slate-700 hover:border-cyan-300 hover:text-[#0e7c76]"
+                }`}
+              >
+                {page}
+              </Link>
+            </span>
+          ))}
+        </span>
+
+        {currentPage === totalPages ? (
+          <span className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 font-semibold text-slate-300">
+            Next
+          </span>
+        ) : (
+          <Link
+            href={buildProductsPageHref(filters, nextPage)}
+            className="rounded-lg border border-slate-200 bg-white px-3 py-2 font-semibold text-slate-700 transition hover:border-cyan-300 hover:text-[#0e7c76]"
+          >
+            Next
+          </Link>
+        )}
+      </div>
+    </nav>
+  );
+}
+
 export default async function ProductsPage({ searchParams }: ProductsPageProps) {
   const query = await searchParams;
   const searchQuery = getSearchValue(query?.search)?.trim() ?? "";
@@ -103,19 +232,32 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   const selectedBrand = getSearchValue(query?.brand)?.trim() ?? "";
   const selectedAvailability = getSearchValue(query?.availability)?.trim() ?? "";
   const selectedType = getSearchValue(query?.type)?.trim() ?? "";
-  const [products, featuredProductCategories] = await Promise.all([
-    getAllProducts(),
-    Promise.resolve(getFeaturedCategories()),
+  const requestedPage = getPageValue(query?.page);
+  const filters = {
+    search: searchQuery,
+    category: selectedCategory,
+    brand: selectedBrand,
+    availability: selectedAvailability,
+    type: selectedType,
+  };
+  const [filterOptions, featuredProductCategories, paginatedProducts] = await Promise.all([
+    getProductFilterOptions(),
+    getFeaturedCategories(),
+    getPaginatedProducts(filters, requestedPage, productsPerPage),
   ]);
-  const industrialCategories = landingCategoryRows.flat();
-  const categoryOptions = getUniqueValues(
-    products.map((product) => product.categoryName || product.category),
-  );
-  const brandOptions = getUniqueValues(products.map((product) => product.brand));
-  const availabilityOptions = getUniqueValues(
-    products.map((product) => product.stockStatus),
-  );
-  const productTypeOptions = getUniqueValues(products.map((product) => product.category));
+  const totalProducts = paginatedProducts.totalCount;
+  const totalPages = Math.max(1, Math.ceil(totalProducts / productsPerPage));
+  const currentPage = Math.min(requestedPage, totalPages);
+
+  if (requestedPage !== currentPage) {
+    redirect(buildProductsPageHref(filters, currentPage));
+  }
+
+  const visibleProducts = paginatedProducts.products;
+  const categoryOptions = filterOptions.categories;
+  const brandOptions = filterOptions.brands;
+  const availabilityOptions = filterOptions.availability;
+  const productTypeOptions = filterOptions.productTypes;
   const hasActiveFilters = Boolean(
     searchQuery ||
       selectedCategory ||
@@ -123,398 +265,352 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       selectedAvailability ||
       selectedType,
   );
-  const visibleProducts = products.filter((product) => {
-    if (searchQuery && !productMatchesSearch(product, searchQuery)) {
-      return false;
-    }
-
-    if (
-      selectedCategory &&
-      (product.categoryName || product.category).toLowerCase() !==
-        selectedCategory.toLowerCase()
-    ) {
-      return false;
-    }
-
-    if (selectedBrand && product.brand?.toLowerCase() !== selectedBrand.toLowerCase()) {
-      return false;
-    }
-
-    if (
-      selectedAvailability &&
-      product.stockStatus?.toLowerCase() !== selectedAvailability.toLowerCase()
-    ) {
-      return false;
-    }
-
-    if (selectedType && product.category.toLowerCase() !== selectedType.toLowerCase()) {
-      return false;
-    }
-
-    return true;
-  });
-
   return (
     <div className="min-h-screen bg-white font-sans text-zinc-900">
       <SiteHeader activeLink="PRODUCTS" />
 
       <main>
-      <section className="relative overflow-hidden bg-brand-charcoal pt-32 pb-24 sm:pt-40 sm:pb-32">
-        <div className="absolute inset-0 z-0">
-          <div
-            className="absolute inset-0 bg-cover bg-center opacity-50 grayscale mix-blend-overlay"
-            style={{ backgroundImage: "url('/images/Shore_base.png')" }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0f1b2d]/80 via-[#0f1b2d]/60 to-[#0f1b2d]" />
-        </div>
+        <section className="relative overflow-hidden bg-brand-charcoal pt-32 pb-20 sm:pt-40 sm:pb-28">
+          <div className="absolute inset-0 z-0">
+            <div
+              className="absolute inset-0 bg-cover bg-center opacity-50 grayscale mix-blend-overlay"
+              style={{ backgroundImage: "url('/images/Shore_base.png')" }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-[#0f1b2d]/80 via-[#0f1b2d]/60 to-[#0f1b2d]" />
+          </div>
 
-        <div className="relative z-10 mx-auto max-w-7xl px-6 text-center lg:px-8">
-          <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl">
-            Industrial, Safety & Marine Supplies in Trinidad & Tobago
-          </h1>
-          <p className="mt-6 mx-auto max-w-2xl text-lg leading-8 text-gray-300">
-            Explore industrial supplies, MRO products, PPE, marine maintenance items, construction consumables, and facility support products available through AMCOL Industrial in Penal.
-          </p>
-        </div>
-      </section>
-
-      <section className="border-b border-zinc-200 bg-white py-8">
-        <div className="mx-auto grid max-w-7xl gap-4 px-6 lg:grid-cols-[1fr_auto] lg:items-center lg:px-8">
-          <div>
-            <h2 className="text-xl font-bold text-zinc-900">
-              Need help choosing the right industrial supplies?
-            </h2>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-600">
-              Use AMCOL&apos;s buying guides for PPE, lubricants, pumps, valves,
-              welding, construction consumables, fire protection, and chemicals
-              before sending your quote request.
+          <div className="relative z-10 mx-auto max-w-7xl px-6 text-center lg:px-8">
+            <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl">
+              Industrial, Safety & Marine Supplies in Trinidad & Tobago
+            </h1>
+            <p className="mt-6 mx-auto max-w-2xl text-lg leading-8 text-gray-300">
+              Explore industrial supplies, MRO products, PPE, marine maintenance items, construction consumables, and facility support products available through AMCOL Industrial in Penal.
             </p>
           </div>
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href="/knowledge"
-              className="inline-flex rounded-sm bg-zinc-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#0b1420]"
-            >
-              Browse Knowledge Center
-            </Link>
-            <Link
-              href="/knowledge/ppe/what-ppe-do-industrial-workers-need"
-              className="inline-flex rounded-sm border border-zinc-300 px-4 py-2.5 text-sm font-semibold text-zinc-800 transition hover:border-[#0e7c76] hover:text-[#0e7c76]"
-            >
-              PPE Buying Guide
-            </Link>
-          </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="border-b border-zinc-200 bg-[linear-gradient(180deg,#f8fbff_0%,#eef5fb_48%,#ffffff_100%)] py-16 sm:py-20">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="overflow-hidden rounded-xl border border-slate-200/80 bg-white/90 px-5 py-9 shadow-[0_24px_70px_-44px_rgba(15,23,42,0.38)] sm:px-8 sm:py-12 lg:px-10">
-            <div className="grid gap-6 lg:grid-cols-[0.78fr_1.22fr] lg:items-end">
+        <section id="product-results" className="scroll-mt-24 bg-zinc-50 py-14 sm:py-20">
+          <div className="mx-auto max-w-7xl px-6 lg:px-8">
+            <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Products" }]} />
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="inline-flex rounded-full border border-cyan-200 bg-cyan-50 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#0e7c76]">
-                  Industrial Categories
+                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#0e7c76]">
+                  Product Catalog
                 </p>
-                <h2 className="mt-5 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
-                  Start with the product line your worksite needs
+                <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
+                  {searchQuery
+                    ? `Search results for "${searchQuery}"`
+                    : "Find the industrial products you need"}
                 </h2>
+                <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
+                  Search by product, brand, SKU, category, or availability, then narrow the catalog before opening a product detail page.
+                </p>
               </div>
-              <p className="max-w-2xl text-base leading-7 text-slate-600 sm:text-lg lg:ml-auto">
-                Browse safety supplies, abrasives, lubricants, sealants, fire protection, HVAC chemicals, ladders, and maintenance products before narrowing the catalog below.
+              <p className="text-sm text-slate-600">
+                Showing {totalProducts === 0 ? 0 : (currentPage - 1) * productsPerPage + 1}-
+                {Math.min(currentPage * productsPerPage, totalProducts)} of{" "}
+                {totalProducts} products.
               </p>
             </div>
 
-            <div className="mt-12 space-y-6 sm:space-y-8">
-              {chunkCategories(industrialCategories, 4).map((row, rowIndex) => (
-                <div
-                  key={rowIndex}
-                  className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4"
-                >
-                  {row.map((tile) => (
-                    <Link
-                      key={tile.name}
-                      href={tile.href}
-                      className="group relative flex min-h-[288px] flex-col overflow-hidden rounded-xl border border-slate-200 bg-white p-5 text-left shadow-[0_18px_40px_-30px_rgba(15,23,42,0.55)] transition-all duration-300 hover:border-cyan-300 hover:shadow-[0_24px_50px_-26px_rgba(8,47,73,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2"
+            <form
+              action="/products"
+              className="mt-8 rounded-xl border border-slate-200 bg-white p-4 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.45)]"
+            >
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[1.5fr_1fr_1fr_1fr_1fr_auto]">
+                <label className="space-y-2">
+                  <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-600">
+                    Search
+                  </span>
+                  <div className="relative">
+                    <svg
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                      className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 fill-slate-400"
                     >
-                      <div className="absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.20),transparent_68%)] opacity-80 transition-opacity duration-300 group-hover:opacity-100" />
-                      <div className="relative flex h-44 w-full items-center justify-center rounded-xl border border-slate-100 bg-[linear-gradient(180deg,#f8fbfd_0%,#eef6fb_100%)] px-4">
+                      <path d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-7.5-3.365-7.5-7.5z" />
+                    </svg>
+                    <input
+                      id="product-search"
+                      name="search"
+                      type="search"
+                      defaultValue={searchQuery}
+                      placeholder="Product, brand, SKU..."
+                      className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-11 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0e7c76] focus:ring-2 focus:ring-[#0e7c76]/20"
+                    />
+                  </div>
+                </label>
+
+                <label className="space-y-2">
+                  <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-600">
+                    Category
+                  </span>
+                  <select
+                    name="category"
+                    defaultValue={selectedCategory}
+                    className="h-12 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-[#0e7c76] focus:ring-2 focus:ring-[#0e7c76]/20"
+                  >
+                    <option value="">All categories</option>
+                    {categoryOptions.map((category) => (
+                      <option key={category} value={category}>
+                        {category}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="space-y-2">
+                  <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-600">
+                    Brand
+                  </span>
+                  <select
+                    name="brand"
+                    defaultValue={selectedBrand}
+                    className="h-12 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-[#0e7c76] focus:ring-2 focus:ring-[#0e7c76]/20"
+                  >
+                    <option value="">All brands</option>
+                    {brandOptions.map((brand) => (
+                      <option key={brand} value={brand}>
+                        {brand}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="space-y-2">
+                  <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-600">
+                    Availability
+                  </span>
+                  <select
+                    name="availability"
+                    defaultValue={selectedAvailability}
+                    className="h-12 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-[#0e7c76] focus:ring-2 focus:ring-[#0e7c76]/20"
+                  >
+                    <option value="">Any status</option>
+                    {availabilityOptions.map((availability) => (
+                      <option key={availability} value={availability}>
+                        {availability}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="space-y-2">
+                  <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-600">
+                    Product Type
+                  </span>
+                  <select
+                    name="type"
+                    defaultValue={selectedType}
+                    className="h-12 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-[#0e7c76] focus:ring-2 focus:ring-[#0e7c76]/20"
+                  >
+                    <option value="">All types</option>
+                    {productTypeOptions.map((productType) => (
+                      <option key={productType} value={productType}>
+                        {productType}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <div className="flex items-end gap-2 md:col-span-2 xl:col-span-1">
+                  <button
+                    type="submit"
+                    className="inline-flex h-12 flex-1 items-center justify-center rounded-xl bg-slate-950 px-5 text-sm font-semibold text-white transition hover:bg-slate-800"
+                  >
+                    Apply
+                  </button>
+                  {hasActiveFilters ? (
+                    <Link
+                      href="/products"
+                      className="inline-flex h-12 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:border-cyan-300 hover:text-[#0e7c76]"
+                    >
+                      Clear
+                    </Link>
+                  ) : null}
+                </div>
+              </div>
+            </form>
+
+            {visibleProducts.length > 0 ? (
+              <>
+                <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                  {visibleProducts.map((product) => (
+                    <Link
+                      key={`${product.categorySlug}-${product.slug || product.id}-${product.name}`}
+                      href={`/products/${product.slug}`}
+                      className="group relative flex min-h-[420px] flex-col overflow-hidden rounded-xl border border-slate-200 bg-white p-5 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.55)] transition-all duration-300 hover:border-cyan-300 hover:shadow-[0_24px_50px_-26px_rgba(8,47,73,0.35)] sm:p-6"
+                    >
+                      <div className="relative flex h-72 w-full items-center justify-center overflow-hidden rounded-lg border border-slate-100 bg-[linear-gradient(180deg,#f8fbfd_0%,#eef6fb_100%)] sm:h-80">
                         <Image
-                          src={tile.image}
-                          alt={tile.name}
-                          width={220}
-                          height={180}
-                          className="h-auto max-h-36 w-auto max-w-[180px] object-contain transition-transform duration-300 group-hover:scale-[1.08]"
+                          src={product.image}
+                          alt={product.imageAlt || product.name}
+                          fill
+                          sizes="(min-width: 1280px) 24vw, (min-width: 640px) 50vw, 100vw"
+                          className="object-contain p-4 transition-transform duration-300 group-hover:scale-[1.05]"
                         />
                       </div>
+
                       <div className="relative flex flex-1 flex-col pt-5">
-                        <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#0e7c76]">
-                          Product Line
-                        </span>
-                        <span className="mt-3 text-base font-semibold leading-6 text-slate-900 transition-colors duration-300 group-hover:text-[#0f1b2d]">
-                          {tile.name}
-                        </span>
-                        <span className="mt-auto inline-flex items-center gap-3 pt-6 text-sm font-medium text-slate-600 transition-colors duration-300 group-hover:text-slate-900">
-                          View category
-                          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-base text-slate-700 transition-all duration-300 group-hover:border-[#0e7c76]/50 group-hover:bg-teal-50 group-hover:text-[#0e7c76]">
-                            →
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="rounded-full border border-[#0e7c76]/25 bg-[#e6f7f5] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#0e7c76]">
+                            {product.category}
                           </span>
-                        </span>
+                          {product.featured ? (
+                            <span className="rounded-full border border-[#0e7c76]/25 bg-[#e6f7f5] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#0e7c76]">
+                              Featured
+                            </span>
+                          ) : null}
+                        </div>
+
+                        <h3 className="mt-3 text-xl font-semibold leading-7 text-slate-900">
+                          {product.name}
+                        </h3>
+                        <p className="product-card-summary mt-3 text-sm leading-6 text-slate-600">
+                          {product.summary}
+                        </p>
+
+                        <div className="mt-5 flex flex-wrap gap-3 text-sm text-slate-600">
+                          <span className="font-semibold text-[#0b1420]">
+                            {product.price}
+                          </span>
+                          {product.brand ? <span>Brand: {product.brand}</span> : null}
+                          {product.sku ? <span>SKU: {product.sku}</span> : null}
+                          {product.unit ? <span>Unit: {product.unit}</span> : null}
+                        </div>
+
+                        <div className="mt-auto flex items-center justify-between pt-6">
+                          <span className="text-sm font-medium text-slate-500">
+                            {product.stockStatus || "Available on request"}
+                          </span>
+                          <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-900 transition group-hover:text-[#0e7c76]">
+                            View details
+                            <span aria-hidden="true">-&gt;</span>
+                          </span>
+                        </div>
                       </div>
                     </Link>
                   ))}
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-white py-16">
-        <div className="mx-auto max-w-7xl px-6 text-center lg:px-8">
-          <h2 className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
-            Industries We Serve
-          </h2>
-          <p className="mt-6 mx-auto max-w-3xl text-lg leading-8 text-zinc-600">
-            At AMCOL, we pride ourselves on being the backbone of major industries. From heavy construction and industrial manufacturing to marine logistics and energy production, our diverse product range ensures that you have the right tools and materials for every job.
-          </p>
-
-          <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {featuredProductCategories.map((category) => (
-              <Link
-                key={category.name}
-                href={category.href}
-                className="group relative flex h-64 flex-col overflow-hidden rounded-2xl transition-all hover:shadow-lg"
-              >
-                <Image
-                  src={category.image}
-                  alt={`${category.title} industrial supply category`}
-                  fill
-                  sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                <ProductPagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalItems={totalProducts}
+                  pageSize={productsPerPage}
+                  filters={filters}
                 />
-                <div className="absolute inset-0 bg-black/50" />
-                <div className="relative flex flex-1 items-center justify-center">
-                  <h3 className="text-2xl font-bold text-white">{category.title}</h3>
-                </div>
-              </Link>
-            ))}
+              </>
+            ) : (
+              <div className="mt-12 rounded-xl border border-slate-200 bg-white px-6 py-12 text-center shadow-[0_18px_40px_-30px_rgba(15,23,42,0.45)]">
+                <h3 className="text-xl font-semibold text-slate-950">No products found</h3>
+                <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-600">
+                  Try a different product name, brand, category, or SKU.
+                </p>
+                <Link
+                  href="/products"
+                  className="mt-6 inline-flex rounded-full border border-slate-200 bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+                >
+                  Clear search
+                </Link>
+              </div>
+            )}
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="bg-zinc-50 py-16 sm:py-24">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Products" }]} />
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#0e7c76]">
-                Product Catalog
-              </p>
-              <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
-                {searchQuery
-                  ? `Search results for "${searchQuery}"`
-                  : "Industrial supplies and MRO products"}
-              </h2>
-            </div>
-            <p className="text-sm text-slate-600">
-              Showing {visibleProducts.length} of {products.length} items across the AMCOL catalog.
-            </p>
-          </div>
-
-          <form
-            action="/products"
-            className="mt-8 rounded-xl border border-slate-200 bg-white p-4 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.45)]"
-          >
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[1.5fr_1fr_1fr_1fr_1fr_auto]">
-              <label className="space-y-2">
-                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-600">
-                  Search
-                </span>
-                <div className="relative">
-                  <svg
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                    className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 fill-slate-400"
-                  >
-                    <path d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-7.5-3.365-7.5-7.5z" />
-                  </svg>
-                  <input
-                    id="product-search"
-                    name="search"
-                    type="search"
-                    defaultValue={searchQuery}
-                    placeholder="Product, brand, SKU..."
-                    className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-11 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0e7c76] focus:ring-2 focus:ring-[#0e7c76]/20"
-                  />
+        {featuredProductCategories.length > 0 ? (
+          <section className="border-b border-zinc-200 bg-[linear-gradient(180deg,#f8fbff_0%,#eef5fb_48%,#ffffff_100%)] py-16 sm:py-20">
+            <div className="mx-auto max-w-7xl px-6 lg:px-8">
+              <div className="overflow-hidden rounded-xl border border-slate-200/80 bg-white/90 px-5 py-9 shadow-[0_24px_70px_-44px_rgba(15,23,42,0.38)] sm:px-8 sm:py-12 lg:px-10">
+                <div className="grid gap-6 lg:grid-cols-[0.78fr_1.22fr] lg:items-end">
+                  <div>
+                    <p className="inline-flex rounded-full border border-cyan-200 bg-cyan-50 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#0e7c76]">
+                      Industrial Categories
+                    </p>
+                    <h2 className="mt-5 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
+                      Browse by product line
+                    </h2>
+                  </div>
+                  <p className="max-w-2xl text-base leading-7 text-slate-600 sm:text-lg lg:ml-auto">
+                    Explore featured product lines selected from the current AMCOL catalog, then open a category page for deeper browsing.
+                  </p>
                 </div>
-              </label>
 
-              <label className="space-y-2">
-                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-600">
-                  Category
-                </span>
-                <select
-                  name="category"
-                  defaultValue={selectedCategory}
-                  className="h-12 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-[#0e7c76] focus:ring-2 focus:ring-[#0e7c76]/20"
-                >
-                  <option value="">All categories</option>
-                  {categoryOptions.map((category) => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
+                <div className="mt-12 space-y-6 sm:space-y-8">
+                  {chunkCategories(featuredProductCategories, 4).map((row, rowIndex) => (
+                    <div
+                      key={rowIndex}
+                      className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4"
+                    >
+                      {row.map((tile) => (
+                        <Link
+                          key={tile.slug}
+                          href={tile.href}
+                          className="group relative flex min-h-[288px] flex-col overflow-hidden rounded-xl border border-slate-200 bg-white p-5 text-left shadow-[0_18px_40px_-30px_rgba(15,23,42,0.55)] transition-all duration-300 hover:border-cyan-300 hover:shadow-[0_24px_50px_-26px_rgba(8,47,73,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2"
+                        >
+                          <div className="absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.20),transparent_68%)] opacity-80 transition-opacity duration-300 group-hover:opacity-100" />
+                          <div className="relative flex h-44 w-full items-center justify-center rounded-xl border border-slate-100 bg-[linear-gradient(180deg,#f8fbfd_0%,#eef6fb_100%)] px-4">
+                            <Image
+                              src={tile.image}
+                              alt={tile.name}
+                              width={220}
+                              height={180}
+                              className="h-auto max-h-36 w-auto max-w-[180px] object-contain transition-transform duration-300 group-hover:scale-[1.08]"
+                            />
+                          </div>
+                          <div className="relative flex flex-1 flex-col pt-5">
+                            <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#0e7c76]">
+                              Product Line
+                            </span>
+                            <span className="mt-3 text-base font-semibold leading-6 text-slate-900 transition-colors duration-300 group-hover:text-[#0f1b2d]">
+                              {tile.name}
+                            </span>
+                            <span className="mt-auto inline-flex items-center gap-3 pt-6 text-sm font-medium text-slate-600 transition-colors duration-300 group-hover:text-slate-900">
+                              View category
+                              <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-base text-slate-700 transition-all duration-300 group-hover:border-[#0e7c76]/50 group-hover:bg-teal-50 group-hover:text-[#0e7c76]">
+                                -&gt;
+                              </span>
+                            </span>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
                   ))}
-                </select>
-              </label>
-
-              <label className="space-y-2">
-                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-600">
-                  Brand
-                </span>
-                <select
-                  name="brand"
-                  defaultValue={selectedBrand}
-                  className="h-12 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-[#0e7c76] focus:ring-2 focus:ring-[#0e7c76]/20"
-                >
-                  <option value="">All brands</option>
-                  {brandOptions.map((brand) => (
-                    <option key={brand} value={brand}>
-                      {brand}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="space-y-2">
-                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-600">
-                  Availability
-                </span>
-                <select
-                  name="availability"
-                  defaultValue={selectedAvailability}
-                  className="h-12 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-[#0e7c76] focus:ring-2 focus:ring-[#0e7c76]/20"
-                >
-                  <option value="">Any status</option>
-                  {availabilityOptions.map((availability) => (
-                    <option key={availability} value={availability}>
-                      {availability}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="space-y-2">
-                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-600">
-                  Product Type
-                </span>
-                <select
-                  name="type"
-                  defaultValue={selectedType}
-                  className="h-12 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-[#0e7c76] focus:ring-2 focus:ring-[#0e7c76]/20"
-                >
-                  <option value="">All types</option>
-                  {productTypeOptions.map((productType) => (
-                    <option key={productType} value={productType}>
-                      {productType}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <div className="flex items-end gap-2 md:col-span-2 xl:col-span-1">
-                <button
-                  type="submit"
-                  className="inline-flex h-12 flex-1 items-center justify-center rounded-xl bg-slate-950 px-5 text-sm font-semibold text-white transition hover:bg-slate-800"
-                >
-                  Apply
-                </button>
-                {hasActiveFilters ? (
-                  <Link
-                    href="/products"
-                    className="inline-flex h-12 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:border-cyan-300 hover:text-[#0e7c76]"
-                  >
-                    Clear
-                  </Link>
-                ) : null}
+                </div>
               </div>
             </div>
-          </form>
+          </section>
+        ) : null}
 
-          {visibleProducts.length > 0 ? (
-          <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
-            {visibleProducts.map((product) => (
-              <Link
-                key={`${product.categorySlug}-${product.slug || product.id}-${product.name}`}
-                href={`/products/${product.slug}`}
-                className="group relative flex min-h-[420px] flex-col overflow-hidden rounded-xl border border-slate-200 bg-white p-5 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.55)] transition-all duration-300 hover:border-cyan-300 hover:shadow-[0_24px_50px_-26px_rgba(8,47,73,0.35)] sm:p-6"
-              >
-                <div className="relative flex h-72 w-full items-center justify-center overflow-hidden rounded-lg border border-slate-100 bg-[linear-gradient(180deg,#f8fbfd_0%,#eef6fb_100%)] sm:h-80">
-                  <Image
-                    src={product.image}
-                    alt={product.imageAlt || product.name}
-                    fill
-                    sizes="(min-width: 1280px) 24vw, (min-width: 640px) 50vw, 100vw"
-                    className="object-contain p-4 transition-transform duration-300 group-hover:scale-[1.05]"
-                  />
-                </div>
-
-                <div className="relative flex flex-1 flex-col pt-5">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-full border border-[#0e7c76]/25 bg-[#e6f7f5] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#0e7c76]">
-                      {product.category}
-                    </span>
-                    {product.featured ? (
-                      <span className="rounded-full border border-[#0e7c76]/25 bg-[#e6f7f5] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#0e7c76]">
-                        Featured
-                      </span>
-                    ) : null}
-                  </div>
-
-                  <h3 className="mt-3 text-xl font-semibold leading-7 text-slate-900">
-                    {product.name}
-                  </h3>
-                  <p className="product-card-summary mt-3 text-sm leading-6 text-slate-600">
-                    {product.summary}
-                  </p>
-
-                  <div className="mt-5 flex flex-wrap gap-3 text-sm text-slate-600">
-                    <span className="font-semibold text-[#0b1420]">{product.price}</span>
-                    {product.brand ? <span>Brand: {product.brand}</span> : null}
-                    {product.sku ? <span>SKU: {product.sku}</span> : null}
-                    {product.unit ? <span>Unit: {product.unit}</span> : null}
-                  </div>
-
-                  <div className="mt-auto flex items-center justify-between pt-6">
-                    <span className="text-sm font-medium text-slate-500">
-                      {product.stockStatus || "Available on request"}
-                    </span>
-                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-900 transition group-hover:text-[#0e7c76]">
-                      View details
-                      <span aria-hidden="true">→</span>
-                    </span>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-          ) : (
-            <div className="mt-12 rounded-xl border border-slate-200 bg-white px-6 py-12 text-center shadow-[0_18px_40px_-30px_rgba(15,23,42,0.45)]">
-              <h3 className="text-xl font-semibold text-slate-950">No products found</h3>
-              <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-600">
-                Try a different product name, brand, category, or SKU.
+        <section className="border-b border-zinc-200 bg-white py-8">
+          <div className="mx-auto grid max-w-7xl gap-4 px-6 lg:grid-cols-[1fr_auto] lg:items-center lg:px-8">
+            <div>
+              <h2 className="text-xl font-bold text-zinc-900">
+                Need help choosing the right industrial supplies?
+              </h2>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-600">
+                Use AMCOL&apos;s buying guides for PPE, lubricants, pumps, valves,
+                welding, construction consumables, fire protection, and chemicals
+                before sending your quote request.
               </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
               <Link
-                href="/products"
-                className="mt-6 inline-flex rounded-full border border-slate-200 bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+                href="/knowledge"
+                className="inline-flex rounded-sm bg-zinc-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#0b1420]"
               >
-                Clear search
+                Browse Knowledge Center
+              </Link>
+              <Link
+                href="/knowledge/ppe/what-ppe-do-industrial-workers-need"
+                className="inline-flex rounded-sm border border-zinc-300 px-4 py-2.5 text-sm font-semibold text-zinc-800 transition hover:border-[#0e7c76] hover:text-[#0e7c76]"
+              >
+                PPE Buying Guide
               </Link>
             </div>
-          )}
-        </div>
-      </section>
-
+          </div>
+        </section>
       </main>
+
       <JsonLd
         id="products-item-list-schema"
         data={itemListJsonLd(

@@ -7,6 +7,7 @@ import {
   deleteAdminCategory,
   getAdminCategories,
   updateAdminCategory,
+  updateAdminCategoryFeatured,
 } from "@/lib/catalog-store";
 import {
   getSupabaseStorageHostname,
@@ -80,6 +81,7 @@ export async function POST(request: Request) {
     const name = String(formData.get("name") ?? "").trim();
     const slug = String(formData.get("slug") ?? "").trim();
     const description = String(formData.get("description") ?? "").trim();
+    const isFeatured = String(formData.get("isFeatured") ?? "") === "true";
     const imageFile = formData.get("image");
 
     if (!name) {
@@ -130,6 +132,7 @@ export async function POST(request: Request) {
       slug,
       description,
       image,
+      isFeatured,
     });
 
     if (uploadedImagePath && image && !category.image && hasSupabaseAdminConfig()) {
@@ -165,6 +168,7 @@ export async function PUT(request: Request) {
     const currentSlug = String(formData.get("currentSlug") ?? "").trim();
     const name = String(formData.get("name") ?? "").trim();
     const description = String(formData.get("description") ?? "").trim();
+    const isFeatured = String(formData.get("isFeatured") ?? "") === "true";
     const imageFile = formData.get("image");
 
     if (!id && !currentSlug) {
@@ -223,6 +227,7 @@ export async function PUT(request: Request) {
       name,
       description,
       image,
+      isFeatured,
     });
 
     revalidatePath("/");
@@ -238,6 +243,51 @@ export async function PUT(request: Request) {
 
     const message =
       error instanceof Error ? error.message : "Unable to update category.";
+
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const body = (await request.json()) as {
+      id?: string;
+      currentSlug?: string;
+      isFeatured?: boolean;
+    };
+    const id = body.id?.trim() ?? "";
+    const currentSlug = body.currentSlug?.trim() ?? "";
+
+    if (!id && !currentSlug) {
+      return NextResponse.json(
+        { error: "A category id or current slug is required." },
+        { status: 400 },
+      );
+    }
+
+    if (typeof body.isFeatured !== "boolean") {
+      return NextResponse.json(
+        { error: "A featured status is required." },
+        { status: 400 },
+      );
+    }
+
+    const category = await updateAdminCategoryFeatured({
+      id,
+      currentSlug,
+      isFeatured: body.isFeatured,
+    });
+
+    revalidatePath("/");
+    revalidatePath("/products");
+    revalidatePath(`/products/${category.slug}`);
+
+    return NextResponse.json({ category });
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Unable to update featured status.";
 
     return NextResponse.json({ error: message }, { status: 500 });
   }

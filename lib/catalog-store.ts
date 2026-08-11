@@ -2,7 +2,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { unstable_noStore as noStore } from "next/cache";
 import {
-  featuredProductCategories,
+  landingCategoryRows,
   productCategoryData,
   type ProductCategoryPageData,
   type ProductItem,
@@ -25,6 +25,7 @@ export type AdminCategoryRecord = {
   name: string;
   description: string;
   image?: string;
+  isFeatured: boolean;
   createdAt: string;
   source: "seed" | "admin";
 };
@@ -34,11 +35,18 @@ export type AdminCategoryInput = {
   slug?: string;
   description?: string;
   image?: string;
+  isFeatured?: boolean;
 };
 
 export type AdminCategoryUpdateInput = AdminCategoryInput & {
   id?: string;
   currentSlug?: string;
+};
+
+export type AdminCategoryFeaturedInput = {
+  id?: string;
+  currentSlug?: string;
+  isFeatured: boolean;
 };
 
 export type DeleteAdminCategoryResult = {
@@ -77,12 +85,33 @@ export type AdminProductUpdateInput = AdminProductInput & {
   id: string;
 };
 
+export type ProductCatalogFilters = {
+  search?: string;
+  category?: string;
+  brand?: string;
+  availability?: string;
+  type?: string;
+};
+
+export type PaginatedProductsResult = {
+  products: Array<AdminProductRecord & { categoryName: string }>;
+  totalCount: number;
+};
+
+export type ProductFilterOptions = {
+  categories: string[];
+  brands: string[];
+  availability: string[];
+  productTypes: string[];
+};
+
 type ProductCategoryRow = {
   id: string;
   slug: string;
   name: string;
   description?: string | null;
   image_url?: string | null;
+  is_featured?: boolean | null;
   created_at?: string;
 };
 
@@ -167,6 +196,7 @@ const categorySelectQuery = `
   name,
   description,
   image_url,
+  is_featured,
   created_at
 `;
 
@@ -182,6 +212,14 @@ const defaultCategoryImage = "/images/Shore_base.png";
 const defaultCategoryBanner = "/images/Proman_industrial.webp";
 const defaultProductSummary =
   "Product details are available through our sales team for this category.";
+const initialFeaturedCategorySlugs = new Set(
+  landingCategoryRows.flat().map((category) => category.slug),
+);
+const initialFeaturedCategoryOrder = new Map(
+  landingCategoryRows
+    .flat()
+    .map((category, index) => [category.slug, index] as const),
+);
 const categoryImageOverrides: Record<string, string> = {
   "pipe-valves-and-fittings": "/images/pipes-valves-fittings.webp",
 };
@@ -217,8 +255,29 @@ export async function getCategoryOptions(): Promise<CategoryOption[]> {
     .sort((left, right) => left.name.localeCompare(right.name));
 }
 
-export function getFeaturedCategories() {
-  return featuredProductCategories;
+export async function getFeaturedCategories() {
+  const categories = await getBaseCategoryData();
+
+  return Object.values(categories)
+    .filter((category) => category.isFeatured)
+    .sort((left, right) => {
+      const leftOrder = initialFeaturedCategoryOrder.get(left.slug);
+      const rightOrder = initialFeaturedCategoryOrder.get(right.slug);
+
+      if (leftOrder !== undefined && rightOrder !== undefined) {
+        return leftOrder - rightOrder;
+      }
+
+      if (leftOrder !== undefined) {
+        return -1;
+      }
+
+      if (rightOrder !== undefined) {
+        return 1;
+      }
+
+      return left.name.localeCompare(right.name);
+    });
 }
 
 export async function getLandingCategories(): Promise<ProductCategoryPageData[]> {
@@ -290,6 +349,16 @@ export async function updateAdminCategory(
   return updateFileAdminCategory(input);
 }
 
+export async function updateAdminCategoryFeatured(
+  input: AdminCategoryFeaturedInput,
+): Promise<AdminCategoryRecord> {
+  if (hasSupabaseAdminConfig()) {
+    return updateSupabaseAdminCategoryFeatured(input);
+  }
+
+  return updateFileAdminCategoryFeatured(input);
+}
+
 export async function getAdminProductById(
   id: string,
 ): Promise<AdminProductRecord | null> {
@@ -335,7 +404,13 @@ async function getFileAdminCategories(): Promise<AdminCategoryRecord[]> {
   try {
     const fileContents = await readFile(adminCategoriesFile, "utf8");
     const parsed = JSON.parse(fileContents);
-    return Array.isArray(parsed) ? (parsed as AdminCategoryRecord[]) : [];
+    return Array.isArray(parsed)
+      ? (parsed as AdminCategoryRecord[]).map((category) => ({
+          ...category,
+          isFeatured:
+            category.isFeatured ?? initialFeaturedCategorySlugs.has(category.slug),
+        }))
+      : [];
   } catch {
     return [];
   }
@@ -425,6 +500,7 @@ function mapSupabaseCategory(row: ProductCategoryRow): AdminCategoryRecord {
     name: row.name,
     description: normalizeCategoryDescription(row.description, row.name),
     image: row.image_url ?? undefined,
+    isFeatured: Boolean(row.is_featured),
     createdAt: row.created_at ?? new Date().toISOString(),
     source: productCategoryData[row.slug] ? "seed" : "admin",
   };
@@ -682,6 +758,7 @@ async function createFileAdminCategory(
     name: input.name.trim(),
     description: normalizeCategoryDescription(input.description, input.name),
     image: input.image?.trim() || undefined,
+    isFeatured: Boolean(input.isFeatured),
     createdAt: new Date().toISOString(),
     source: "admin",
   };
@@ -711,6 +788,12 @@ async function createSupabaseAdminCategory(
     slug,
     name: input.name.trim(),
     description: normalizeCategoryDescription(input.description, input.name),
+    is_featured: Boolean(input.isFeatured),
+  };
+  const legacyBaseCategoryInput = {
+    slug: baseCategoryInput.slug,
+    name: baseCategoryInput.name,
+    description: baseCategoryInput.description,
   };
 
   const categoryInsertResult = await supabase
@@ -728,7 +811,7 @@ async function createSupabaseAdminCategory(
   if (error && isMissingCategoryImageColumnError(error)) {
     const fallbackResult = await supabase
       .from("product_categories")
-      .insert(baseCategoryInput)
+      .insert(legacyBaseCategoryInput)
       .select(legacyCategorySelectQuery)
       .single();
 
@@ -771,15 +854,17 @@ async function updateFileAdminCategory(
     throw new Error("Unable to find the selected category.");
   }
 
+  const seedCategory = existingSeedCategory;
   const currentCategory =
     categoryIndex >= 0
       ? existingAdminCategories[categoryIndex]
       : {
           id: input.id || `category-${Date.now()}`,
           slug: currentSlug,
-          name: existingSeedCategory.name,
-          description: existingSeedCategory.description,
-          image: existingSeedCategory.image,
+          name: seedCategory!.name,
+          description: seedCategory!.description,
+          image: seedCategory!.image,
+          isFeatured: seedCategory!.isFeatured ?? false,
           createdAt: new Date().toISOString(),
           source: "admin" as const,
         };
@@ -790,6 +875,7 @@ async function updateFileAdminCategory(
     name,
     description: normalizeCategoryDescription(input.description, name),
     image: input.image?.trim() || currentCategory.image,
+    isFeatured: Boolean(input.isFeatured),
     source: currentCategory.source === "seed" ? "seed" : "admin",
   };
 
@@ -831,6 +917,11 @@ async function updateSupabaseAdminCategory(
   const baseCategoryInput = {
     name,
     description: normalizeCategoryDescription(input.description, name),
+    is_featured: Boolean(input.isFeatured),
+  };
+  const legacyBaseCategoryInput = {
+    name: baseCategoryInput.name,
+    description: baseCategoryInput.description,
   };
 
   const updatePayload = input.image?.trim()
@@ -851,7 +942,7 @@ async function updateSupabaseAdminCategory(
   if (error && isMissingCategoryImageColumnError(error)) {
     const fallbackResult = await supabase
       .from("product_categories")
-      .update(baseCategoryInput)
+      .update(legacyBaseCategoryInput)
       .eq("id", input.id)
       .eq("is_active", true)
       .select(legacyCategorySelectQuery)
@@ -870,6 +961,88 @@ async function updateSupabaseAdminCategory(
   }
 
   return mapSupabaseCategory(data);
+}
+
+async function updateFileAdminCategoryFeatured(
+  input: AdminCategoryFeaturedInput,
+): Promise<AdminCategoryRecord> {
+  const currentSlug = createCategorySlug(input.currentSlug ?? "");
+
+  if (!input.id && !currentSlug) {
+    throw new Error("A category id or current slug is required.");
+  }
+
+  const existingAdminCategories = await getFileAdminCategories();
+  const categoryIndex = existingAdminCategories.findIndex(
+    (category) =>
+      (input.id && category.id === input.id) ||
+      (currentSlug && category.slug === currentSlug),
+  );
+  const existingSeedCategory = currentSlug ? productCategoryData[currentSlug] : null;
+
+  if (categoryIndex === -1 && !existingSeedCategory) {
+    throw new Error("Unable to find the selected category.");
+  }
+
+  const seedCategory = existingSeedCategory;
+  const currentCategory =
+    categoryIndex >= 0
+      ? existingAdminCategories[categoryIndex]
+      : {
+          id: input.id || `category-${Date.now()}`,
+          slug: currentSlug,
+          name: seedCategory!.name,
+          description: seedCategory!.description,
+          image: seedCategory!.image,
+          isFeatured: seedCategory!.isFeatured ?? false,
+          createdAt: new Date().toISOString(),
+          source: "admin" as const,
+        };
+
+  const updatedCategory = {
+    ...currentCategory,
+    isFeatured: input.isFeatured,
+  };
+
+  if (categoryIndex >= 0) {
+    existingAdminCategories[categoryIndex] = updatedCategory;
+  } else {
+    existingAdminCategories.unshift(updatedCategory);
+  }
+
+  await writeFile(
+    adminCategoriesFile,
+    JSON.stringify(existingAdminCategories, null, 2),
+    "utf8",
+  );
+
+  return updatedCategory;
+}
+
+async function updateSupabaseAdminCategoryFeatured(
+  input: AdminCategoryFeaturedInput,
+): Promise<AdminCategoryRecord> {
+  const supabase = createSupabaseAdminClient();
+  const query = supabase
+    .from("product_categories")
+    .update({ is_featured: input.isFeatured })
+    .eq("is_active", true);
+  const scopedQuery = input.id
+    ? query.eq("id", input.id)
+    : query.eq("slug", createCategorySlug(input.currentSlug ?? ""));
+  const { data, error } = await scopedQuery
+    .select(categorySelectQuery)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Unable to update featured status: ${error.message}`);
+  }
+
+  if (!data) {
+    throw new Error("Unable to find the selected category.");
+  }
+
+  return mapSupabaseCategory(data as ProductCategoryRow);
 }
 
 async function updateFileAdminProduct(
@@ -1080,7 +1253,8 @@ function isMissingCategoryImageColumnError(
   return (
     error.code === "42703" ||
     error.code === "PGRST204" ||
-    combinedMessage.includes("image_url")
+    combinedMessage.includes("image_url") ||
+    combinedMessage.includes("is_featured")
   );
 }
 
@@ -1099,7 +1273,10 @@ function buildCategorySubtitle(name: string) {
 }
 
 function buildDynamicCategoryPageData(
-  category: Pick<AdminCategoryRecord, "slug" | "name" | "description" | "image">,
+  category: Pick<
+    AdminCategoryRecord,
+    "slug" | "name" | "description" | "image" | "isFeatured"
+  >,
 ): ProductCategoryPageData {
   return {
     slug: category.slug,
@@ -1110,6 +1287,7 @@ function buildDynamicCategoryPageData(
     title: category.name,
     subtitle: buildCategorySubtitle(category.name),
     description: category.description,
+    isFeatured: category.isFeatured,
     products: [],
   };
 }
@@ -1156,7 +1334,10 @@ async function getBaseCategoryData(): Promise<Record<string, ProductCategoryPage
   const baseCategories = Object.fromEntries(
     Object.entries(productCategoryData).map(([slug, category]) => [
       slug,
-      { ...category },
+      {
+        ...category,
+        isFeatured: category.isFeatured ?? initialFeaturedCategorySlugs.has(slug),
+      },
     ]),
   ) as Record<string, ProductCategoryPageData>;
 
@@ -1175,6 +1356,7 @@ async function getBaseCategoryData(): Promise<Record<string, ProductCategoryPage
           seededCategory.image,
         title: category.name,
         description: category.description || seededCategory.description,
+        isFeatured: category.isFeatured,
       };
       continue;
     }
@@ -1248,6 +1430,246 @@ export async function getAllProducts() {
   );
 
   return addProductSlugs(products);
+}
+
+function productMatchesCatalogFilters<
+  TProduct extends ProductItem & { categorySlug: string; categoryName: string },
+>(product: TProduct, filters: ProductCatalogFilters) {
+  const search = filters.search?.trim().toLowerCase() ?? "";
+
+  if (search) {
+    const searchableText = [
+      product.name,
+      product.category,
+      product.categoryName,
+      product.brand,
+      product.sku,
+      product.summary,
+      product.description,
+      product.price,
+      product.stockStatus,
+      ...(product.specifications ?? []),
+      ...(product.useCases ?? []),
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    if (!searchableText.includes(search)) {
+      return false;
+    }
+  }
+
+  if (
+    filters.category &&
+    product.categorySlug !== filters.category &&
+    (product.categoryName || product.category).toLowerCase() !==
+      filters.category.toLowerCase()
+  ) {
+    return false;
+  }
+
+  if (filters.brand && product.brand?.toLowerCase() !== filters.brand.toLowerCase()) {
+    return false;
+  }
+
+  if (
+    filters.availability &&
+    product.stockStatus?.toLowerCase() !== filters.availability.toLowerCase()
+  ) {
+    return false;
+  }
+
+  if (filters.type && product.category.toLowerCase() !== filters.type.toLowerCase()) {
+    return false;
+  }
+
+  return true;
+}
+
+async function getFilePaginatedProducts(
+  filters: ProductCatalogFilters,
+  page: number,
+  pageSize: number,
+): Promise<PaginatedProductsResult> {
+  const products = await getAllProducts();
+  const matchingProducts = products.filter((product) =>
+    productMatchesCatalogFilters(product, filters),
+  );
+  const start = (page - 1) * pageSize;
+
+  return {
+    products: matchingProducts.slice(start, start + pageSize) as Array<
+      AdminProductRecord & { categoryName: string }
+    >,
+    totalCount: matchingProducts.length,
+  };
+}
+
+async function getSupabasePaginatedProducts(
+  filters: ProductCatalogFilters,
+  page: number,
+  pageSize: number,
+): Promise<PaginatedProductsResult> {
+  const supabase = createSupabaseReadClient();
+  let query = supabase
+    .from("products")
+    .select(productSelectQuery, { count: "exact" })
+    .eq("is_active", true);
+
+  if (filters.search) {
+    const search = filters.search.trim().replace(/[%_]/g, "\\$&");
+    query = query.or(
+      [
+        `name.ilike.%${search}%`,
+        `slug.ilike.%${search}%`,
+        `price.ilike.%${search}%`,
+        `summary.ilike.%${search}%`,
+        `description.ilike.%${search}%`,
+        `brand.ilike.%${search}%`,
+        `sku.ilike.%${search}%`,
+        `stock_status.ilike.%${search}%`,
+      ].join(","),
+    );
+  }
+
+  if (filters.category) {
+    const categoryValue = filters.category.trim();
+    const categoryField =
+      createCategorySlug(categoryValue) === categoryValue
+        ? "product_categories.slug"
+        : "product_categories.name";
+    query = query.eq(categoryField, categoryValue);
+  }
+
+  if (filters.brand) {
+    query = query.eq("brand", filters.brand);
+  }
+
+  if (filters.availability) {
+    query = query.eq("stock_status", filters.availability);
+  }
+
+  if (filters.type) {
+    query = query.eq("product_categories.name", filters.type);
+  }
+
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+  const { data, error, count } = await query
+    .order("created_at", { ascending: false })
+    .range(from, to);
+
+  if (error) {
+    throw new Error(`Unable to load Supabase products: ${error.message}`);
+  }
+
+  return {
+    products: ((data ?? []) as ProductRow[]).map((product) => {
+      const mappedProduct = mapSupabaseProduct(product);
+
+      return {
+        ...mappedProduct,
+        categoryName: mappedProduct.category,
+      };
+    }),
+    totalCount: count ?? 0,
+  };
+}
+
+export async function getPaginatedProducts(
+  filters: ProductCatalogFilters,
+  page: number,
+  pageSize: number,
+): Promise<PaginatedProductsResult> {
+  noStore();
+
+  if (hasSupabaseReadConfig()) {
+    try {
+      return await getSupabasePaginatedProducts(filters, page, pageSize);
+    } catch (error) {
+      console.warn(
+        "Falling back to local paginated products because Supabase read failed.",
+        error,
+      );
+    }
+  }
+
+  return getFilePaginatedProducts(filters, page, pageSize);
+}
+
+function uniqueSorted(values: Array<string | undefined>) {
+  return Array.from(
+    new Set(
+      values
+        .map((value) => value?.trim())
+        .filter((value): value is string => Boolean(value)),
+    ),
+  ).sort((left, right) => left.localeCompare(right));
+}
+
+export async function getProductFilterOptions(): Promise<ProductFilterOptions> {
+  noStore();
+
+  if (hasSupabaseReadConfig()) {
+    try {
+      const supabase = createSupabaseReadClient();
+      const { data, error } = await supabase
+        .from("products")
+        .select(
+          `
+            brand,
+            stock_status,
+            product_categories!inner (
+              name
+            )
+          `,
+        )
+        .eq("is_active", true);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      const rows = (data ?? []) as Array<{
+        brand?: string | null;
+        stock_status?: string | null;
+        product_categories?: ProductCategoryRow | ProductCategoryRow[] | null;
+      }>;
+      const categoryNames = rows.map((row) => {
+        const category = Array.isArray(row.product_categories)
+          ? row.product_categories[0]
+          : row.product_categories;
+
+        return category?.name;
+      });
+
+      return {
+        categories: uniqueSorted(categoryNames),
+        brands: uniqueSorted(rows.map((row) => row.brand ?? undefined)),
+        availability: uniqueSorted(
+          rows.map((row) => row.stock_status ?? undefined),
+        ),
+        productTypes: uniqueSorted(categoryNames),
+      };
+    } catch (error) {
+      console.warn(
+        "Falling back to local product filter options because Supabase read failed.",
+        error,
+      );
+    }
+  }
+
+  const products = await getAllProducts();
+
+  return {
+    categories: uniqueSorted(
+      products.map((product) => product.categoryName || product.category),
+    ),
+    brands: uniqueSorted(products.map((product) => product.brand)),
+    availability: uniqueSorted(products.map((product) => product.stockStatus)),
+    productTypes: uniqueSorted(products.map((product) => product.category)),
+  };
 }
 
 export async function getProductBySlug(slug: string) {

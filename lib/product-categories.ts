@@ -30,6 +30,7 @@ export type ProductCategoryPageData = {
   subtitle: string;
   description: string;
   products: ProductItem[];
+  isFeatured?: boolean;
 };
 
 export const productCategoryData: Record<string, ProductCategoryPageData> = {
