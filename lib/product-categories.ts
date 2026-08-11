@@ -30,6 +30,18 @@ export type ProductCategoryPageData = {
   subtitle: string;
   description: string;
   products: ProductItem[];
+  parentSlug?: string;
+  parentName?: string;
+  subcategories?: ProductSubcategorySummary[];
+};
+
+export type ProductSubcategorySummary = {
+  slug: string;
+  name: string;
+  href: string;
+  image: string;
+  description: string;
+  productCount: number;
 };
 
 export const productCategoryData: Record<string, ProductCategoryPageData> = {

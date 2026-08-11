@@ -45,4 +45,5 @@ next-env.d.ts
 .tools/
 .npm-cache/
 .next-dev.*.log
+/.next-*.log
 .vscode/

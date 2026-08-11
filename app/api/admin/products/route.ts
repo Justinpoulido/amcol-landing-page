@@ -1,3 +1,4 @@
+import { Buffer } from "node:buffer";
 import path from "node:path";
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
@@ -77,9 +78,32 @@ async function uploadProductImage(
   imageFile: File,
   name: string,
 ): Promise<{ publicUrl: string; path: string }> {
+  if (hasSupabaseAdminConfig()) {
+    const extension = path.extname(imageFile.name) || ".png";
+    const fileName = `${Date.now()}-${sanitizeSegment(name)}${extension.toLowerCase()}`;
+    const uploadedPath = `products/${fileName}`;
+    const supabase = createSupabaseAdminClient();
+    const { error } = await supabase.storage
+      .from(PRODUCT_IMAGES_BUCKET)
+      .upload(uploadedPath, Buffer.from(await imageFile.arrayBuffer()), {
+        contentType: imageFile.type || undefined,
+        upsert: false,
+      });
+
+    if (error) {
+      throw new Error(`Unable to upload product image: ${error.message}`);
+    }
+
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from(PRODUCT_IMAGES_BUCKET).getPublicUrl(uploadedPath);
+
+    return { publicUrl, path: publicUrl };
+  }
+
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
     throw new Error(
-      "Vercel Blob is not configured. Add BLOB_READ_WRITE_TOKEN before saving product images.",
+      "Product image storage is not configured. Add SUPABASE_SERVICE_ROLE_KEY or BLOB_READ_WRITE_TOKEN before saving product images.",
     );
   }
 

@@ -15,8 +15,13 @@ import {
 import { createCategorySlug, createProductSlug } from "@/lib/catalog-utils";
 
 export type CategoryOption = {
+  id?: string;
   slug: string;
   name: string;
+  parentId?: string;
+  parentSlug?: string;
+  parentName?: string;
+  displayOrder?: number;
 };
 
 export type AdminCategoryRecord = {
@@ -25,6 +30,10 @@ export type AdminCategoryRecord = {
   name: string;
   description: string;
   image?: string;
+  parentId?: string;
+  parentSlug?: string;
+  parentName?: string;
+  displayOrder: number;
   createdAt: string;
   source: "seed" | "admin";
 };
@@ -34,6 +43,12 @@ export type AdminCategoryInput = {
   slug?: string;
   description?: string;
   image?: string;
+  parentId?: string | null;
+  displayOrder?: number;
+};
+
+export type AdminCategoryUpdateInput = AdminCategoryInput & {
+  id: string;
 };
 
 export type DeleteAdminCategoryResult = {
@@ -78,6 +93,8 @@ type ProductCategoryRow = {
   name: string;
   description?: string | null;
   image_url?: string | null;
+  parent_id?: string | null;
+  display_order?: number | null;
   created_at?: string;
 };
 
@@ -162,6 +179,17 @@ const categorySelectQuery = `
   name,
   description,
   image_url,
+  parent_id,
+  display_order,
+  created_at
+`;
+
+const categorySelectWithoutHierarchyQuery = `
+  id,
+  slug,
+  name,
+  description,
+  image_url,
   created_at
 `;
 
@@ -208,8 +236,10 @@ export async function getCategoryOptions(): Promise<CategoryOption[]> {
     .map((category) => ({
       slug: category.slug,
       name: category.name,
+      parentSlug: category.parentSlug,
+      parentName: category.parentName,
     }))
-    .sort((left, right) => left.name.localeCompare(right.name));
+    .sort(compareCategoryHierarchy);
 }
 
 export function getFeaturedCategories() {
@@ -225,10 +255,12 @@ export async function getLandingCategories(): Promise<ProductCategoryPageData[]>
     .filter((category): category is ProductCategoryPageData => Boolean(category));
 
   const adminCategories = Object.values(categories)
-    .filter((category) => !productCategoryData[category.slug])
+    .filter((category) => !productCategoryData[category.slug] && !category.parentSlug)
     .sort((left, right) => left.name.localeCompare(right.name));
 
-  return [...seededCategories, ...adminCategories];
+  return [...seededCategories, ...adminCategories].filter(
+    (category) => !category.parentSlug,
+  );
 }
 
 export async function getAdminProducts(): Promise<AdminProductRecord[]> {
@@ -345,7 +377,9 @@ async function getSupabaseAdminCategories(): Promise<AdminCategoryRecord[]> {
   const supabase = createSupabaseReadClient();
   const categories = await listSupabaseCategories(supabase);
 
-  return categories.map(mapSupabaseCategory);
+  return categories
+    .map((category) => mapSupabaseCategory(category, categories))
+    .sort(compareCategoryHierarchy);
 }
 
 async function getFileAdminProductById(
@@ -403,13 +437,24 @@ function mapSupabaseProduct(row: ProductRow): AdminProductRecord {
   };
 }
 
-function mapSupabaseCategory(row: ProductCategoryRow): AdminCategoryRecord {
+function mapSupabaseCategory(
+  row: ProductCategoryRow,
+  categories: ProductCategoryRow[] = [],
+): AdminCategoryRecord {
+  const parent = row.parent_id
+    ? categories.find((category) => category.id === row.parent_id)
+    : undefined;
+
   return {
     id: row.id,
     slug: row.slug,
     name: row.name,
     description: normalizeCategoryDescription(row.description, row.name),
     image: row.image_url ?? undefined,
+    parentId: row.parent_id ?? undefined,
+    parentSlug: parent?.slug,
+    parentName: parent?.name,
+    displayOrder: row.display_order ?? 0,
     createdAt: row.created_at ?? new Date().toISOString(),
     source: productCategoryData[row.slug] ? "seed" : "admin",
   };
@@ -435,6 +480,16 @@ export async function createAdminCategory(
   return createFileAdminCategory(input);
 }
 
+export async function updateAdminCategory(
+  input: AdminCategoryUpdateInput,
+): Promise<AdminCategoryRecord> {
+  if (hasSupabaseAdminConfig()) {
+    return updateSupabaseAdminCategory(input);
+  }
+
+  return updateFileAdminCategory(input);
+}
+
 async function deleteFileAdminCategory(
   id: string,
 ): Promise<DeleteAdminCategoryResult> {
@@ -455,6 +510,15 @@ async function deleteFileAdminCategory(
   const hasProducts = assignedProducts.some(
     (product) => product.categorySlug === category.slug,
   );
+  const hasChildren = existingCategories.some(
+    (candidate) => candidate.parentId === category.id,
+  );
+
+  if (hasChildren) {
+    throw new Error(
+      "Move or remove this category's subcategories before deleting it.",
+    );
+  }
 
   if (hasProducts) {
     throw new Error(
@@ -539,6 +603,22 @@ async function deleteSupabaseAdminCategory(
   if ((count ?? 0) > 0) {
     throw new Error(
       "Remove or move the products in this category before deleting it.",
+    );
+  }
+
+  const { count: childCount, error: childCountError } = await supabase
+    .from("product_categories")
+    .select("id", { count: "exact", head: true })
+    .eq("parent_id", id)
+    .eq("is_active", true);
+
+  if (childCountError && !isMissingCategoryHierarchyColumnError(childCountError)) {
+    throw new Error(`Unable to check subcategory usage: ${childCountError.message}`);
+  }
+
+  if ((childCount ?? 0) > 0) {
+    throw new Error(
+      "Move or remove this category's subcategories before deleting it.",
     );
   }
 
@@ -671,6 +751,8 @@ async function createFileAdminCategory(
     name: input.name.trim(),
     description: normalizeCategoryDescription(input.description, input.name),
     image: input.image?.trim() || undefined,
+    parentId: input.parentId || undefined,
+    displayOrder: input.displayOrder ?? 0,
     createdAt: new Date().toISOString(),
     source: "admin",
   };
@@ -696,10 +778,14 @@ async function createSupabaseAdminCategory(
     throw new Error("Please provide a category name or slug.");
   }
 
+  await validateSupabaseCategoryParent(supabase, input.parentId);
+
   const baseCategoryInput = {
     slug,
     name: input.name.trim(),
     description: normalizeCategoryDescription(input.description, input.name),
+    parent_id: input.parentId || null,
+    display_order: input.displayOrder ?? 0,
   };
 
   const categoryInsertResult = await supabase
@@ -714,10 +800,20 @@ async function createSupabaseAdminCategory(
   let data = categoryInsertResult.data as ProductCategoryRow | null;
   let error = categoryInsertResult.error;
 
+  if (error && isMissingCategoryHierarchyColumnError(error)) {
+    throw new Error(
+      "Subcategory support is ready in the app, but the catalog hierarchy migration has not been applied to Supabase yet.",
+    );
+  }
+
   if (error && isMissingCategoryImageColumnError(error)) {
     const fallbackResult = await supabase
       .from("product_categories")
-      .insert(baseCategoryInput)
+      .insert({
+        slug: baseCategoryInput.slug,
+        name: baseCategoryInput.name,
+        description: baseCategoryInput.description,
+      })
       .select(legacyCategorySelectQuery)
       .single();
 
@@ -736,7 +832,91 @@ async function createSupabaseAdminCategory(
     throw new Error(message);
   }
 
-  return mapSupabaseCategory(category);
+  const categories = await listSupabaseCategories(supabase);
+  return mapSupabaseCategory(category, categories);
+}
+
+async function updateFileAdminCategory(
+  input: AdminCategoryUpdateInput,
+): Promise<AdminCategoryRecord> {
+  const categories = await getFileAdminCategories();
+  const index = categories.findIndex((category) => category.id === input.id);
+
+  if (index === -1) {
+    throw new Error("Unable to find the selected category.");
+  }
+
+  const slug = createCategorySlug(input.slug?.trim() || input.name);
+  const duplicate = categories.some(
+    (category) => category.id !== input.id && category.slug === slug,
+  );
+
+  if (duplicate || (productCategoryData[slug] && categories[index].slug !== slug)) {
+    throw new Error("A category with that slug already exists.");
+  }
+
+  const updatedCategory: AdminCategoryRecord = {
+    ...categories[index],
+    slug,
+    name: input.name.trim(),
+    description: normalizeCategoryDescription(input.description, input.name),
+    image: input.image?.trim() || undefined,
+    parentId: input.parentId || undefined,
+    displayOrder: input.displayOrder ?? 0,
+  };
+
+  categories[index] = updatedCategory;
+  await writeFile(adminCategoriesFile, JSON.stringify(categories, null, 2), "utf8");
+  return updatedCategory;
+}
+
+async function updateSupabaseAdminCategory(
+  input: AdminCategoryUpdateInput,
+): Promise<AdminCategoryRecord> {
+  const supabase = createSupabaseAdminClient();
+  const existing = await getSupabaseCategoryById(supabase, input.id);
+
+  if (!existing) {
+    throw new Error("Unable to find the selected category.");
+  }
+
+  if (input.parentId === input.id) {
+    throw new Error("A category cannot be its own parent.");
+  }
+
+  await validateSupabaseCategoryParent(supabase, input.parentId);
+
+  const { data, error } = await supabase
+    .from("product_categories")
+    .update({
+      slug: createCategorySlug(input.slug?.trim() || input.name),
+      name: input.name.trim(),
+      description: normalizeCategoryDescription(input.description, input.name),
+      image_url: input.image?.trim() || null,
+      parent_id: input.parentId || null,
+      display_order: input.displayOrder ?? 0,
+    })
+    .eq("id", input.id)
+    .eq("is_active", true)
+    .select(categorySelectQuery)
+    .maybeSingle();
+
+  if (error || !data) {
+    if (isMissingCategoryHierarchyColumnError(error)) {
+      throw new Error(
+        "Subcategory support is ready in the app, but the catalog hierarchy migration has not been applied to Supabase yet.",
+      );
+    }
+
+    throw new Error(
+      error?.code === "23505"
+        ? "A category with that slug already exists."
+        : error?.message ?? "Unable to update category.",
+    );
+  }
+
+  const categories = await listSupabaseCategories(supabase);
+  return mapSupabaseCategory(data as ProductCategoryRow, categories);
 }
 
 async function updateFileAdminProduct(
@@ -872,7 +1052,23 @@ async function listSupabaseCategories(
     return (data as ProductCategoryRow[] | null) ?? [];
   }
 
-  if (!isMissingCategoryImageColumnError(error)) {
+  if (isMissingCategoryHierarchyColumnError(error)) {
+    const hierarchyFallback = await supabase
+      .from("product_categories")
+      .select(categorySelectWithoutHierarchyQuery)
+      .eq("is_active", true)
+      .order("name", { ascending: true });
+
+    if (!hierarchyFallback.error) {
+      return (hierarchyFallback.data as ProductCategoryRow[] | null) ?? [];
+    }
+
+    if (!isMissingCategoryImageColumnError(hierarchyFallback.error)) {
+      throw new Error(
+        `Unable to load product categories: ${hierarchyFallback.error.message}`,
+      );
+    }
+  } else if (!isMissingCategoryImageColumnError(error)) {
     throw new Error(`Unable to load product categories: ${error.message}`);
   }
 
@@ -906,7 +1102,22 @@ async function getSupabaseCategoryById(
     return (data as ProductCategoryRow | null) ?? null;
   }
 
-  if (!isMissingCategoryImageColumnError(error)) {
+  if (isMissingCategoryHierarchyColumnError(error)) {
+    const hierarchyFallback = await supabase
+      .from("product_categories")
+      .select(categorySelectWithoutHierarchyQuery)
+      .eq("id", id)
+      .eq("is_active", true)
+      .maybeSingle();
+
+    if (!hierarchyFallback.error) {
+      return (hierarchyFallback.data as ProductCategoryRow | null) ?? null;
+    }
+
+    if (!isMissingCategoryImageColumnError(hierarchyFallback.error)) {
+      throw new Error(`Unable to load category: ${hierarchyFallback.error.message}`);
+    }
+  } else if (!isMissingCategoryImageColumnError(error)) {
     throw new Error(`Unable to load category: ${error.message}`);
   }
 
@@ -922,6 +1133,42 @@ async function getSupabaseCategoryById(
   }
 
   return (fallbackResult.data as ProductCategoryRow | null) ?? null;
+}
+
+async function validateSupabaseCategoryParent(
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  parentId: string | null | undefined,
+) {
+  if (!parentId) {
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from("product_categories")
+    .select("id, parent_id")
+    .eq("id", parentId)
+    .eq("is_active", true)
+    .maybeSingle();
+
+  if (error) {
+    if (isMissingCategoryHierarchyColumnError(error)) {
+      throw new Error(
+        "Subcategory support is ready in the app, but the catalog hierarchy migration has not been applied to Supabase yet.",
+      );
+    }
+
+    throw new Error(`Unable to validate the parent category: ${error.message}`);
+  }
+
+  const parent = data as Pick<ProductCategoryRow, "id" | "parent_id"> | null;
+
+  if (!parent) {
+    throw new Error("Please select a valid parent category.");
+  }
+
+  if (parent.parent_id) {
+    throw new Error("Subcategories can only be placed under a top-level category.");
+  }
 }
 
 function isMissingCategoryImageColumnError(
@@ -951,6 +1198,57 @@ function isMissingCategoryImageColumnError(
   );
 }
 
+function isMissingCategoryHierarchyColumnError(
+  error:
+    | {
+        code?: string;
+        details?: string | null;
+        hint?: string | null;
+        message?: string;
+      }
+    | null
+    | undefined,
+) {
+  if (!error) {
+    return false;
+  }
+
+  const combinedMessage = [error.message, error.details, error.hint]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  return (
+    error.code === "42703" ||
+    error.code === "PGRST204" ||
+    combinedMessage.includes("parent_id") ||
+    combinedMessage.includes("display_order")
+  );
+}
+
+function compareCategoryHierarchy<
+  TCategory extends {
+    name: string;
+    parentName?: string;
+    displayOrder?: number;
+  },
+>(left: TCategory, right: TCategory) {
+  const leftGroup = left.parentName || left.name;
+  const rightGroup = right.parentName || right.name;
+  const groupComparison = leftGroup.localeCompare(rightGroup);
+
+  if (groupComparison !== 0) {
+    return groupComparison;
+  }
+
+  if (Boolean(left.parentName) !== Boolean(right.parentName)) {
+    return left.parentName ? 1 : -1;
+  }
+
+  const orderComparison = (left.displayOrder ?? 0) - (right.displayOrder ?? 0);
+  return orderComparison || left.name.localeCompare(right.name);
+}
+
 function normalizeCategoryDescription(description: string | null | undefined, name: string) {
   const trimmed = description?.trim();
 
@@ -966,7 +1264,10 @@ function buildCategorySubtitle(name: string) {
 }
 
 function buildDynamicCategoryPageData(
-  category: Pick<AdminCategoryRecord, "slug" | "name" | "description" | "image">,
+  category: Pick<
+    AdminCategoryRecord,
+    "slug" | "name" | "description" | "image" | "parentSlug" | "parentName"
+  >,
 ): ProductCategoryPageData {
   return {
     slug: category.slug,
@@ -978,6 +1279,8 @@ function buildDynamicCategoryPageData(
     subtitle: buildCategorySubtitle(category.name),
     description: category.description,
     products: [],
+    parentSlug: category.parentSlug,
+    parentName: category.parentName,
   };
 }
 
@@ -1042,6 +1345,8 @@ async function getBaseCategoryData(): Promise<Record<string, ProductCategoryPage
           seededCategory.image,
         title: category.name,
         description: category.description || seededCategory.description,
+        parentSlug: category.parentSlug,
+        parentName: category.parentName,
       };
       continue;
     }
@@ -1090,6 +1395,19 @@ export async function getMergedCategoryData(): Promise<
     category.products = productsWithSlugs.filter(
       (product) => product.categorySlug === category.slug,
     );
+    category.subcategories = Object.values(mergedCategories)
+      .filter((candidate) => candidate.parentSlug === category.slug)
+      .sort((left, right) => left.name.localeCompare(right.name))
+      .map((subcategory) => ({
+        slug: subcategory.slug,
+        name: subcategory.name,
+        href: subcategory.href,
+        image: subcategory.image,
+        description: subcategory.description,
+        productCount: productsWithSlugs.filter(
+          (product) => product.categorySlug === subcategory.slug,
+        ).length,
+      }));
   }
 
   return mergedCategories;

@@ -40,6 +40,10 @@ type CategoryOption = {
   name: string;
   description?: string;
   image?: string;
+  parentId?: string;
+  parentSlug?: string;
+  parentName?: string;
+  displayOrder?: number;
   source?: "seed" | "admin";
 };
 
@@ -80,6 +84,8 @@ type CategoryFormState = {
   name: string;
   slug: string;
   description: string;
+  parentId: string;
+  displayOrder: string;
 };
 
 const fallbackCategories = Object.values(productCategoryData).map((category) => ({
@@ -112,6 +118,8 @@ const initialCategoryFormState: CategoryFormState = {
   name: "",
   slug: "",
   description: "",
+  parentId: "",
+  displayOrder: "0",
 };
 
 const sections: { id: AdminSection; label: string }[] = [
@@ -163,6 +171,9 @@ export default function AdminDashboardPage() {
   >([]);
   const [selectedCategoryImage, setSelectedCategoryImage] = useState<File | null>(null);
   const [categoryImagePreview, setCategoryImagePreview] = useState("");
+  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
+  const [currentCategoryImageUrl, setCurrentCategoryImageUrl] = useState("");
+  const [removeCategoryImage, setRemoveCategoryImage] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -281,6 +292,8 @@ export default function AdminDashboardPage() {
   const selectedCategoryName =
     categories.find((category) => category.slug === form.categorySlug)?.name ?? "";
   const previewImageSrc = imagePreview || currentImageUrl;
+  const categoryPreviewImage =
+    categoryImagePreview || (removeCategoryImage ? "" : currentCategoryImageUrl);
   const galleryImagePreviews = [
     ...currentGalleryImages.map((url) => ({
       id: url,
@@ -304,7 +317,37 @@ export default function AdminDashboardPage() {
   const activeProducts = products.filter(
     (product) => (product.stockStatus || "In stock") === "In stock",
   ).length;
+  const lowStockProducts = products.filter(
+    (product) => product.stockStatus === "Low stock",
+  ).length;
+  const featuredProducts = products.filter((product) => product.featured).length;
   const missingImageCount = products.filter((product) => !product.image).length;
+  const subcategoryCount = categories.filter((category) => category.parentId).length;
+  const rootCategories = categories.filter(
+    (category) => !category.parentId && category.id !== editingCategoryId,
+  );
+  const sortedCategories = useMemo(
+    () =>
+      [...categories].sort((left, right) => {
+        const leftGroup = left.parentName || left.name;
+        const rightGroup = right.parentName || right.name;
+        const groupComparison = leftGroup.localeCompare(rightGroup);
+
+        if (groupComparison !== 0) {
+          return groupComparison;
+        }
+
+        if (Boolean(left.parentId) !== Boolean(right.parentId)) {
+          return left.parentId ? 1 : -1;
+        }
+
+        return (
+          (left.displayOrder ?? 0) - (right.displayOrder ?? 0) ||
+          left.name.localeCompare(right.name)
+        );
+      }),
+    [categories],
+  );
 
   const filteredProducts = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -655,6 +698,29 @@ export default function AdminDashboardPage() {
   const resetCategoryForm = () => {
     setCategoryForm(initialCategoryFormState);
     setSelectedCategoryImage(null);
+    setEditingCategoryId(null);
+    setCurrentCategoryImageUrl("");
+    setRemoveCategoryImage(false);
+  };
+
+  const startEditingCategory = (category: CategoryOption) => {
+    if (!category.id) {
+      return;
+    }
+
+    setCategoryErrorMessage("");
+    setCategorySuccessMessage("");
+    setEditingCategoryId(category.id);
+    setCategoryForm({
+      name: category.name,
+      slug: category.slug,
+      description: category.description ?? "",
+      parentId: category.parentId ?? "",
+      displayOrder: String(category.displayOrder ?? 0),
+    });
+    setSelectedCategoryImage(null);
+    setCurrentCategoryImageUrl(category.image ?? "");
+    setRemoveCategoryImage(false);
   };
 
   const handleCategorySubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -664,17 +730,27 @@ export default function AdminDashboardPage() {
     setIsCategorySubmitting(true);
 
     try {
+      const previousCategory = categories.find(
+        (category) => category.id === editingCategoryId,
+      );
       const payload = new FormData();
       payload.append("name", categoryForm.name);
       payload.append("slug", categoryForm.slug);
       payload.append("description", categoryForm.description);
+      payload.append("parentId", categoryForm.parentId);
+      payload.append("displayOrder", categoryForm.displayOrder);
+      payload.append("removeImage", String(removeCategoryImage));
+
+      if (editingCategoryId) {
+        payload.append("id", editingCategoryId);
+      }
 
       if (selectedCategoryImage) {
         payload.append("image", selectedCategoryImage);
       }
 
       const response = await fetch("/api/admin/categories", {
-        method: "POST",
+        method: editingCategoryId ? "PUT" : "POST",
         body: payload,
       });
 
@@ -688,13 +764,31 @@ export default function AdminDashboardPage() {
       }
 
       setCategories((current) =>
-        [...current, data.category].sort((left, right) =>
-          left.name.localeCompare(right.name),
-        ),
+        editingCategoryId
+          ? current.map((category) =>
+              category.id === data.category.id ? data.category : category,
+            )
+          : [...current, data.category],
       );
+      if (previousCategory) {
+        setProducts((current) =>
+          current.map((product) =>
+            product.categorySlug === previousCategory.slug
+              ? {
+                  ...product,
+                  categorySlug: data.category.slug,
+                  category: data.category.name,
+                }
+              : product,
+          ),
+        );
+      }
       setForm((current) => ({ ...current, categorySlug: data.category.slug }));
+      const wasEditing = Boolean(editingCategoryId);
       resetCategoryForm();
-      setCategorySuccessMessage(`${data.category.name} was created.`);
+      setCategorySuccessMessage(
+        `${data.category.name} was ${wasEditing ? "updated" : "created"}.`,
+      );
     } catch (error) {
       setCategoryErrorMessage(
         error instanceof Error ? error.message : "Unable to create category.",
@@ -706,6 +800,19 @@ export default function AdminDashboardPage() {
 
   const handleDeleteCategory = async (category: CategoryOption) => {
     if (!category.id) {
+      return;
+    }
+
+    const hasChildren = categories.some((item) => item.parentId === category.id);
+
+    if (hasChildren) {
+      setCategoryErrorMessage(
+        "Move or remove this category's subcategories before deleting it.",
+      );
+      return;
+    }
+
+    if (!window.confirm(`Remove "${category.name}" from the public catalog?`)) {
       return;
     }
 
@@ -821,11 +928,34 @@ export default function AdminDashboardPage() {
 
           {activeSection === "dashboard" ? (
             <section className="grid gap-6">
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="overflow-hidden rounded-[1.5rem] border border-slate-700 bg-[#0b1c2d] p-6 text-white shadow-[0_24px_70px_-44px_rgba(2,12,24,0.9)]">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-200">
+                  Operations overview
+                </p>
+                <div className="mt-3 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                  <div>
+                    <h2 className="text-3xl font-semibold tracking-tight">Catalog control room</h2>
+                    <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
+                      Monitor catalog completeness, organize product lines, and publish changes directly to the AMCOL website.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={openAddProduct}
+                    className="rounded-xl bg-cyan-300 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-200"
+                  >
+                    Add catalog product
+                  </button>
+                </div>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {[
                   ["Catalog products", products.length],
                   ["Categories", categories.length],
+                  ["Subcategories", subcategoryCount],
                   ["In stock", activeProducts],
+                  ["Low stock", lowStockProducts],
+                  ["Featured", featuredProducts],
                   ["Missing images", missingImageCount],
                 ].map(([label, value]) => (
                   <article
@@ -840,6 +970,48 @@ export default function AdminDashboardPage() {
                     </p>
                   </article>
                 ))}
+              </div>
+              <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+                <article className="rounded-[1.5rem] border border-slate-200 bg-white p-6 shadow-[0_20px_60px_-46px_rgba(15,23,42,0.55)]">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-cyan-700">Recent catalog activity</p>
+                  <h3 className="mt-2 text-xl font-semibold text-slate-950">Newest products</h3>
+                  <div className="mt-5 divide-y divide-slate-100">
+                    {products.slice(0, 5).map((product) => (
+                      <button
+                        key={product.id}
+                        type="button"
+                        onClick={() => startEditingProduct(product)}
+                        className="flex w-full items-center justify-between gap-4 py-3 text-left transition hover:text-cyan-800"
+                      >
+                        <span>
+                          <span className="block text-sm font-semibold">{product.name}</span>
+                          <span className="mt-1 block text-xs text-slate-500">{product.category} / {product.stockStatus}</span>
+                        </span>
+                        <span className="text-xs font-semibold uppercase tracking-[0.16em]">Edit</span>
+                      </button>
+                    ))}
+                    {!isLoading && products.length === 0 ? (
+                      <p className="py-6 text-sm text-slate-500">No admin products have been added yet.</p>
+                    ) : null}
+                  </div>
+                </article>
+                <article className="rounded-[1.5rem] border border-slate-200 bg-white p-6 shadow-[0_20px_60px_-46px_rgba(15,23,42,0.55)]">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-amber-700">Publishing readiness</p>
+                  <h3 className="mt-2 text-xl font-semibold text-slate-950">Catalog health</h3>
+                  <div className="mt-5 space-y-4 text-sm">
+                    {[
+                      [missingImageCount === 0, "Every product has a main image"],
+                      [categories.length > 0, "Product categories are available"],
+                      [products.every((product) => Boolean(product.description)), "Every product has detail copy"],
+                      [products.every((product) => Boolean(product.categorySlug)), "Every product is assigned to a product line"],
+                    ].map(([ready, label]) => (
+                      <div key={String(label)} className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                        <span className={`h-2.5 w-2.5 rounded-full ${ready ? "bg-emerald-500" : "bg-amber-500"}`} />
+                        <span className="font-medium text-slate-700">{label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </article>
               </div>
             </section>
           ) : null}
@@ -974,11 +1146,14 @@ export default function AdminDashboardPage() {
             <section className="grid gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
               <div className="rounded-[1.5rem] border border-slate-200 bg-white p-6 shadow-[0_20px_60px_-46px_rgba(15,23,42,0.55)]">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-cyan-700">
-                  Categories
+                  Catalog architecture
                 </p>
                 <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
-                  Add category
+                  {editingCategoryId ? "Update category" : "Add category"}
                 </h2>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  Create a top-level department or place a specialist product line beneath one.
+                </p>
                 <form className="mt-6 space-y-5" onSubmit={handleCategorySubmit}>
                   <label className="block space-y-2">
                     <span className="text-sm font-semibold text-slate-800">Name</span>
@@ -1001,8 +1176,49 @@ export default function AdminDashboardPage() {
                         handleCategoryChange("slug", event.target.value)
                       }
                       className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-cyan-400 focus:bg-white"
+                      required
                     />
                   </label>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <label className="block space-y-2">
+                      <span className="text-sm font-semibold text-slate-800">
+                        Parent category
+                      </span>
+                      <select
+                        value={categoryForm.parentId}
+                        onChange={(event) =>
+                          handleCategoryChange("parentId", event.target.value)
+                        }
+                        className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-cyan-400 focus:bg-white"
+                      >
+                        <option value="">None — top level</option>
+                        {rootCategories
+                          .filter((category) => category.id)
+                          .map((category) => (
+                            <option key={category.id} value={category.id}>
+                              {category.name}
+                            </option>
+                          ))}
+                      </select>
+                    </label>
+                    <label className="block space-y-2">
+                      <span className="text-sm font-semibold text-slate-800">
+                        Display order
+                      </span>
+                      <input
+                        type="number"
+                        min="0"
+                        value={categoryForm.displayOrder}
+                        onChange={(event) =>
+                          handleCategoryChange("displayOrder", event.target.value)
+                        }
+                        className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-cyan-400 focus:bg-white"
+                      />
+                    </label>
+                  </div>
+                  <p className="-mt-2 text-xs leading-5 text-slate-500">
+                    Subcategories appear automatically on their parent&apos;s public catalog page.
+                  </p>
                   <label className="block space-y-2">
                     <span className="text-sm font-semibold text-slate-800">
                       Description
@@ -1022,22 +1238,35 @@ export default function AdminDashboardPage() {
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={(event) =>
-                        setSelectedCategoryImage(event.target.files?.[0] ?? null)
-                      }
+                      onChange={(event) => {
+                        setSelectedCategoryImage(event.target.files?.[0] ?? null);
+                        setRemoveCategoryImage(false);
+                      }}
                       className="block w-full rounded-[1.25rem] border border-dashed border-slate-300 bg-slate-50 px-4 py-4 text-sm file:mr-4 file:rounded-full file:border-0 file:bg-slate-900 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
                     />
                   </label>
-                  {categoryImagePreview ? (
+                  {categoryPreviewImage ? (
                     <div className="relative h-44 overflow-hidden rounded-[1.25rem] border border-slate-200">
                       <Image
-                        src={categoryImagePreview}
+                        src={categoryPreviewImage}
                         alt={categoryForm.name || "Category preview"}
                         fill
                         unoptimized
-                        className="object-cover"
+                        className="bg-slate-50 object-contain p-4"
                       />
                     </div>
+                  ) : null}
+                  {currentCategoryImageUrl || selectedCategoryImage ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedCategoryImage(null);
+                        setRemoveCategoryImage(true);
+                      }}
+                      className="text-sm font-semibold text-red-700 transition hover:text-red-900"
+                    >
+                      Remove category image
+                    </button>
                   ) : null}
                   {categoryErrorMessage ? (
                     <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -1055,41 +1284,67 @@ export default function AdminDashboardPage() {
                       disabled={isCategorySubmitting}
                       className="rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
                     >
-                      {isCategorySubmitting ? "Creating..." : "Create category"}
+                      {isCategorySubmitting
+                        ? "Saving..."
+                        : editingCategoryId
+                          ? "Save category"
+                          : "Create category"}
                     </button>
                     <button
                       type="button"
                       onClick={resetCategoryForm}
                       className="rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-400"
                     >
-                      Reset
+                      {editingCategoryId ? "Cancel edit" : "Reset"}
                     </button>
                   </div>
                 </form>
               </div>
 
               <div className="rounded-[1.5rem] border border-slate-200 bg-white p-6 shadow-[0_20px_60px_-46px_rgba(15,23,42,0.55)]">
-                <h2 className="text-2xl font-semibold tracking-tight text-slate-950">
-                  Category list
+                <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-cyan-700">
+                  {categories.length - subcategoryCount} departments · {subcategoryCount} subcategories
+                </p>
+                <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+                  Category hierarchy
                 </h2>
                 <div className="mt-5 space-y-3">
-                  {categories.map((category) => {
+                  {sortedCategories.map((category) => {
                     const productCount = products.filter(
                       (product) => product.categorySlug === category.slug,
                     ).length;
+                    const childCount = categories.filter(
+                      (item) => item.parentId === category.id,
+                    ).length;
                     const isSeeded = category.source === "seed";
-                    const isDisabled = isSeeded || productCount > 0 || !category.id;
+                    const isDisabled =
+                      isSeeded || productCount > 0 || childCount > 0 || !category.id;
 
                     return (
                       <article
                         key={category.slug}
-                        className="rounded-[1.25rem] border border-slate-200 bg-slate-50 p-4"
+                        className={`rounded-[1.25rem] border p-4 transition ${
+                          editingCategoryId === category.id
+                            ? "border-cyan-400 bg-cyan-50/70 ring-2 ring-cyan-100"
+                            : category.parentId
+                              ? "ml-5 border-slate-200 bg-slate-50"
+                              : "border-slate-300 bg-white shadow-sm"
+                        }`}
                       >
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                          <div>
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
                             <p className="font-semibold text-slate-950">
                               {category.name}
                             </p>
+                            <span className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] ${
+                              category.parentId
+                                ? "border-cyan-200 bg-cyan-50 text-cyan-800"
+                                : "border-slate-200 bg-slate-100 text-slate-600"
+                            }`}>
+                              {category.parentId ? "Subcategory" : "Department"}
+                            </span>
+                            </div>
                             <p className="mt-1 text-xs text-slate-500">
                               {category.slug} · {productCount} products ·{" "}
                               {isSeeded ? "Seeded" : "Admin"}
@@ -1100,14 +1355,31 @@ export default function AdminDashboardPage() {
                               </p>
                             ) : null}
                           </div>
-                          <button
-                            type="button"
-                            disabled={isDisabled || deletingCategoryId === category.id}
-                            onClick={() => handleDeleteCategory(category)}
-                            className="rounded-full border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400"
-                          >
-                            {deletingCategoryId === category.id ? "Deleting" : "Delete"}
-                          </button>
+                          <div className="flex shrink-0 flex-wrap gap-2">
+                            <Link
+                              href={`/products/${category.slug}`}
+                              target="_blank"
+                              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-cyan-300 hover:text-cyan-800"
+                            >
+                              View
+                            </Link>
+                            <button
+                              type="button"
+                              disabled={!category.id}
+                              onClick={() => startEditingCategory(category)}
+                              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition hover:bg-slate-100 disabled:text-slate-400"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              disabled={isDisabled || deletingCategoryId === category.id}
+                              onClick={() => handleDeleteCategory(category)}
+                              className="rounded-lg border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400"
+                            >
+                              {deletingCategoryId === category.id ? "Deleting" : "Delete"}
+                            </button>
+                          </div>
                         </div>
                       </article>
                     );
@@ -1223,7 +1495,9 @@ export default function AdminDashboardPage() {
                         >
                           {categories.map((category) => (
                             <option key={category.slug} value={category.slug}>
-                              {category.name}
+                              {category.parentName
+                                ? `${category.parentName} / ${category.name}`
+                                : category.name}
                             </option>
                           ))}
                         </select>

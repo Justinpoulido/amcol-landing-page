@@ -6,6 +6,7 @@ import {
   createAdminCategory,
   deleteAdminCategory,
   getAdminCategories,
+  updateAdminCategory,
 } from "@/lib/catalog-store";
 import {
   getSupabaseStorageHostname,
@@ -66,6 +67,36 @@ async function removeStoredImage(publicUrl: string | undefined) {
   await supabase.storage.from(PRODUCT_IMAGES_BUCKET).remove([storagePath]);
 }
 
+async function uploadCategoryImage(imageFile: File, slugOrName: string) {
+  if (!hasSupabaseAdminConfig()) {
+    throw new Error(
+      "Supabase admin access is not configured. Add SUPABASE_SERVICE_ROLE_KEY before uploading category images.",
+    );
+  }
+
+  const supabase = createSupabaseAdminClient();
+  const extension = path.extname(imageFile.name) || ".png";
+  const fileName = `${Date.now()}-${sanitizeSegment(slugOrName)}${extension.toLowerCase()}`;
+  const uploadedImagePath = `categories/${fileName}`;
+  const bytes = await imageFile.arrayBuffer();
+  const { error } = await supabase.storage
+    .from(PRODUCT_IMAGES_BUCKET)
+    .upload(uploadedImagePath, Buffer.from(bytes), {
+      contentType: imageFile.type || undefined,
+      upsert: false,
+    });
+
+  if (error) {
+    throw new Error(`Unable to upload category image: ${error.message}`);
+  }
+
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from(PRODUCT_IMAGES_BUCKET).getPublicUrl(uploadedImagePath);
+
+  return { publicUrl, uploadedImagePath };
+}
+
 export async function GET() {
   const categories = await getAdminCategories();
   return NextResponse.json({ categories });
@@ -79,6 +110,11 @@ export async function POST(request: Request) {
     const name = String(formData.get("name") ?? "").trim();
     const slug = String(formData.get("slug") ?? "").trim();
     const description = String(formData.get("description") ?? "").trim();
+    const parentId = String(formData.get("parentId") ?? "").trim();
+    const displayOrder = Number.parseInt(
+      String(formData.get("displayOrder") ?? "0"),
+      10,
+    );
     const imageFile = formData.get("image");
 
     if (!name) {
@@ -91,37 +127,9 @@ export async function POST(request: Request) {
     let image: string | undefined;
 
     if (imageFile instanceof File && imageFile.size > 0) {
-      if (!hasSupabaseAdminConfig()) {
-        return NextResponse.json(
-          {
-            error:
-              "Supabase admin access is not configured. Add SUPABASE_SERVICE_ROLE_KEY before uploading category images.",
-          },
-          { status: 500 },
-        );
-      }
-
-      const supabase = createSupabaseAdminClient();
-      const extension = path.extname(imageFile.name) || ".png";
-      const fileName = `${Date.now()}-${sanitizeSegment(slug || name)}${extension.toLowerCase()}`;
-      uploadedImagePath = `categories/${fileName}`;
-      const bytes = await imageFile.arrayBuffer();
-      const { error: uploadError } = await supabase.storage
-        .from(PRODUCT_IMAGES_BUCKET)
-        .upload(uploadedImagePath, Buffer.from(bytes), {
-          contentType: imageFile.type || undefined,
-          upsert: false,
-        });
-
-      if (uploadError) {
-        throw new Error(`Unable to upload category image: ${uploadError.message}`);
-      }
-
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from(PRODUCT_IMAGES_BUCKET).getPublicUrl(uploadedImagePath);
-
-      image = publicUrl;
+      const upload = await uploadCategoryImage(imageFile, slug || name);
+      uploadedImagePath = upload.uploadedImagePath;
+      image = upload.publicUrl;
     }
 
     const category = await createAdminCategory({
@@ -129,6 +137,8 @@ export async function POST(request: Request) {
       slug,
       description,
       image,
+      parentId: parentId || null,
+      displayOrder: Number.isFinite(displayOrder) ? displayOrder : 0,
     });
 
     if (uploadedImagePath && image && !category.image && hasSupabaseAdminConfig()) {
@@ -140,6 +150,9 @@ export async function POST(request: Request) {
     revalidatePath("/products");
     revalidatePath("/");
     revalidatePath(`/products/${category.slug}`);
+    if (category.parentSlug) {
+      revalidatePath(`/products/${category.parentSlug}`);
+    }
 
     return NextResponse.json({ category }, { status: 201 });
   } catch (error) {
@@ -152,6 +165,88 @@ export async function POST(request: Request) {
       error instanceof Error ? error.message : "Unable to create category.";
 
     return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+export async function PUT(request: Request) {
+  let uploadedImagePath: string | null = null;
+
+  try {
+    const formData = await request.formData();
+    const id = String(formData.get("id") ?? "").trim();
+    const name = String(formData.get("name") ?? "").trim();
+    const slug = String(formData.get("slug") ?? "").trim();
+    const description = String(formData.get("description") ?? "").trim();
+    const parentId = String(formData.get("parentId") ?? "").trim();
+    const displayOrder = Number.parseInt(
+      String(formData.get("displayOrder") ?? "0"),
+      10,
+    );
+    const removeImage = String(formData.get("removeImage") ?? "") === "true";
+    const imageFile = formData.get("image");
+
+    if (!id || !name) {
+      return NextResponse.json(
+        { error: "A category id and name are required." },
+        { status: 400 },
+      );
+    }
+
+    const existing = (await getAdminCategories()).find(
+      (category) => category.id === id,
+    );
+
+    if (!existing) {
+      return NextResponse.json(
+        { error: "Unable to find the selected category." },
+        { status: 404 },
+      );
+    }
+
+    let image = removeImage ? undefined : existing.image;
+
+    if (imageFile instanceof File && imageFile.size > 0) {
+      const upload = await uploadCategoryImage(imageFile, slug || name);
+      uploadedImagePath = upload.uploadedImagePath;
+      image = upload.publicUrl;
+    }
+
+    const category = await updateAdminCategory({
+      id,
+      name,
+      slug,
+      description,
+      image,
+      parentId: parentId || null,
+      displayOrder: Number.isFinite(displayOrder) ? displayOrder : 0,
+    });
+
+    if (existing.image && existing.image !== category.image) {
+      await removeStoredImage(existing.image);
+    }
+
+    revalidatePath("/");
+    revalidatePath("/products");
+    revalidatePath(`/products/${existing.slug}`);
+    revalidatePath(`/products/${category.slug}`);
+    if (existing.parentSlug) {
+      revalidatePath(`/products/${existing.parentSlug}`);
+    }
+    if (category.parentSlug) {
+      revalidatePath(`/products/${category.parentSlug}`);
+    }
+
+    return NextResponse.json({ category });
+  } catch (error) {
+    if (uploadedImagePath && hasSupabaseAdminConfig()) {
+      const supabase = createSupabaseAdminClient();
+      await supabase.storage.from(PRODUCT_IMAGES_BUCKET).remove([uploadedImagePath]);
+    }
+
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Unable to update category." },
+      { status: 500 },
+    );
   }
 }
 
@@ -174,6 +269,9 @@ export async function DELETE(request: Request) {
     revalidatePath("/");
     revalidatePath("/products");
     revalidatePath(`/products/${category.slug}`);
+    if (category.parentSlug) {
+      revalidatePath(`/products/${category.parentSlug}`);
+    }
 
     return NextResponse.json({ category });
   } catch (error) {

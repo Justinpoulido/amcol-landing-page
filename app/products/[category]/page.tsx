@@ -345,6 +345,12 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
     : undefined;
   const hasProductFilterCards = isPipeValveFittingCategory || isSprayersPumpsCategory;
   const hasSelectedProductFilter = Boolean(selectedBrand || selectedProductType);
+  const subcategories = data.subcategories ?? [];
+  const subcategoryProductCount = subcategories.reduce(
+    (total, subcategory) => total + subcategory.productCount,
+    0,
+  );
+  const categoryItemCount = data.products.length + subcategoryProductCount;
   const visibleProducts = selectedBrand
     ? data.products.filter((product) => matchesBrand(product.brand, selectedBrand))
     : selectedProductType
@@ -363,6 +369,9 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
         data={breadcrumbJsonLd([
           { label: "Home", href: "/" },
           { label: "Products", href: "/products" },
+          ...(data.parentSlug && data.parentName
+            ? [{ label: data.parentName, href: `/products/${data.parentSlug}` }]
+            : []),
           { label: data.name },
         ])}
       />
@@ -382,6 +391,9 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
           items={[
             { label: "Home", href: "/" },
             { label: "Products", href: "/products" },
+            ...(data.parentSlug && data.parentName
+              ? [{ label: data.parentName, href: `/products/${data.parentSlug}` }]
+              : []),
             { label: data.name },
           ]}
         />
@@ -416,7 +428,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
               Product Focus
             </p>
             <p className="mt-4 text-2xl font-semibold text-white">
-              {data.products.length} featured items in this category
+              {categoryItemCount} catalog {categoryItemCount === 1 ? "item" : "items"}
             </p>
             <p className="mt-3 text-sm leading-6 text-slate-200/85">
               Browse a tailored selection for maintenance, repair, safety, contractor, and facility supply needs.
@@ -442,9 +454,47 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
               Related items in {data.name}
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
-              Contact AMCOL for availability, bulk quantities, and quote support across relevant industrial supply items.
+              {subcategories.length > 0
+                ? "Choose a specialist product line, then browse products and request availability or bulk pricing from AMCOL."
+                : "Contact AMCOL for availability, bulk quantities, and quote support across relevant industrial supply items."}
             </p>
           </div>
+
+          {subcategories.length > 0 ? (
+            <div className="mt-12 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+              {subcategories.map((subcategory) => (
+                <Link
+                  key={subcategory.slug}
+                  href={subcategory.href}
+                  className="group grid min-h-64 overflow-hidden rounded-[1.4rem] border border-slate-200 bg-white shadow-[0_20px_45px_-32px_rgba(15,23,42,0.5)] transition hover:-translate-y-1 hover:border-cyan-300 sm:grid-cols-[0.78fr_1.22fr]"
+                >
+                  <div className="relative min-h-48 bg-[linear-gradient(145deg,#eaf5f7,#f8fbfd)]">
+                    <Image
+                      src={subcategory.image}
+                      alt={subcategory.name}
+                      fill
+                      sizes="(min-width: 1280px) 14vw, (min-width: 640px) 35vw, 100vw"
+                      className="object-contain p-5 transition duration-300 group-hover:scale-105"
+                    />
+                  </div>
+                  <div className="flex flex-col p-6">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-cyan-700">
+                      Subcategory / {subcategory.productCount} items
+                    </p>
+                    <h3 className="mt-3 text-xl font-semibold text-slate-950">
+                      {subcategory.name}
+                    </h3>
+                    <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-600">
+                      {subcategory.description}
+                    </p>
+                    <span className="mt-auto pt-5 text-sm font-semibold text-cyan-800">
+                      Browse product line <span aria-hidden="true">-&gt;</span>
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : null}
 
           {isPipeValveFittingCategory ? (
             <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
