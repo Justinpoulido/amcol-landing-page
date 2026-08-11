@@ -6,6 +6,7 @@ import {
   createAdminCategory,
   deleteAdminCategory,
   getAdminCategories,
+  updateAdminCategory,
 } from "@/lib/catalog-store";
 import {
   getSupabaseStorageHostname,
@@ -150,6 +151,93 @@ export async function POST(request: Request) {
 
     const message =
       error instanceof Error ? error.message : "Unable to create category.";
+
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+export async function PUT(request: Request) {
+  let uploadedImagePath: string | null = null;
+
+  try {
+    const formData = await request.formData();
+    const id = String(formData.get("id") ?? "").trim();
+    const currentSlug = String(formData.get("currentSlug") ?? "").trim();
+    const name = String(formData.get("name") ?? "").trim();
+    const description = String(formData.get("description") ?? "").trim();
+    const imageFile = formData.get("image");
+
+    if (!id && !currentSlug) {
+      return NextResponse.json(
+        { error: "A category id or current slug is required." },
+        { status: 400 },
+      );
+    }
+
+    if (!name) {
+      return NextResponse.json(
+        { error: "A category name is required." },
+        { status: 400 },
+      );
+    }
+
+    let image: string | undefined;
+
+    if (imageFile instanceof File && imageFile.size > 0) {
+      if (!hasSupabaseAdminConfig()) {
+        return NextResponse.json(
+          {
+            error:
+              "Supabase admin access is not configured. Add SUPABASE_SERVICE_ROLE_KEY before uploading category images.",
+          },
+          { status: 500 },
+        );
+      }
+
+      const supabase = createSupabaseAdminClient();
+      const extension = path.extname(imageFile.name) || ".png";
+      const fileName = `${Date.now()}-${sanitizeSegment(currentSlug || name)}${extension.toLowerCase()}`;
+      uploadedImagePath = `categories/${fileName}`;
+      const bytes = await imageFile.arrayBuffer();
+      const { error: uploadError } = await supabase.storage
+        .from(PRODUCT_IMAGES_BUCKET)
+        .upload(uploadedImagePath, Buffer.from(bytes), {
+          contentType: imageFile.type || undefined,
+          upsert: false,
+        });
+
+      if (uploadError) {
+        throw new Error(`Unable to upload category image: ${uploadError.message}`);
+      }
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from(PRODUCT_IMAGES_BUCKET).getPublicUrl(uploadedImagePath);
+
+      image = publicUrl;
+    }
+
+    const category = await updateAdminCategory({
+      id,
+      currentSlug,
+      name,
+      description,
+      image,
+    });
+
+    revalidatePath("/");
+    revalidatePath("/products");
+    revalidatePath(`/products/${category.slug}`);
+
+    return NextResponse.json({ category });
+  } catch (error) {
+    if (uploadedImagePath && hasSupabaseAdminConfig()) {
+      const supabase = createSupabaseAdminClient();
+      await supabase.storage.from(PRODUCT_IMAGES_BUCKET).remove([uploadedImagePath]);
+    }
+
+    const message =
+      error instanceof Error ? error.message : "Unable to update category.";
 
     return NextResponse.json({ error: message }, { status: 500 });
   }
