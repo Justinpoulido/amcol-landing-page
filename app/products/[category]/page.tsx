@@ -19,11 +19,9 @@ type CategoryPageProps = {
 
 type CategorySearchParams = {
   brand?: string | string[];
-  pumpType?: string | string[];
 };
 
 const pipeValveFittingBrands = ["Valve", "Flange", "Pipe", "Fittings"] as const;
-const sprayersPumpsSlug = "sprayers-pumps";
 const pipeValveFittingBrandImages: Partial<
   Record<(typeof pipeValveFittingBrands)[number], string>
 > = {
@@ -41,31 +39,6 @@ function getSelectedBrand(value: string | string[] | undefined) {
 
 function matchesBrand(productBrand: string | undefined, brand: string) {
   return productBrand?.toLowerCase() === brand.toLowerCase();
-}
-
-function getQueryValue(value: string | string[] | undefined) {
-  return Array.isArray(value) ? value[0] : value;
-}
-
-function getProductTypes(products: { category: string }[]) {
-  return Array.from(
-    new Set(products.map((product) => product.category).filter(Boolean)),
-  );
-}
-
-function getSelectedProductType(
-  value: string | string[] | undefined,
-  productTypes: string[],
-) {
-  const selectedValue = getQueryValue(value);
-
-  return productTypes.find(
-    (productType) => productType.toLowerCase() === selectedValue?.toLowerCase(),
-  );
-}
-
-function matchesProductType(productType: string, selectedType: string) {
-  return productType.toLowerCase() === selectedType.toLowerCase();
 }
 
 function getProductMetaDescription(
@@ -184,6 +157,14 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
       { label: "Home", href: "/" },
       { label: "Products", href: "/products" },
       { label: product.categoryName, href: `/products/${product.categorySlug}` },
+      ...(product.subcategorySlug && product.subcategoryName
+        ? [
+            {
+              label: product.subcategoryName,
+              href: `/products/${product.categorySlug}/${product.subcategorySlug}`,
+            },
+          ]
+        : []),
       { label: product.name },
     ];
     const specifications = [
@@ -234,7 +215,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
                     {product.categoryName}
                   </Link>
                   <span className="rounded-full border border-slate-200 bg-white px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
-                    {product.category}
+                    {product.subcategoryName || product.category}
                   </span>
                 </div>
 
@@ -338,21 +319,11 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   const selectedBrand = isPipeValveFittingCategory
     ? getSelectedBrand(query.brand)
     : undefined;
-  const isSprayersPumpsCategory = data.slug === sprayersPumpsSlug;
-  const productTypes = isSprayersPumpsCategory ? getProductTypes(data.products) : [];
-  const selectedProductType = isSprayersPumpsCategory
-    ? getSelectedProductType(query.pumpType, productTypes)
-    : undefined;
-  const hasProductFilterCards = isPipeValveFittingCategory || isSprayersPumpsCategory;
-  const hasSelectedProductFilter = Boolean(selectedBrand || selectedProductType);
+  const subcategories = data.subcategories ?? [];
+  const hasSubcategoryCards = subcategories.length > 0;
+  const hasSelectedProductFilter = Boolean(selectedBrand);
   const visibleProducts = selectedBrand
     ? data.products.filter((product) => matchesBrand(product.brand, selectedBrand))
-    : selectedProductType
-    ? data.products.filter((product) =>
-        matchesProductType(product.category, selectedProductType),
-      )
-    : hasProductFilterCards
-    ? []
     : data.products;
 
   return (
@@ -502,37 +473,27 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
             </div>
           ) : null}
 
-          {isSprayersPumpsCategory ? (
+          {hasSubcategoryCards ? (
             <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-3">
-              {productTypes.map((productType) => {
-                const typeProducts = data.products.filter((product) =>
-                  matchesProductType(product.category, productType),
+              {subcategories.map((subcategory) => {
+                const typeProducts = data.products.filter(
+                  (product) => product.subcategorySlug === subcategory.slug,
                 );
                 const previewProduct = typeProducts[0];
-                const isActive = selectedProductType === productType;
 
                 return (
                   <Link
-                    key={productType}
-                    href={
-                      isActive
-                        ? `/products/${data.slug}`
-                        : `/products/${data.slug}?pumpType=${encodeURIComponent(productType)}`
-                    }
-                    className={`group relative flex min-h-[320px] flex-col overflow-hidden rounded-[1.6rem] border bg-white p-7 text-left shadow-[0_18px_42px_-28px_rgba(15,23,42,0.58)] transition-all duration-300 hover:-translate-y-1 hover:border-cyan-300 hover:shadow-[0_28px_56px_-30px_rgba(8,47,73,0.36)] ${
-                      isActive
-                        ? "border-cyan-400 ring-2 ring-cyan-200"
-                        : "border-slate-200"
-                    }`}
-                    aria-current={isActive ? "true" : undefined}
+                    key={subcategory.slug}
+                    href={`/products/${data.slug}/${subcategory.slug}`}
+                    className="group relative flex min-h-[320px] flex-col overflow-hidden rounded-[1.6rem] border border-slate-200 bg-white p-7 text-left shadow-[0_18px_42px_-28px_rgba(15,23,42,0.58)] transition-all duration-300 hover:-translate-y-1 hover:border-cyan-300 hover:shadow-[0_28px_56px_-30px_rgba(8,47,73,0.36)]"
                   >
                     <div className="flex min-w-0 flex-1 flex-col">
                       <div>
                         <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-cyan-700">
-                          Select Category
+                          Product Type
                         </p>
                         <h3 className="mt-4 break-words text-3xl font-semibold tracking-tight text-slate-950">
-                          {productType}
+                          {subcategory.name}
                         </h3>
                       </div>
                     </div>
@@ -540,7 +501,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
                     <div className="relative mt-7 h-44 w-full shrink-0 overflow-hidden rounded-[1.25rem] border border-slate-100 bg-[linear-gradient(180deg,#f8fbfd_0%,#eef6fb_100%)]">
                       <Image
                         src={previewProduct?.image || data.image}
-                        alt={previewProduct?.imageAlt || `${productType} products`}
+                        alt={previewProduct?.imageAlt || `${subcategory.name} products`}
                         fill
                         sizes="(min-width: 640px) 28vw, 100vw"
                         className="object-contain p-5 transition-transform duration-300 group-hover:scale-105"
@@ -561,12 +522,6 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
               {selectedBrand ? (
                 <p>
                   Showing {visibleProducts.length} {selectedBrand.toLowerCase()}{" "}
-                  {visibleProducts.length === 1 ? "product" : "products"}.
-                </p>
-              ) : null}
-              {selectedProductType ? (
-                <p>
-                  Showing {visibleProducts.length} {selectedProductType.toLowerCase()}{" "}
                   {visibleProducts.length === 1 ? "product" : "products"}.
                 </p>
               ) : null}

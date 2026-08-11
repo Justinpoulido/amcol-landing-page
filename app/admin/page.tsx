@@ -21,6 +21,9 @@ type DashboardProduct = {
   name: string;
   category: string;
   categorySlug: string;
+  categoryName?: string;
+  subcategorySlug?: string;
+  subcategoryName?: string;
   price: string;
   summary?: string;
   description: string;
@@ -42,6 +45,10 @@ type CategoryOption = {
   name: string;
   description?: string;
   image?: string;
+  isFeatured?: boolean;
+  parentId?: string | null;
+  parentSlug?: string;
+  parentName?: string;
   source?: "seed" | "admin";
 };
 
@@ -67,6 +74,7 @@ type FormState = {
   name: string;
   slug: string;
   categorySlug: string;
+  subcategorySlug: string;
   price: string;
   summary: string;
   description: string;
@@ -84,12 +92,15 @@ type CategoryFormState = {
   name: string;
   slug: string;
   description: string;
+  isFeatured: boolean;
+  parentSlug: string;
 };
 
 const fallbackCategories = Object.values(productCategoryData).map((category) => ({
   slug: category.slug,
   name: category.name,
   description: category.description,
+  isFeatured: category.isFeatured ?? false,
   source: "seed" as const,
 }));
 
@@ -99,6 +110,7 @@ const initialFormState: FormState = {
   name: "",
   slug: "",
   categorySlug: defaultCategorySlug,
+  subcategorySlug: "",
   price: "",
   summary: "",
   description: "",
@@ -116,6 +128,8 @@ const initialCategoryFormState: CategoryFormState = {
   name: "",
   slug: "",
   description: "",
+  isFeatured: false,
+  parentSlug: "",
 };
 
 const sections: { id: AdminSection; label: string; icon: string }[] = [
@@ -175,12 +189,18 @@ export default function AdminDashboardPage() {
   const [categoryImagePreview, setCategoryImagePreview] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [categoryListFilter, setCategoryListFilter] = useState<
+    "all" | "general" | "subcategories"
+  >("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortOption, setSortOption] = useState<SortOption>("recent");
   const [pageSize, setPageSize] = useState(50);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
   const [openActionMenuId, setOpenActionMenuId] = useState<string | null>(null);
+  const [openCategoryActionMenuSlug, setOpenCategoryActionMenuSlug] = useState<
+    string | null
+  >(null);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [mediaFilter, setMediaFilter] = useState<MediaFilter>("all");
   const [isLoading, setIsLoading] = useState(true);
@@ -240,14 +260,18 @@ export default function AdminDashboardPage() {
             : productData.categories;
 
         if (Array.isArray(nextCategories) && nextCategories.length > 0) {
+          const nextTopLevelCategories = nextCategories.filter(
+            (category) => !category.parentSlug && !category.parentId,
+          );
           setCategories(nextCategories);
           setForm((current) => ({
             ...current,
-            categorySlug: nextCategories.some(
+            categorySlug: nextTopLevelCategories.some(
               (category) => category.slug === current.categorySlug,
             )
               ? current.categorySlug
-              : nextCategories[0].slug,
+              : nextTopLevelCategories[0]?.slug ?? nextCategories[0].slug,
+            subcategorySlug: current.subcategorySlug,
           }));
         }
       } catch (error) {
@@ -299,6 +323,50 @@ export default function AdminDashboardPage() {
   const isEditMode = Boolean(editingProduct);
   const selectedCategoryName =
     categories.find((category) => category.slug === form.categorySlug)?.name ?? "";
+  const topLevelCategories = useMemo(
+    () =>
+      categories
+        .filter((category) => !category.parentSlug && !category.parentId)
+        .sort((left, right) => left.name.localeCompare(right.name)),
+    [categories],
+  );
+  const subcategoriesByParentSlug = useMemo(() => {
+    const grouped = new Map<string, CategoryOption[]>();
+
+    for (const category of categories) {
+      const parentSlug = category.parentSlug;
+
+      if (!parentSlug) {
+        continue;
+      }
+
+      grouped.set(parentSlug, [
+        ...(grouped.get(parentSlug) ?? []),
+        category,
+      ].sort((left, right) => left.name.localeCompare(right.name)));
+    }
+
+    return grouped;
+  }, [categories]);
+  const availableSubcategories =
+    subcategoriesByParentSlug.get(form.categorySlug) ?? [];
+  const visibleCategories = useMemo(
+    () =>
+      categories.filter((category) => {
+        const isSubcategory = Boolean(category.parentSlug || category.parentId);
+
+        if (categoryListFilter === "general") {
+          return !isSubcategory;
+        }
+
+        if (categoryListFilter === "subcategories") {
+          return isSubcategory;
+        }
+
+        return true;
+      }),
+    [categories, categoryListFilter],
+  );
   const previewImageSrc = imagePreview || currentImageUrl;
   const galleryImagePreviews = [
     ...currentGalleryImages.map((url) => ({
@@ -561,6 +629,39 @@ export default function AdminDashboardPage() {
     return () => window.cancelAnimationFrame(animationFrame);
   }, [editingCategorySlug, categoryForm.name]);
 
+  useEffect(() => {
+    if (!openCategoryActionMenuSlug) {
+      return;
+    }
+
+    const closeCategoryActionMenu = (event: PointerEvent) => {
+      const target = event.target;
+
+      if (
+        target instanceof Element &&
+        target.closest("[data-category-action-menu]")
+      ) {
+        return;
+      }
+
+      setOpenCategoryActionMenuSlug(null);
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpenCategoryActionMenuSlug(null);
+      }
+    };
+
+    document.addEventListener("pointerdown", closeCategoryActionMenu);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("pointerdown", closeCategoryActionMenu);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [openCategoryActionMenuSlug]);
+
   const confirmDiscardProductChanges = () =>
     !hasProductFormChanges ||
     window.confirm("You have unsaved changes. Leave without saving?");
@@ -620,6 +721,10 @@ export default function AdminDashboardPage() {
         return { ...current, slug: createProductSlug(String(value)) };
       }
 
+      if (field === "categorySlug") {
+        return { ...current, categorySlug: String(value), subcategorySlug: "" };
+      }
+
       return { ...current, [field]: value };
     });
   };
@@ -645,6 +750,10 @@ export default function AdminDashboardPage() {
         return { ...current, slug: createCategorySlug(String(value)) };
       }
 
+      if (field === "parentSlug" && String(value)) {
+        return { ...current, parentSlug: String(value), isFeatured: false };
+      }
+
       return { ...current, [field]: value };
     });
   };
@@ -653,7 +762,9 @@ export default function AdminDashboardPage() {
     selectedGalleryImages.forEach((image) => URL.revokeObjectURL(image.previewUrl));
     setForm((current) => ({
       ...initialFormState,
-      categorySlug: current.categorySlug || categories[0]?.slug || defaultCategorySlug,
+      categorySlug:
+        current.categorySlug || topLevelCategories[0]?.slug || defaultCategorySlug,
+      subcategorySlug: "",
     }));
     setEditingProductId(null);
     setSelectedImage(null);
@@ -696,6 +807,7 @@ export default function AdminDashboardPage() {
       name: product.name,
       slug: product.slug ?? createProductSlug(product.name),
       categorySlug: product.categorySlug,
+      subcategorySlug: product.subcategorySlug ?? "",
       price: product.price,
       summary: product.summary ?? "",
       description: product.description ?? "",
@@ -832,6 +944,7 @@ export default function AdminDashboardPage() {
       payload.append("name", form.name);
       payload.append("slug", form.slug);
       payload.append("categorySlug", form.categorySlug);
+      payload.append("subcategorySlug", form.subcategorySlug);
       payload.append("category", selectedCategoryName);
       payload.append("price", form.price);
       payload.append("summary", form.summary);
@@ -956,6 +1069,8 @@ export default function AdminDashboardPage() {
       name: category.name,
       slug: category.slug,
       description: category.description ?? "",
+      isFeatured: Boolean(category.isFeatured),
+      parentSlug: category.parentSlug ?? "",
     });
   };
 
@@ -971,6 +1086,16 @@ export default function AdminDashboardPage() {
       payload.append("slug", categoryForm.slug);
       payload.append("currentSlug", editingCategorySlug ?? categoryForm.slug);
       payload.append("description", categoryForm.description);
+      payload.append("isFeatured", String(categoryForm.isFeatured));
+      payload.append("parentSlug", categoryForm.parentSlug);
+
+      const parentCategory = categories.find(
+        (category) => category.slug === categoryForm.parentSlug,
+      );
+
+      if (parentCategory?.id) {
+        payload.append("parentId", parentCategory.id);
+      }
 
       const editingCategory = categories.find(
         (category) => category.slug === editingCategorySlug,
@@ -1033,8 +1158,23 @@ export default function AdminDashboardPage() {
   };
 
   const handleDeleteCategory = async (category: CategoryOption) => {
+    const childCategories = categories.filter(
+      (item) => item.parentSlug === category.slug || item.parentId === category.id,
+    );
+
+    if (childCategories.length > 0) {
+      setCategoryErrorMessage(
+        `Cannot delete this category because ${childCategories.length} subcategor${
+          childCategories.length === 1 ? "y is" : "ies are"
+        } assigned to it.`,
+      );
+      return;
+    }
+
     const productCount = products.filter(
-      (product) => product.categorySlug === category.slug,
+      (product) =>
+        product.categorySlug === category.slug ||
+        product.subcategorySlug === category.slug,
     ).length;
 
     if (productCount > 0) {
@@ -1089,6 +1229,57 @@ export default function AdminDashboardPage() {
       );
     } finally {
       setDeletingCategoryId(null);
+    }
+  };
+
+  const handleToggleCategoryFeatured = async (category: CategoryOption) => {
+    const nextFeatured = !category.isFeatured;
+    setCategoryErrorMessage("");
+    setCategorySuccessMessage("");
+
+    try {
+      const response = await fetch("/api/admin/categories", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: category.id,
+          currentSlug: category.slug,
+          isFeatured: nextFeatured,
+        }),
+      });
+
+      const data = await readJsonResponse<CategoryResponse>(
+        response,
+        "Unable to update featured status.",
+      );
+
+      if (!response.ok || !("category" in data)) {
+        throw new Error(
+          "error" in data ? data.error : "Unable to update featured status.",
+        );
+      }
+
+      setCategories((current) =>
+        current.map((item) =>
+          item.slug === category.slug ? data.category : item,
+        ),
+      );
+      setCategoryForm((current) =>
+        editingCategorySlug === category.slug
+          ? { ...current, isFeatured: Boolean(data.category.isFeatured) }
+          : current,
+      );
+      setCategorySuccessMessage(
+        data.category.isFeatured
+          ? `${data.category.name} added to Featured Categories.`
+          : `${data.category.name} removed from Featured Categories.`,
+      );
+    } catch (error) {
+      setCategoryErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Unable to update featured status.",
+      );
     }
   };
 
@@ -1386,9 +1577,14 @@ export default function AdminDashboardPage() {
                           </div>
                         </td>
                         <td className="min-w-0 border-t border-slate-100 px-5 py-4 text-slate-600">
-                          <span className="block truncate">
-                            {product.category}
+                          <span className="block truncate font-medium text-slate-700">
+                            {product.categoryName || product.category}
                           </span>
+                          {product.subcategoryName ? (
+                            <span className="mt-1 block truncate text-xs text-slate-500">
+                              / {product.subcategoryName}
+                            </span>
+                          ) : null}
                         </td>
                         <td className="border-t border-slate-100 px-5 py-4">
                           <span className="inline-flex whitespace-nowrap rounded-md border border-red-100 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700">
@@ -1576,6 +1772,82 @@ export default function AdminDashboardPage() {
                       className="min-h-32 w-full rounded-[1.25rem] border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-cyan-400 focus:bg-white"
                     />
                   </label>
+                  <fieldset className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
+                    <legend className="text-sm font-semibold text-slate-800">
+                      Category type
+                    </legend>
+                    <div className="flex flex-wrap gap-3">
+                      <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                        <input
+                          type="radio"
+                          name="categoryType"
+                          checked={!categoryForm.parentSlug}
+                          onChange={() => handleCategoryChange("parentSlug", "")}
+                          className="h-4 w-4 border-slate-300"
+                        />
+                        General Category
+                      </label>
+                      <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                        <input
+                          type="radio"
+                          name="categoryType"
+                          checked={Boolean(categoryForm.parentSlug)}
+                          onChange={() =>
+                            handleCategoryChange(
+                              "parentSlug",
+                              topLevelCategories.find(
+                                (category) => category.slug !== editingCategorySlug,
+                              )?.slug ?? "",
+                            )
+                          }
+                          className="h-4 w-4 border-slate-300"
+                        />
+                        Subcategory
+                      </label>
+                    </div>
+                    {categoryForm.parentSlug ? (
+                      <label className="block space-y-2">
+                        <span className="text-sm font-semibold text-slate-800">
+                          Parent category
+                        </span>
+                        <select
+                          value={categoryForm.parentSlug}
+                          onChange={(event) =>
+                            handleCategoryChange("parentSlug", event.target.value)
+                          }
+                          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400"
+                          required
+                        >
+                          {topLevelCategories
+                            .filter((category) => category.slug !== editingCategorySlug)
+                            .map((category) => (
+                              <option key={category.slug} value={category.slug}>
+                                {category.name}
+                              </option>
+                            ))}
+                        </select>
+                      </label>
+                    ) : null}
+                  </fieldset>
+                  <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                    <input
+                      type="checkbox"
+                      checked={categoryForm.isFeatured}
+                      onChange={(event) =>
+                        handleCategoryChange("isFeatured", event.target.checked)
+                      }
+                      disabled={Boolean(categoryForm.parentSlug)}
+                      className="h-4 w-4 rounded border-slate-300"
+                    />
+                    <span className="text-sm font-semibold text-slate-800">
+                      Feature this general category on the Products page
+                    </span>
+                  </label>
+                  {categoryForm.parentSlug ? (
+                    <p className="-mt-3 text-xs leading-5 text-slate-500">
+                      Featured Categories only show general categories.
+                    </p>
+                  ) : null}
                   <label className="block space-y-2">
                     <span className="text-sm font-semibold text-slate-800">
                       Category image
@@ -1639,14 +1911,52 @@ export default function AdminDashboardPage() {
                 <h2 className="text-2xl font-semibold tracking-tight text-slate-950">
                   Category list
                 </h2>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {[
+                    ["all", "All"],
+                    ["general", "General Categories"],
+                    ["subcategories", "Subcategories"],
+                  ].map(([value, label]) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() =>
+                        setCategoryListFilter(
+                          value as "all" | "general" | "subcategories",
+                        )
+                      }
+                      className={`rounded-lg border px-3 py-2 text-xs font-semibold transition ${
+                        categoryListFilter === value
+                          ? "border-cyan-300 bg-cyan-50 text-cyan-800"
+                          : "border-slate-200 bg-white text-slate-600 hover:border-cyan-200"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
                 <div className="mt-5 space-y-3">
-                  {categories.map((category) => {
+                  {visibleCategories.map((category) => {
                     const productCount = products.filter(
-                      (product) => product.categorySlug === category.slug,
+                      (product) =>
+                        product.categorySlug === category.slug ||
+                        product.subcategorySlug === category.slug,
                     ).length;
+                    const childCount = categories.filter(
+                      (item) =>
+                        item.parentSlug === category.slug ||
+                        item.parentId === category.id,
+                    ).length;
+                    const isSubcategory = Boolean(
+                      category.parentSlug || category.parentId,
+                    );
                     const isSeeded = category.source === "seed";
                     const deleteDisabledReason =
-                      productCount > 0
+                      childCount > 0
+                        ? `${childCount} subcategor${
+                            childCount === 1 ? "y" : "ies"
+                          } assigned`
+                        : productCount > 0
                         ? `${productCount} product${
                             productCount === 1 ? "" : "s"
                           } assigned`
@@ -1669,6 +1979,30 @@ export default function AdminDashboardPage() {
                               {category.slug} / {productCount} products /{" "}
                               {isSeeded ? "Seeded" : "Admin"}
                             </p>
+                            <p className="mt-1 text-xs font-semibold text-slate-600">
+                              {isSubcategory
+                                ? `Subcategory of: ${
+                                    category.parentName || category.parentSlug
+                                  }`
+                                : `General Category${
+                                    childCount > 0
+                                      ? ` / ${childCount} subcategor${
+                                          childCount === 1 ? "y" : "ies"
+                                        }`
+                                      : ""
+                                  }`}
+                            </p>
+                            <div className="mt-2">
+                              <span
+                                className={`inline-flex rounded-md border px-2.5 py-1 text-xs font-semibold ${
+                                  category.isFeatured
+                                    ? "border-cyan-200 bg-cyan-50 text-cyan-800"
+                                    : "border-slate-200 bg-white text-slate-500"
+                                }`}
+                              >
+                                Featured: {category.isFeatured ? "Yes" : "No"}
+                              </span>
+                            </div>
                             {category.description ? (
                               <p className="mt-2 text-sm leading-6 text-slate-600">
                                 {category.description}
@@ -1679,28 +2013,88 @@ export default function AdminDashboardPage() {
                             <div className="flex gap-2">
                               <button
                                 type="button"
+                                onClick={() => handleToggleCategoryFeatured(category)}
+                                disabled={isSubcategory}
+                                className="rounded-lg border border-cyan-200 bg-white px-4 py-2 text-sm font-semibold text-cyan-800 transition hover:bg-cyan-50"
+                              >
+                                {category.isFeatured
+                                  ? "Remove Featured"
+                                  : "Add Featured"}
+                              </button>
+                              <button
+                                type="button"
                                 onClick={() => startEditingCategory(category)}
                                 className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-cyan-300 hover:text-cyan-800"
                               >
                                 Edit
                               </button>
-                              <button
-                                type="button"
-                                disabled={
-                                  isDeleteDisabled ||
-                                  deletingCategoryId === category.id
-                                }
-                                onClick={() => handleDeleteCategory(category)}
-                                title={
-                                  deleteDisabledReason ||
-                                  `Delete ${category.name}`
-                                }
-                                className="rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400"
+                              <div
+                                className="relative"
+                                data-category-action-menu
                               >
-                                {deletingCategoryId === category.id
-                                  ? "Deleting"
-                                  : "Delete"}
-                              </button>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setOpenCategoryActionMenuSlug((current) =>
+                                      current === category.slug
+                                        ? null
+                                        : category.slug,
+                                    )
+                                  }
+                                  aria-label={`More actions for ${category.name}`}
+                                  aria-expanded={
+                                    openCategoryActionMenuSlug === category.slug
+                                  }
+                                  aria-haspopup="menu"
+                                  className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-cyan-300 hover:text-cyan-800"
+                                >
+                                  ...
+                                </button>
+                                {openCategoryActionMenuSlug === category.slug ? (
+                                  <div
+                                    role="menu"
+                                    className="absolute right-0 top-10 z-30 w-44 overflow-hidden rounded-xl border border-slate-200 bg-white p-1 text-sm shadow-[0_18px_44px_-24px_rgba(15,23,42,0.65)]"
+                                  >
+                                    <Link
+                                      href={
+                                        category.parentSlug
+                                          ? `/products/${category.parentSlug}/${category.slug}`
+                                          : `/products/${category.slug}`
+                                      }
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      role="menuitem"
+                                      onClick={() =>
+                                        setOpenCategoryActionMenuSlug(null)
+                                      }
+                                      className="block rounded-lg px-3 py-2 font-semibold text-slate-700 transition hover:bg-slate-100"
+                                    >
+                                      View Category
+                                    </Link>
+                                    <button
+                                      type="button"
+                                      role="menuitem"
+                                      disabled={
+                                        isDeleteDisabled ||
+                                        deletingCategoryId === category.id
+                                      }
+                                      onClick={() => {
+                                        setOpenCategoryActionMenuSlug(null);
+                                        handleDeleteCategory(category);
+                                      }}
+                                      title={
+                                        deleteDisabledReason ||
+                                        `Delete ${category.name}`
+                                      }
+                                      className="w-full rounded-lg px-3 py-2 text-left font-semibold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:text-slate-400 disabled:hover:bg-transparent"
+                                    >
+                                      {deletingCategoryId === category.id
+                                        ? "Deleting"
+                                        : "Delete"}
+                                    </button>
+                                  </div>
+                                ) : null}
+                              </div>
                             </div>
                             {deleteDisabledReason ? (
                               <p className="text-xs font-medium text-slate-500">
@@ -1863,7 +2257,7 @@ export default function AdminDashboardPage() {
                       </label>
                       <label className="space-y-2">
                         <span className="text-sm font-semibold text-slate-800">
-                          Category
+                          General Category
                         </span>
                         <select
                           value={form.categorySlug}
@@ -1873,7 +2267,27 @@ export default function AdminDashboardPage() {
                           className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-cyan-400 focus:bg-white"
                           required
                         >
-                          {categories.map((category) => (
+                          {topLevelCategories.map((category) => (
+                            <option key={category.slug} value={category.slug}>
+                              {category.name}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className="space-y-2">
+                        <span className="text-sm font-semibold text-slate-800">
+                          Subcategory
+                        </span>
+                        <select
+                          value={form.subcategorySlug}
+                          onChange={(event) =>
+                            handleChange("subcategorySlug", event.target.value)
+                          }
+                          className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-cyan-400 focus:bg-white disabled:cursor-not-allowed disabled:text-slate-400"
+                          disabled={availableSubcategories.length === 0}
+                        >
+                          <option value="">None</option>
+                          {availableSubcategories.map((category) => (
                             <option key={category.slug} value={category.slug}>
                               {category.name}
                             </option>
