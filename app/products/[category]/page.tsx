@@ -405,17 +405,31 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
 
       <section className="border-t border-slate-200 bg-[linear-gradient(180deg,#f8fbff_0%,#eef5fb_52%,#ffffff_100%)] py-16 sm:py-24">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl text-center">
-            <p className="inline-flex rounded-full border border-cyan-200 bg-cyan-50 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-800">
-              Available Products
-            </p>
-            <h2 className="mt-5 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
-              Related items in {data.name}
-            </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
-              Contact AMCOL for availability, bulk quantities, and quote support across relevant industrial supply items.
-            </p>
-          </div>
+          {hasSubcategoryCards ? (
+            <div className="mx-auto max-w-3xl text-center">
+              <p className="inline-flex rounded-full border border-cyan-200 bg-cyan-50 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-800">
+                Browse by Product Type
+              </p>
+              <h2 className="mt-5 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
+                Product types within {data.name}
+              </h2>
+              <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
+                Each card below is a subcategory of {data.name}. Select one to view the items it contains.
+              </p>
+            </div>
+          ) : (
+            <div className="mx-auto max-w-3xl text-center">
+              <p className="inline-flex rounded-full border border-cyan-200 bg-cyan-50 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-800">
+                Available Products
+              </p>
+              <h2 className="mt-5 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
+                Related items in {data.name}
+              </h2>
+              <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
+                Contact AMCOL for availability, bulk quantities, and quote support across relevant industrial supply items.
+              </p>
+            </div>
+          )}
 
           {isPipeValveFittingCategory ? (
             <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -474,46 +488,60 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
           ) : null}
 
           {hasSubcategoryCards ? (
-            <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-3">
-              {subcategories.map((subcategory) => {
-                const typeProducts = data.products.filter(
-                  (product) => product.subcategorySlug === subcategory.slug,
-                );
-                const previewProduct = typeProducts[0];
+            <div className="relative mt-12">
+              <div className="mx-auto mb-8 flex max-w-3xl items-center justify-center gap-2 text-sm font-semibold text-slate-500">
+                <span className="rounded-full border border-slate-300 bg-white px-4 py-1.5 uppercase tracking-[0.18em] text-slate-700">
+                  {data.name}
+                </span>
+                <span aria-hidden="true" className="text-slate-400">
+                  &darr;
+                </span>
+                <span className="text-xs font-medium uppercase tracking-[0.2em] text-slate-400">
+                  splits into {subcategories.length}{" "}
+                  {subcategories.length === 1 ? "subcategory" : "subcategories"}
+                </span>
+              </div>
 
-                return (
-                  <Link
-                    key={subcategory.slug}
-                    href={`/products/${data.slug}/${subcategory.slug}`}
-                    className="group relative flex min-h-[320px] flex-col overflow-hidden rounded-[1.6rem] border border-slate-200 bg-white p-7 text-left shadow-[0_18px_42px_-28px_rgba(15,23,42,0.58)] transition-all duration-300 hover:-translate-y-1 hover:border-cyan-300 hover:shadow-[0_28px_56px_-30px_rgba(8,47,73,0.36)]"
-                  >
-                    <div className="flex min-w-0 flex-1 flex-col">
-                      <div>
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-cyan-700">
-                          Product Type
-                        </p>
-                        <h3 className="mt-4 break-words text-3xl font-semibold tracking-tight text-slate-950">
+              <div className="flex flex-wrap items-center justify-center gap-4">
+                {subcategories.map((subcategory) => {
+                  const typeProducts = data.products.filter(
+                    (product) => product.subcategorySlug === subcategory.slug,
+                  );
+                  const previewProduct = typeProducts[0];
+
+                  return (
+                    <Link
+                      key={subcategory.slug}
+                      href={`/products/${data.slug}/${subcategory.slug}`}
+                      className="group flex items-center gap-3 rounded-full border border-slate-200 bg-white py-2.5 pl-2.5 pr-5 shadow-[0_10px_24px_-18px_rgba(15,23,42,0.5)] transition-all duration-300 hover:-translate-y-0.5 hover:border-cyan-300 hover:shadow-[0_16px_32px_-18px_rgba(8,47,73,0.32)]"
+                    >
+                      <span className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full border border-slate-100 bg-[linear-gradient(180deg,#f8fbfd_0%,#eef6fb_100%)]">
+                        <Image
+                          src={previewProduct?.image || data.image}
+                          alt={previewProduct?.imageAlt || `${subcategory.name} products`}
+                          fill
+                          sizes="44px"
+                          className="object-contain p-1.5"
+                        />
+                      </span>
+                      <span className="flex flex-col">
+                        <span className="text-base font-semibold text-slate-900">
                           {subcategory.name}
-                        </h3>
-                      </div>
-                    </div>
-
-                    <div className="relative mt-7 h-44 w-full shrink-0 overflow-hidden rounded-[1.25rem] border border-slate-100 bg-[linear-gradient(180deg,#f8fbfd_0%,#eef6fb_100%)]">
-                      <Image
-                        src={previewProduct?.image || data.image}
-                        alt={previewProduct?.imageAlt || `${subcategory.name} products`}
-                        fill
-                        sizes="(min-width: 640px) 28vw, 100vw"
-                        className="object-contain p-5 transition-transform duration-300 group-hover:scale-105"
-                      />
-                    </div>
-
-                    <p className="mt-5 text-base font-semibold text-slate-600">
-                      {typeProducts.length} {typeProducts.length === 1 ? "item" : "items"}
-                    </p>
-                  </Link>
-                );
-              })}
+                        </span>
+                        <span className="text-xs font-medium text-slate-500">
+                          {typeProducts.length} {typeProducts.length === 1 ? "item" : "items"}
+                        </span>
+                      </span>
+                      <span
+                        aria-hidden="true"
+                        className="ml-1 text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-cyan-700"
+                      >
+                        &gt;
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
           ) : null}
 
