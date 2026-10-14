@@ -211,6 +211,19 @@ const productSelectQuery = `
   )
 `;
 
+function getPaginatedProductSelectQuery(filters: ProductCatalogFilters) {
+  const categoryRelationship = filters.category
+    ? "product_categories!products_category_id_fkey!inner"
+    : "product_categories!products_category_id_fkey";
+  const subcategoryRelationship = filters.subcategory || filters.type
+    ? "product_categories!products_subcategory_id_fkey!inner"
+    : "product_categories!products_subcategory_id_fkey";
+
+  return productSelectQuery
+    .replace("product_categories!products_category_id_fkey", categoryRelationship)
+    .replace("product_categories!products_subcategory_id_fkey", subcategoryRelationship);
+}
+
 const categorySelectQuery = `
   id,
   slug,
@@ -1993,7 +2006,7 @@ async function getSupabasePaginatedProducts(
   const supabase = createSupabaseReadClient();
   let query = supabase
     .from("products")
-    .select(productSelectQuery, { count: "exact" })
+    .select(getPaginatedProductSelectQuery(filters), { count: "exact" })
     .eq("is_active", true);
 
   if (filters.search) {
@@ -2052,8 +2065,12 @@ async function getSupabasePaginatedProducts(
     throw new Error(`Unable to load Supabase products: ${error.message}`);
   }
 
+  // The select relationship is conditional so PostgREST applies embedded filters to
+  // parent product rows. Supabase cannot infer a row type from that runtime string.
+  const productRows = (data ?? []) as unknown as ProductRow[];
+
   return {
-    products: ((data ?? []) as ProductRow[]).map((product) => {
+    products: productRows.map((product) => {
       const mappedProduct = mapSupabaseProduct(product);
 
       return {
