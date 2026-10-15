@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { businessInfo } from "@/lib/business-info";
 
 const navLinks = [
   { name: "HOME", href: "/", external: false },
@@ -10,23 +11,15 @@ const navLinks = [
   { name: "CONTACT US", href: "/contact", external: false },
 ] as const;
 
-const topbarItems = [
+const topbarInfoItems = [
   {
     label: "#22 Ramjohn Trace, Penal",
     href: "https://www.google.com/maps/search/?api=1&query=%2322+Ramjohn+Trace,+Penal,+Trinidad+and+Tobago",
     icon: "location",
-    mobileHidden: true,
-  },
-  {
-    label: "Office: +1 (868) 288-5800",
-    href: "tel:+18682885800",
-    icon: "phone",
-    mobileHidden: false,
   },
   {
     label: "Mon-Fri: 7am - 5pm",
     icon: "clock",
-    mobileHidden: true,
   },
 ] as const;
 
@@ -35,7 +28,7 @@ type SiteHeaderProps = {
 };
 
 type HeaderIconProps = {
-  name: "location" | "phone" | "clock" | "external" | "search" | "menu";
+  name: "location" | "phone" | "clock" | "mail" | "search" | "menu";
   className?: string;
 };
 
@@ -56,10 +49,10 @@ function HeaderIcon({ name, className = "h-4 w-4" }: HeaderIconProps) {
         <path d="M12 7v5l3.2 1.9" />
       </>
     ),
-    external: (
+    mail: (
       <>
-        <path d="M7 17 17 7" />
-        <path d="M9 7h8v8" />
+        <rect x="3" y="5" width="18" height="14" rx="2" />
+        <path d="m3.5 6.5 8.5 6 8.5-6" />
       </>
     ),
     search: (
@@ -101,14 +94,14 @@ function ProductSearchForm({ id, className }: { id: string; className?: string }
       </label>
       <HeaderIcon
         name="search"
-        className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#39d9cd]"
+        className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
       />
       <input
         id={id}
         name="search"
         type="search"
         placeholder="Search products..."
-        className="h-10 w-full rounded-lg border border-white/15 bg-white/8 pl-10 pr-3 text-sm font-medium text-white outline-none transition placeholder:text-slate-400 hover:border-white/30 focus:border-[#39d9cd] focus:bg-white/12"
+        className="h-10 w-full rounded-md border border-slate-200 bg-slate-50 pl-10 pr-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-[#0f1b2d] focus:bg-white"
       />
     </form>
   );
@@ -117,47 +110,62 @@ function ProductSearchForm({ id, className }: { id: string; className?: string }
 export function SiteHeader({ activeLink }: SiteHeaderProps) {
   return (
     <header className="hero-header sticky top-0 z-50">
-      <div className="hero-topbar">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-white/90 sm:px-6 lg:px-8">
-          {topbarItems.map((item) => {
-            const visibility = item.mobileHidden ? "hidden sm:inline-flex" : "inline-flex";
-            const content = (
-              <>
-                <HeaderIcon name={item.icon} className="h-4 w-4 shrink-0 text-[#39d9cd]" />
-                <span>{item.label}</span>
-              </>
-            );
+      <div className="hero-topbar hidden sm:block">
+        <div className="mx-auto flex h-9 max-w-7xl items-center justify-between gap-6 px-4 text-xs text-slate-300 sm:px-6 lg:px-8">
+          <div className="flex min-w-0 items-center gap-6">
+            {topbarInfoItems.map((item) => {
+              const content = (
+                <>
+                  <HeaderIcon name={item.icon} className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+                  <span className="truncate">{item.label}</span>
+                </>
+              );
 
-            return "href" in item ? (
-              <a
-                key={item.label}
-                href={item.href}
-                className={`hero-topbar-item ${visibility} items-center gap-2 transition-colors hover:text-white`}
-              >
-                {content}
-              </a>
-            ) : (
-              <span
-                key={item.label}
-                className={`hero-topbar-item ${visibility} items-center gap-2`}
-              >
-                {content}
-              </span>
-            );
-          })}
+              return "href" in item ? (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  className="hero-topbar-item inline-flex items-center gap-2 transition-colors hover:text-white"
+                >
+                  {content}
+                </a>
+              ) : (
+                <span key={item.label} className="hero-topbar-item hidden items-center gap-2 md:inline-flex">
+                  {content}
+                </span>
+              );
+            })}
+          </div>
+
+          <div className="flex shrink-0 items-center gap-6">
+            <a
+              href={`mailto:${businessInfo.email}`}
+              className="hero-topbar-item hidden items-center gap-2 transition-colors hover:text-white lg:inline-flex"
+            >
+              <HeaderIcon name="mail" className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+              <span>{businessInfo.email}</span>
+            </a>
+            <a
+              href="tel:+18682885800"
+              className="hero-topbar-item inline-flex items-center gap-2 font-semibold text-white transition-colors hover:text-[#ff8a97]"
+            >
+              <HeaderIcon name="phone" className="h-3.5 w-3.5 shrink-0 text-[#ff6b7d]" />
+              <span>+1 (868) 288-5800</span>
+            </a>
+          </div>
         </div>
       </div>
 
       <div className="hero-mainnav">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-6 gap-y-0 px-4 py-3 sm:px-6 lg:px-8">
-          <Link className="relative z-10 shrink-0" href="/" aria-label="AMCOL Home">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-8 px-4 sm:px-6 lg:flex-nowrap lg:px-8">
+          <Link className="relative z-10 shrink-0 py-3" href="/" aria-label="AMCOL Home">
             <Image
               src="/images/AMCOL_Logo.webp"
               alt="AMCOL Logo"
               width={420}
               height={104}
               priority
-              className="hero-brand-logo h-10 w-auto sm:h-12"
+              className="h-11 w-auto sm:h-[52px]"
             />
           </Link>
 
@@ -166,15 +174,15 @@ export function SiteHeader({ activeLink }: SiteHeaderProps) {
           <label
             htmlFor="site-nav-toggle"
             aria-label="Toggle navigation"
-            className="ml-auto inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg border border-white/15 text-slate-200 transition hover:border-[#39d9cd] hover:text-white peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-[#39d9cd] md:hidden"
+            className="ml-auto inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-md border border-slate-200 text-slate-700 transition hover:border-slate-400 hover:text-slate-950 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-[#0f1b2d] lg:hidden"
           >
             <HeaderIcon name="menu" className="h-5 w-5" />
           </label>
 
-          <div className="hidden w-full flex-col gap-1 pt-3 peer-checked:flex md:ml-auto md:flex md:w-auto md:flex-row md:items-center md:gap-6 md:pt-0">
+          <div className="hidden w-full flex-col pb-4 peer-checked:flex lg:flex lg:w-auto lg:flex-1 lg:flex-row lg:items-center lg:gap-6 lg:pb-0">
             <nav
               aria-label="Main navigation"
-              className="flex flex-col md:flex-row md:items-center md:gap-6"
+              className="flex flex-col border-t border-slate-100 lg:mx-auto lg:flex-row lg:items-stretch lg:gap-7 lg:border-0"
             >
               {navLinks.map((link) => {
                 const isActive = link.name === activeLink;
@@ -184,8 +192,8 @@ export function SiteHeader({ activeLink }: SiteHeaderProps) {
                     key={link.name}
                     href={link.href}
                     aria-current={isActive ? "page" : undefined}
-                    className={`hero-nav-link min-h-[52px] border-b border-white/8 px-1 text-[13px] font-semibold uppercase md:min-h-[44px] md:border-0 ${
-                      isActive ? "text-[#39d9cd]" : "text-[#cbd5e1] hover:text-white"
+                    className={`hero-nav-link border-b border-slate-100 text-[13px] font-semibold uppercase lg:border-0 ${
+                      isActive ? "text-[#0f1b2d]" : "text-slate-600 hover:text-[#0f1b2d]"
                     }`}
                   >
                     {link.name}
@@ -196,12 +204,12 @@ export function SiteHeader({ activeLink }: SiteHeaderProps) {
 
             <ProductSearchForm
               id="site-header-product-search"
-              className="mt-3 w-full md:mt-0 md:w-[240px]"
+              className="mt-4 w-full lg:mt-0 lg:hidden xl:block xl:w-[220px]"
             />
 
             <Link
               href="/contact"
-              className="btn btn-primary btn-sm mt-3 w-full md:mt-0 md:w-auto"
+              className="btn btn-primary btn-sm mt-3 w-full lg:mt-0 lg:w-auto"
             >
               Request a Quote
             </Link>

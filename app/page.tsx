@@ -14,6 +14,8 @@ const heroImages = [
   "/images/Port Authority.webp",
 ];
 
+const HERO_SLIDE_DURATION_MS = 6000;
+
 const latestArticles = [...industrialArticles]
   .sort((a, b) => new Date(b.completedOn).getTime() - new Date(a.completedOn).getTime())
   .slice(0, 3);
@@ -151,7 +153,20 @@ const procurementTrustCards = [
   },
 ];
 
-type HeroIconName = "box" | "quote" | "book" | "quality" | "expertise" | "delivery" | "award" | "clients" | "range" | "shield";
+type HeroIconName =
+  | "box"
+  | "quote"
+  | "book"
+  | "quality"
+  | "expertise"
+  | "delivery"
+  | "award"
+  | "clients"
+  | "range"
+  | "shield"
+  | "arrowRight"
+  | "chevronLeft"
+  | "chevronRight";
 
 const heroTrustHighlights: {
   title: string;
@@ -270,6 +285,14 @@ function HeroLineIcon({ name, className = "h-6 w-6" }: { name: HeroIconName; cla
         <path d="m8.5 12 2.3 2.3 4.7-5" />
       </>
     ),
+    arrowRight: (
+      <>
+        <path d="M5 12h14" />
+        <path d="m13 6 6 6-6 6" />
+      </>
+    ),
+    chevronLeft: <path d="m15 6-6 6 6 6" />,
+    chevronRight: <path d="m9 6 6 6-6 6" />,
   };
 
   return (
@@ -437,11 +460,19 @@ export default function Home() {
   const activeBrand = featuredIndustrialBrands[activeBrandIndex];
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    const timeout = setTimeout(() => {
       setCurrentImageIndex((prevIndex) => (prevIndex + 1) % heroImages.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
+    }, HERO_SLIDE_DURATION_MS);
+    return () => clearTimeout(timeout);
+  }, [currentImageIndex]);
+
+  const showPreviousSlide = () => {
+    setCurrentImageIndex((prevIndex) => (prevIndex - 1 + heroImages.length) % heroImages.length);
+  };
+
+  const showNextSlide = () => {
+    setCurrentImageIndex((prevIndex) => (prevIndex + 1) % heroImages.length);
+  };
 
   useEffect(() => {
     const mapLayer = industriesMapRef.current;
@@ -514,189 +545,193 @@ export default function Home() {
       <SiteHeader />
 
       <main>
-      <div className="relative left-1/2 z-10 w-screen -translate-x-1/2 px-0">
-        <div className="overflow-hidden border-y border-cyan-400/30 bg-[linear-gradient(135deg,rgba(13,34,56,0.96)_0%,rgba(15,55,100,0.92)_48%,rgba(6,182,212,0.28)_100%)] shadow-[0_22px_50px_-28px_rgba(6,182,212,0.4)]">
-          <div className="relative overflow-hidden px-4 py-3 sm:px-6">
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.18),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(6,182,212,0.13),transparent_28%)]" />
-            <div className="relative flex w-full flex-col gap-3 lg:flex-row lg:items-center lg:gap-4">
-              <div className="hidden w-[260px] shrink-0 flex-col gap-1 md:flex">
-                <p className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.28em] text-cyan-200">
-                  Quick Product Shortcuts
-                </p>
-                <p className="truncate text-xs text-cyan-50/75">
-                  Browse categories or send us a supply list.
-                </p>
-              </div>
-
-              <div className="relative min-w-0 flex-1 overflow-hidden lg:mr-auto">
-                <div className="flex flex-wrap items-center gap-2">
-                  {quickCategoryShortcuts.map((category) => (
-                    <Link
-                      key={category.name}
-                      href={category.href}
-                      className="inline-flex min-h-9 items-center justify-center rounded-full border border-cyan-300/30 bg-cyan-300/10 px-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-cyan-50 transition hover:border-cyan-200 hover:bg-cyan-300/18 focus-visible:bg-cyan-300/18"
-                    >
-                      {category.name}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </div>
-      </div>
-
       <section
-        className="relative isolate overflow-hidden bg-[#07121f] text-white"
+        className="relative isolate overflow-hidden bg-[#07111a] text-white"
         aria-label="AMCOL Industrial homepage banner"
       >
-        <div className="relative flex min-h-[670px] items-center overflow-hidden py-20 sm:py-24 lg:min-h-[610px] lg:py-28">
+        <div className="relative flex min-h-[640px] flex-col lg:min-h-[700px]">
           <div className="absolute inset-0 -z-20">
-            {heroImages.map((image, index) => (
-              <div
-                key={image}
-                className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                  index === currentImageIndex ? "opacity-100" : "opacity-0"
-                }`}
-                aria-hidden={index !== currentImageIndex}
-              >
-                <Image
-                  src={image}
-                  alt=""
-                  fill
-                  priority={index === 0}
-                  sizes="100vw"
-                  className="object-cover object-center"
-                />
-              </div>
-            ))}
+            {heroImages.map((image, index) => {
+              const isActive = index === currentImageIndex;
+
+              return (
+                <div
+                  key={image}
+                  className={`absolute inset-0 transition-opacity duration-[1400ms] ease-in-out ${
+                    isActive ? "opacity-100" : "opacity-0"
+                  }`}
+                  aria-hidden="true"
+                >
+                  <Image
+                    key={isActive ? `${image}-active` : image}
+                    src={image}
+                    alt=""
+                    fill
+                    priority={index === 0}
+                    sizes="100vw"
+                    className={`object-cover object-center ${isActive ? "hero-slide-zoom" : ""}`}
+                  />
+                </div>
+              );
+            })}
           </div>
 
-          <div aria-hidden="true" className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(45,8,15,0.62)_0%,rgba(7,18,31,0.68)_34%,rgba(7,18,31,0.42)_60%,rgba(6,22,42,0.7)_100%)]" />
-          <div aria-hidden="true" className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_0%_18%,rgba(220,38,38,0.18),transparent_35%),radial-gradient(circle_at_100%_26%,rgba(37,99,235,0.18),transparent_34%),linear-gradient(180deg,rgba(3,7,18,0.14)_0%,rgba(3,7,18,0.66)_100%)]" />
-          <div aria-hidden="true" className="absolute inset-y-0 left-0 -z-10 w-[28%] bg-[linear-gradient(135deg,rgba(220,38,38,0.1)_0%,transparent_70%)]" />
-          <div aria-hidden="true" className="absolute right-0 top-0 -z-10 h-full w-[34%] bg-[linear-gradient(135deg,transparent_0%,rgba(59,130,246,0.08)_48%,rgba(14,165,233,0.1)_100%)]" />
+          {/* One navy tone, deepest behind the copy and fading out to let the photo breathe on the right. */}
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(7,17,26,0.94)_0%,rgba(7,17,26,0.82)_38%,rgba(7,17,26,0.45)_68%,rgba(7,17,26,0.2)_100%)]"
+          />
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 -z-10 bg-[linear-gradient(0deg,rgba(7,17,26,0.95)_0%,rgba(7,17,26,0)_38%),linear-gradient(180deg,rgba(7,17,26,0.45)_0%,rgba(7,17,26,0)_22%)]"
+          />
 
-          <div className="z-10 mx-auto grid w-full max-w-[1440px] gap-10 px-6 sm:px-8 lg:grid-cols-[1fr_360px] lg:items-center lg:px-10 xl:grid-cols-[1fr_410px]">
-            <div className="max-w-4xl">
-              <p className="text-[11px] font-black uppercase tracking-[0.34em] text-red-100/85">
-                Industrial Supply Partner Across the Caribbean
+          <div className="mx-auto flex w-full max-w-7xl flex-1 items-center px-4 pb-14 pt-16 sm:px-6 lg:px-8 lg:pb-20 lg:pt-20">
+            <div className="max-w-3xl">
+              <p className="flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.24em] text-slate-300">
+                <span aria-hidden="true" className="h-px w-10 bg-[#e5394d]" />
+                Industrial supply partner across the Caribbean
               </p>
-              <h1 className="mt-5 max-w-3xl text-5xl font-black uppercase leading-[0.95] tracking-normal text-white drop-shadow-[0_4px_18px_rgba(0,0,0,0.62)] sm:text-6xl lg:text-7xl xl:text-[5.4rem]">
-                Industrial Solutions.
-                <span className="mt-1 block text-red-400">Delivered.</span>
+
+              <h1 className="mt-6 max-w-2xl text-[2.75rem] font-bold leading-[1.02] tracking-[-0.03em] text-white sm:text-6xl lg:text-[4.5rem]">
+                Industrial solutions.
+                <span className="block text-[#ef4a5c]">Delivered.</span>
               </h1>
-              <div className="mt-5 h-1 w-24 bg-red-400/85" />
-              <p className="mt-5 max-w-2xl text-base leading-7 text-slate-100 sm:text-lg">
+
+              <p className="mt-6 max-w-xl text-base leading-7 text-slate-300 sm:text-lg sm:leading-8">
                 Supplying the Caribbean&apos;s construction, energy, marine, and industrial sectors with quality products and technical expertise you can rely on.
               </p>
 
-              <div className="mt-8 grid gap-3 sm:grid-cols-3">
+              <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <Link
                   href="/products"
-                  className="group flex min-h-[84px] items-center gap-4 rounded-sm border border-red-200/30 bg-[linear-gradient(135deg,rgba(185,28,28,0.76)_0%,rgba(88,28,36,0.72)_100%)] px-4 py-4 text-left shadow-[0_18px_35px_-28px_rgba(127,29,29,0.75)] backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-red-100/80 hover:bg-red-700/72 focus:outline-none focus:ring-2 focus:ring-red-200 focus:ring-offset-2 focus:ring-offset-[#07121f]"
+                  className="btn btn-primary group h-[52px] px-7 text-[15px]"
                 >
-                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-sm border border-white/25 bg-white/10 text-white">
-                    <HeroLineIcon name="box" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-[12px] font-black uppercase tracking-[0.08em] text-white">
-                      View Product Lines
-                    </span>
-                    <span className="mt-1 block text-xs leading-5 text-red-50">
-                      Explore our full range
-                    </span>
-                  </span>
-                  <span className="text-2xl leading-none transition group-hover:translate-x-1" aria-hidden="true">-&gt;</span>
+                  Browse Products
+                  <HeroLineIcon name="arrowRight" className="h-4 w-4 transition group-hover:translate-x-0.5" />
                 </Link>
                 <Link
                   href="/contact"
-                  className="group flex min-h-[84px] items-center gap-4 rounded-sm border border-blue-200/25 bg-[linear-gradient(135deg,rgba(30,64,120,0.68)_0%,rgba(15,39,78,0.7)_100%)] px-4 py-4 text-left shadow-[0_18px_35px_-28px_rgba(30,64,175,0.65)] backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-blue-100/75 hover:bg-blue-900/60 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:ring-offset-2 focus:ring-offset-[#07121f]"
+                  className="btn btn-secondary-dark h-[52px] px-7 text-[15px]"
                 >
-                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-sm border border-white/25 bg-white/10 text-blue-100">
-                    <HeroLineIcon name="quote" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-[12px] font-black uppercase tracking-[0.08em] text-white">
-                      Request Quote/Service
-                    </span>
-                    <span className="mt-1 block text-xs leading-5 text-blue-50">
-                      Get a fast response
-                    </span>
-                  </span>
-                  <span className="text-2xl leading-none transition group-hover:translate-x-1" aria-hidden="true">-&gt;</span>
+                  Request a Quote
                 </Link>
                 <Link
                   href="/knowledge"
-                  className="group flex min-h-[84px] items-center gap-4 rounded-sm border border-cyan-200/25 bg-[linear-gradient(135deg,rgba(15,78,118,0.62)_0%,rgba(13,50,86,0.68)_100%)] px-4 py-4 text-left shadow-[0_18px_35px_-28px_rgba(8,145,178,0.58)] backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-cyan-100/75 hover:bg-cyan-950/58 focus:outline-none focus:ring-2 focus:ring-cyan-200 focus:ring-offset-2 focus:ring-offset-[#07121f]"
+                  className="group inline-flex items-center gap-2 px-1 py-2 text-sm font-semibold text-slate-200 transition hover:text-white sm:ml-3"
                 >
-                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-sm border border-white/25 bg-white/10 text-cyan-100">
-                    <HeroLineIcon name="book" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-[12px] font-black uppercase tracking-[0.08em] text-white">
-                      Read Buying Guides
-                    </span>
-                    <span className="mt-1 block text-xs leading-5 text-cyan-50">
-                      Expert advice and resources
-                    </span>
-                  </span>
-                  <span className="text-2xl leading-none transition group-hover:translate-x-1" aria-hidden="true">-&gt;</span>
+                  Read buying guides
+                  <HeroLineIcon name="arrowRight" className="h-4 w-4 transition group-hover:translate-x-0.5" />
                 </Link>
               </div>
-            </div>
 
-            <aside className="rounded-md border border-white/14 bg-[#08182b]/72 p-5 shadow-[0_24px_60px_-32px_rgba(0,0,0,0.82)] backdrop-blur-md lg:absolute lg:right-10 lg:top-8 lg:w-[360px] xl:right-16 xl:top-10 xl:w-[410px]">
-              <div className="space-y-5">
-                {heroTrustHighlights.map((item, index) => (
-                  <div
-                    key={item.title}
-                    className={index === 0 ? "flex gap-4" : "flex gap-4 border-t border-white/12 pt-5"}
+              <div className="mt-10 flex flex-wrap items-center gap-x-2 gap-y-2.5">
+                <span className="mr-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                  Popular
+                </span>
+                {quickCategoryShortcuts.map((category) => (
+                  <Link
+                    key={category.name}
+                    href={category.href}
+                    className="inline-flex h-8 items-center rounded-full border border-white/15 bg-white/[0.04] px-3.5 text-xs font-medium text-slate-200 transition hover:border-white/40 hover:bg-white/10 hover:text-white"
                   >
-                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-red-300/45 bg-red-500/10 text-white shadow-[0_0_26px_-18px_rgba(239,30,48,0.82)]">
-                      <HeroLineIcon name={item.icon} />
+                    {category.name}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="relative border-t border-white/10 bg-[#07111a]/55 backdrop-blur-md">
+            <div className="mx-auto flex max-w-7xl items-center gap-8 px-4 py-5 sm:px-6 lg:px-8">
+              <ul className="hidden flex-1 grid-cols-3 gap-8 xl:grid">
+                {heroTrustHighlights.map((item) => (
+                  <li key={item.title} className="flex items-start gap-3.5">
+                    <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-white/12 bg-white/[0.05] text-[#ff7584]">
+                      <HeroLineIcon name={item.icon} className="h-5 w-5" />
                     </span>
                     <span>
-                      <span className="block text-sm font-black uppercase tracking-[0.08em] text-white">
-                        {item.title}
-                      </span>
-                      <span className="mt-1 block text-xs leading-5 text-slate-300">
+                      <span className="block text-sm font-semibold text-white">{item.title}</span>
+                      <span className="mt-0.5 block text-[13px] leading-5 text-slate-400">
                         {item.description}
                       </span>
                     </span>
-                  </div>
+                  </li>
                 ))}
-              </div>
-            </aside>
-          </div>
+              </ul>
 
-          <div className="absolute bottom-5 left-0 right-0 z-20 flex justify-center gap-3 lg:bottom-6">
-            {heroImages.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentImageIndex(index)}
-                className={`h-2.5 rounded-full transition-all duration-300 ${
-                  index === currentImageIndex ? "w-9 bg-red-400/90" : "w-2.5 bg-white/50 hover:bg-white/75"
-                }`}
-                aria-label={`Go to slide ${index + 1}`}
-              />
-            ))}
+              <div className="flex w-full items-center justify-between gap-5 xl:w-auto xl:justify-end xl:border-l xl:border-white/10 xl:pl-8">
+                <p className="text-xs font-semibold tabular-nums tracking-[0.18em] text-slate-300">
+                  <span className="text-white">{String(currentImageIndex + 1).padStart(2, "0")}</span>
+                  <span className="mx-1.5 text-slate-500">/</span>
+                  {String(heroImages.length).padStart(2, "0")}
+                </p>
+
+                <div className="flex items-center gap-1.5" role="group" aria-label="Choose banner slide">
+                  {heroImages.map((image, index) => (
+                    <button
+                      key={image}
+                      type="button"
+                      onClick={() => setCurrentImageIndex(index)}
+                      aria-label={`Go to slide ${index + 1}`}
+                      aria-current={index === currentImageIndex ? "true" : undefined}
+                      className="group flex h-6 items-center"
+                    >
+                      <span className="relative block h-[3px] w-8 overflow-hidden rounded-full bg-white/20 transition group-hover:bg-white/35 sm:w-10">
+                        {index === currentImageIndex && (
+                          <span
+                            key={currentImageIndex}
+                            className="hero-progress-fill absolute inset-0 rounded-full bg-[#ef4a5c]"
+                            style={{ "--hero-slide-duration": `${HERO_SLIDE_DURATION_MS}ms` } as React.CSSProperties}
+                          />
+                        )}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={showPreviousSlide}
+                    aria-label="Previous slide"
+                    className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 text-white transition hover:border-white/50 hover:bg-white/10"
+                  >
+                    <HeroLineIcon name="chevronLeft" className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={showNextSlide}
+                    aria-label="Next slide"
+                    className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 text-white transition hover:border-white/50 hover:bg-white/10"
+                  >
+                    <HeroLineIcon name="chevronRight" className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="relative z-10 border-t border-slate-200 bg-white text-slate-950 shadow-[0_-10px_35px_-28px_rgba(15,23,42,0.7)]">
-          <div className="mx-auto grid max-w-[1120px] grid-cols-2 divide-y divide-slate-200 px-6 sm:px-8 md:grid-cols-4 md:divide-x md:divide-y-0">
-            {heroStats.map((stat) => (
-              <div key={stat.label} className="flex min-h-[76px] items-center justify-center gap-4 py-4 text-left">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center text-slate-900">
-                  <HeroLineIcon name={stat.icon} className="h-8 w-8" />
+        <div className="relative z-10 border-b border-slate-200 bg-white text-slate-950">
+          <div className="mx-auto grid max-w-7xl grid-cols-2 px-4 sm:px-6 md:grid-cols-4 lg:px-8">
+            {heroStats.map((stat, index) => (
+              <div
+                key={stat.label}
+                className={`flex min-h-[88px] items-center gap-4 py-5 md:justify-center ${
+                  index % 2 === 1 ? "pl-4 md:pl-0" : ""
+                } ${index > 1 ? "border-t border-slate-200 md:border-t-0" : ""} ${
+                  index > 0 ? "md:border-l md:border-slate-200" : ""
+                }`}
+              >
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center text-[#0f1b2d]">
+                  <HeroLineIcon name={stat.icon} className="h-7 w-7" />
                 </span>
                 <span>
-                  <span className="block text-sm font-black uppercase tracking-[0.12em] text-red-600">
+                  <span className="block text-base font-bold tracking-[-0.01em] text-[#c81f34]">
                     {stat.value}
                   </span>
-                  <span className="block text-[11px] font-black uppercase tracking-[0.14em] text-slate-700">
+                  <span className="block text-xs font-medium uppercase tracking-[0.12em] text-slate-600">
                     {stat.label}
                   </span>
                 </span>

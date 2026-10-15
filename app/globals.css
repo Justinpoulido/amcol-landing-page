@@ -67,50 +67,84 @@ body {
 
 /* Header */
 .hero-header {
-  background: var(--amcol-navy);
-  box-shadow: 0 18px 46px rgba(3, 7, 18, 0.24);
+  background: #fff;
+  box-shadow: 0 1px 0 rgba(15, 27, 45, 0.08), 0 10px 30px -18px rgba(15, 27, 45, 0.35);
 }
 
 .hero-topbar {
-  background: linear-gradient(90deg, #c81f34 0%, #a81528 52%, #8f1826 100%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--amcol-navy-deep);
 }
 
 .hero-topbar-item {
   min-width: 0;
-  text-wrap: balance;
 }
 
 .hero-mainnav {
   position: relative;
-  background: var(--amcol-navy);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.hero-brand-logo {
-  filter: drop-shadow(0 5px 8px rgba(15, 23, 42, 0.22));
+  background: #fff;
 }
 
 .hero-nav-link {
   position: relative;
   display: inline-flex;
   align-items: center;
-  min-height: 44px;
-  letter-spacing: 0.12em;
+  min-height: 52px;
+  letter-spacing: 0.1em;
   transition: color 0.2s ease;
 }
 
 .hero-nav-link::after {
   content: "";
   position: absolute;
-  left: 4px;
-  right: 4px;
-  bottom: 4px;
+  left: 0;
+  bottom: 12px;
+  width: 24px;
   height: 2px;
-  background: var(--amcol-teal);
+  background: var(--amcol-red);
   transform: scaleX(0);
-  transform-origin: center;
+  transform-origin: left;
   transition: transform 0.2s ease;
+}
+
+@media (min-width: 1024px) {
+  .hero-nav-link {
+    min-height: 76px;
+  }
+
+  .hero-nav-link::after {
+    right: 0;
+    bottom: 0;
+    width: auto;
+    height: 3px;
+  }
+}
+
+/* Homepage hero */
+@keyframes hero-slow-zoom {
+  from {
+    transform: scale(1.08);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.hero-slide-zoom {
+  animation: hero-slow-zoom 7s ease-out both;
+}
+
+@keyframes hero-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.hero-progress-fill {
+  transform-origin: left;
+  animation: hero-progress var(--hero-slide-duration, 6s) linear both;
 }
 
 .hero-nav-link[aria-current="page"]::after,
