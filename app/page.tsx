@@ -175,17 +175,17 @@ const heroTrustHighlights: {
 }[] = [
   {
     title: "Trusted Quality",
-    description: "World-class brands selected for demanding industrial work.",
+    description: "World-class brands for demanding work.",
     icon: "quality",
   },
   {
     title: "Technical Expertise",
-    description: "Decades of experience matching crews with the right products.",
+    description: "Decades matching crews with the right gear.",
     icon: "expertise",
   },
   {
     title: "Reliable Delivery",
-    description: "Coordinated support across Trinidad and the Caribbean.",
+    description: "Across Trinidad & the wider Caribbean.",
     icon: "delivery",
   },
 ];
@@ -237,24 +237,20 @@ function HeroLineIcon({ name, className = "h-6 w-6" }: { name: HeroIconName; cla
     ),
     quality: (
       <>
-        <path d="M8 12.5 11 15l5-6" />
-        <path d="M4 12a8 8 0 0 1 15.5-2.8" />
-        <path d="M20 12a8 8 0 0 1-15.5 2.8" />
+        <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z" />
+        <path d="m9 12 2 2 4-4" />
       </>
     ),
     expertise: (
-      <>
-        <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" />
-        <path d="M4 21a8 8 0 0 1 16 0" />
-        <path d="M17.5 6.5 20 4" />
-      </>
+      <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76Z" />
     ),
     delivery: (
       <>
-        <path d="M3 7h11v8H3V7Z" />
-        <path d="M14 10h4l3 3v2h-7v-5Z" />
-        <path d="M7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" />
-        <path d="M18 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" />
+        <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2" />
+        <path d="M15 18H9" />
+        <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.62l-3.48-4.35A1 1 0 0 0 17.52 8H14" />
+        <circle cx="17" cy="18" r="2" />
+        <circle cx="7" cy="18" r="2" />
       </>
     ),
     award: (
@@ -512,6 +508,31 @@ export default function Home() {
       animationFrame = window.requestAnimationFrame(updateMapPosition);
     };
 
+    // Content is only hidden for the reveal once JS is running, so it can never get stuck invisible.
+    // If the section is already on screen at mount, show it in the same frame to avoid a flash.
+    const sectionRect = section.getBoundingClientRect();
+    if (sectionRect.top < window.innerHeight && sectionRect.bottom > 0) {
+      section.classList.add("is-visible");
+    }
+    section.classList.add("reveal-ready");
+
+    const revealObserver = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          section.classList.add("is-visible");
+          revealObserver.disconnect();
+        }
+      },
+      { threshold: 0.2 },
+    );
+    revealObserver.observe(section);
+
+    // Pause the looping map animations while the section is off screen.
+    const inViewObserver = new IntersectionObserver(([entry]) => {
+      section.classList.toggle("is-in-view", entry.isIntersecting);
+    });
+    inViewObserver.observe(section);
+
     updateMapPosition();
     window.addEventListener("scroll", requestMapPositionUpdate, { passive: true });
     window.addEventListener("resize", requestMapPositionUpdate);
@@ -521,6 +542,8 @@ export default function Home() {
         window.cancelAnimationFrame(animationFrame);
       }
 
+      revealObserver.disconnect();
+      inViewObserver.disconnect();
       window.removeEventListener("scroll", requestMapPositionUpdate);
       window.removeEventListener("resize", requestMapPositionUpdate);
     };
@@ -644,15 +667,17 @@ export default function Home() {
 
           <div className="relative border-t border-white/10 bg-[#07111a]/55 backdrop-blur-md">
             <div className="mx-auto flex max-w-7xl items-center gap-8 px-4 py-5 sm:px-6 lg:px-8">
-              <ul className="hidden flex-1 grid-cols-3 gap-8 xl:grid">
+              <ul className="hidden flex-1 grid-cols-3 divide-x divide-white/10 xl:grid">
                 {heroTrustHighlights.map((item) => (
-                  <li key={item.title} className="flex items-start gap-3.5">
-                    <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-white/12 bg-white/[0.05] text-[#ff7584]">
-                      <HeroLineIcon name={item.icon} className="h-5 w-5" />
+                  <li key={item.title} className="flex items-center gap-4 px-7 first:pl-0">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#ef4a5c]/10 text-[#ff7584] ring-1 ring-inset ring-[#ef4a5c]/30">
+                      <HeroLineIcon name={item.icon} className="h-[22px] w-[22px]" />
                     </span>
-                    <span>
-                      <span className="block text-sm font-semibold text-white">{item.title}</span>
-                      <span className="mt-0.5 block text-[13px] leading-5 text-slate-400">
+                    <span className="min-w-0">
+                      <span className="block text-[15px] font-semibold tracking-[-0.01em] text-white">
+                        {item.title}
+                      </span>
+                      <span className="mt-1 block text-[13px] leading-5 text-slate-400">
                         {item.description}
                       </span>
                     </span>
@@ -750,7 +775,7 @@ export default function Home() {
         <div
           ref={industriesMapRef}
           aria-hidden="true"
-          className="absolute inset-0 -z-10 bg-[url('/images/Background_map_AMCOL.webp')] bg-[length:124%_auto] bg-center bg-no-repeat opacity-100 mix-blend-multiply will-change-[background-position]"
+          className="industries-map absolute inset-0 -z-10 bg-[url('/images/Background_map_AMCOL.webp')] bg-[length:124%_auto] bg-center bg-no-repeat opacity-100 mix-blend-multiply will-change-[background-position]"
         />
         <div
           aria-hidden="true"
@@ -760,20 +785,32 @@ export default function Home() {
           aria-hidden="true"
           className="absolute left-0 top-0 -z-10 h-full w-[48%] bg-white/45 shadow-[42px_0_70px_rgba(255,255,255,0.5)]"
         />
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+          <div className="industries-map-sheen absolute inset-y-0 left-0 w-1/3 bg-[linear-gradient(100deg,transparent_0%,rgba(0,137,168,0.10)_45%,rgba(255,255,255,0.35)_50%,rgba(0,137,168,0.10)_55%,transparent_100%)]" />
+        </div>
         <div className="mx-auto max-w-[1440px] px-6 sm:px-8 lg:px-10">
           <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-end">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-700">
+              <p className="industries-reveal text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-700">
                 Industries We Serve
               </p>
-              <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl lg:text-[2.7rem]">
+              <h1
+                className="industries-reveal mt-4 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl lg:text-[2.7rem]"
+                style={{ "--reveal-delay": "120ms" } as React.CSSProperties}
+              >
                 Industrial Supply Partner Across the Caribbean
               </h1>
-              <p className="mt-5 max-w-xl text-base leading-7 text-slate-600 sm:text-lg">
+              <p
+                className="industries-reveal mt-5 max-w-xl text-base leading-7 text-slate-600 sm:text-lg"
+                style={{ "--reveal-delay": "240ms" } as React.CSSProperties}
+              >
                 AMCOL Industrial supplies safety, MRO, marine, construction, and facility maintenance products for worksites across Trinidad & Tobago and the wider Caribbean.
               </p>
             </div>
-            <div className="rounded-[1.25rem] border border-slate-200 bg-white p-5 shadow-[0_18px_44px_-34px_rgba(15,23,42,0.55)] sm:p-6">
+            <div
+              className="industries-reveal rounded-[1.25rem] border border-slate-200 bg-white p-5 shadow-[0_18px_44px_-34px_rgba(15,23,42,0.55)] sm:p-6"
+              style={{ "--reveal-delay": "360ms" } as React.CSSProperties}
+            >
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-cyan-700">

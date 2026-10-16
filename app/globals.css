@@ -147,6 +147,82 @@ body {
   animation: hero-progress var(--hero-slide-duration, 6s) linear both;
 }
 
+/* Homepage "Industries We Serve" map */
+@keyframes industries-map-drift {
+  from {
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.07) translate3d(-1.5%, -1%, 0);
+  }
+}
+
+/* Drift is desktop/tablet only: barely visible on phones and not worth the battery. */
+@media (min-width: 768px) {
+  .industries-map {
+    transform-origin: 65% 50%;
+    animation: industries-map-drift 26s ease-in-out infinite alternate;
+    will-change: background-position, transform;
+  }
+}
+
+@keyframes industries-map-sheen {
+  0% {
+    transform: translateX(-120%) skewX(-12deg);
+  }
+  60%,
+  100% {
+    transform: translateX(380%) skewX(-12deg);
+  }
+}
+
+.industries-map-sheen {
+  animation: industries-map-sheen 11s cubic-bezier(0.45, 0, 0.25, 1) 1.5s infinite;
+  transform: translateX(-120%);
+}
+
+/* Paused until the section is on screen (toggled by an IntersectionObserver in page.tsx). */
+.industries-map,
+.industries-map-sheen {
+  animation-play-state: paused;
+}
+
+.is-in-view .industries-map,
+.is-in-view .industries-map-sheen {
+  animation-play-state: running;
+}
+
+/* Only hidden once JS has added .reveal-ready, so the text stays visible if scripts fail. */
+.reveal-ready .industries-reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.8s ease var(--reveal-delay, 0ms),
+    transform 0.8s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms);
+}
+
+.reveal-ready.is-visible .industries-reveal {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .industries-map,
+  .industries-map-sheen {
+    animation: none;
+  }
+
+  .industries-map-sheen {
+    display: none;
+  }
+
+  .reveal-ready .industries-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
 .hero-nav-link[aria-current="page"]::after,
 .hero-nav-link:hover::after,
 .hero-nav-link:focus-visible::after {
