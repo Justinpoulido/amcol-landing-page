@@ -15,6 +15,7 @@ const heroImages = [
 ];
 
 const HERO_SLIDE_DURATION_MS = 6000;
+const BRAND_SLIDE_DURATION_MS = 7000;
 
 const latestArticles = [...industrialArticles]
   .sort((a, b) => new Date(b.completedOn).getTime() - new Date(a.completedOn).getTime())
@@ -78,55 +79,123 @@ const knowledgeGuideShortcuts = [
   },
 ];
 
-const featuredIndustrialBrands = [
+const featuredIndustrialBrands: {
+  name: string;
+  shortName?: string;
+  product: string;
+  category: string;
+  image: string;
+  logo: string;
+  href: string;
+  description: string;
+  highlights: string[];
+  applications: string[];
+}[] = [
   {
     name: "RIDGID",
+    product: "Pipe Threading Dies",
+    category: "Pipe Threading",
     image: "/images/Ridgid_pipe_dies_no_bg.png",
     logo: "/images/brands/ridgid.png",
     href: "/products?search=pipe%20dies",
     description: "Pipe dies and threading accessories for mechanical, fabrication, and maintenance teams.",
+    highlights: [
+      "Clean, accurate threads on steel pipe",
+      "Made for RIDGID die heads and threaders",
+      "Built for repeat jobsite use",
+    ],
+    applications: ["Pipefitting", "Fabrication", "Plumbing", "Maintenance"],
   },
   {
     name: "Geko",
+    product: "Pipe Repair Clamps",
+    category: "Pipe Repair",
     image: "/images/Geko_repair_clamp.webp",
     logo: "/images/brands/geko.png",
     href: "/products?search=pipe%20repair",
     description: "Pipe repair clamps for fast, secure repairs across industrial water and utility systems.",
+    highlights: [
+      "Fast, secure repair of leaking or damaged pipe",
+      "Stainless steel for corrosion resistance",
+      "Installs with standard hand tools",
+    ],
+    applications: ["Water utilities", "Irrigation", "Plant maintenance", "Emergency repair"],
   },
   {
     name: "BAND-IT",
+    product: "Stainless Steel Banding",
+    category: "Banding & Clamps",
     image: "/images/Band-IT_Band.webp",
     logo: "/images/brands/band-it.png",
     href: "/products?search=banding",
     description: "Stainless steel banding and fastening products for pipework, signage, and industrial installs.",
+    highlights: [
+      "High-strength stainless band, buckles, and clamps",
+      "Permanent, vibration-resistant fastening",
+      "Holds up in corrosive and outdoor environments",
+    ],
+    applications: ["Pipe & hose clamping", "Signage", "Cable bundling", "Oil & gas"],
   },
   {
     name: "DuPont Tyvek",
+    product: "Disposable Coveralls",
+    category: "Protective Wear",
     image: "/images/Tyvek_Dupont_Disposable_Coveralls.webp",
     logo: "/images/brands/tyvek.png",
     href: "/products/safety",
     description: "Disposable protective coveralls for safety, maintenance, and controlled work environments.",
+    highlights: [
+      "Lightweight, breathable full-body protection",
+      "Barrier against fine particles and light splashes",
+      "Comfortable fit for long shifts",
+    ],
+    applications: ["Industrial cleaning", "Painting & coating", "Plant maintenance", "Particulate work"],
   },
   {
     name: "Loctite",
+    product: "LB 8009 Heavy Duty Anti-Seize",
+    category: "Lubricants",
     image: "/images/Loctite_Anti-Seize_no_bg.png",
     logo: "/images/brands/loctite.png",
     href: "/products/lubricants",
     description: "Heavy-duty anti-seize and thread compounds for metal parts exposed to demanding conditions.",
+    highlights: [
+      "Prevents seizing, galling, and corrosion on threads",
+      "Easier disassembly after long service",
+      "Performs under high heat and heavy loads",
+    ],
+    applications: ["Flange bolts", "Pumps & valves", "Marine hardware", "Heavy equipment"],
   },
   {
     name: "Salisbury ElectriFlex",
+    shortName: "Salisbury",
+    product: "Insulating Rubber Gloves",
+    category: "Electrical Safety",
     image: "/images/Salisbury ElectriFlex Insulating Rubber Gloves.png",
     logo: "/images/brands/salisbury.png",
     href: "/products/safety",
     description: "Insulating rubber gloves for electrical safety, maintenance crews, and utility work.",
+    highlights: [
+      "Rated by voltage class for live electrical work",
+      "Flexible rubber for better dexterity",
+      "Worn with leather protectors on the job",
+    ],
+    applications: ["Utility linework", "Electrical maintenance", "Substations", "Switchgear"],
   },
   {
-    name: "RIDGID Pipe Wrench",
+    name: "RIDGID",
+    product: "Straight Pipe Wrenches",
+    category: "Hand Tools",
     image: "/images/Ridgid_Straight_Pipe_Wrenches.webp",
     logo: "/images/brands/ridgid.png",
     href: "/products?search=pipe%20wrench",
     description: "Straight pipe wrenches for mechanical crews, pipefitters, maintenance, and repair work.",
+    highlights: [
+      "Heavy-duty I-beam handle",
+      "Replaceable hook and heel jaws",
+      "Self-cleaning threads for easy adjustment",
+    ],
+    applications: ["Pipefitting", "Plumbing", "Mechanical repair", "Maintenance"],
   },
 ];
 
@@ -451,7 +520,12 @@ function IndustryCardsSection() {
 
 export default function Home() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [activeBrandIndex, setActiveBrandIndex] = useState(6);
+  const [activeBrandIndex, setActiveBrandIndex] = useState(0);
+  const [isBrandHovered, setIsBrandHovered] = useState(false);
+  const [isBrandInView, setIsBrandInView] = useState(false);
+  const brandsSectionRef = useRef<HTMLElement>(null);
+  const brandRailRef = useRef<HTMLDivElement>(null);
+  const isBrandRotationPaused = isBrandHovered || !isBrandInView;
   const industriesMapRef = useRef<HTMLDivElement>(null);
   const activeBrand = featuredIndustrialBrands[activeBrandIndex];
 
@@ -469,6 +543,41 @@ export default function Home() {
   const showNextSlide = () => {
     setCurrentImageIndex((prevIndex) => (prevIndex + 1) % heroImages.length);
   };
+
+  const showNextBrand = () => {
+    setActiveBrandIndex((prevIndex) => (prevIndex + 1) % featuredIndustrialBrands.length);
+  };
+
+  // Only rotate featured brands while the section is on screen.
+  useEffect(() => {
+    const section = brandsSectionRef.current;
+
+    if (!section) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(([entry]) => setIsBrandInView(entry.isIntersecting), {
+      threshold: 0.25,
+    });
+    observer.observe(section);
+
+    return () => observer.disconnect();
+  }, []);
+
+  // On narrow screens the brand rail scrolls sideways; keep the active tab visible without moving the page.
+  useEffect(() => {
+    const rail = brandRailRef.current;
+    const activeTab = rail?.children[activeBrandIndex] as HTMLElement | undefined;
+
+    if (!rail || !activeTab || rail.scrollWidth <= rail.clientWidth) {
+      return;
+    }
+
+    rail.scrollTo({
+      left: activeTab.offsetLeft - (rail.clientWidth - activeTab.offsetWidth) / 2,
+      behavior: "smooth",
+    });
+  }, [activeBrandIndex]);
 
   useEffect(() => {
     const mapLayer = industriesMapRef.current;
@@ -549,19 +658,6 @@ export default function Home() {
     };
   }, []);
 
-  const showPreviousBrand = () => {
-    setActiveBrandIndex(
-      (prevIndex) =>
-        (prevIndex - 1 + featuredIndustrialBrands.length) %
-        featuredIndustrialBrands.length,
-    );
-  };
-
-  const showNextBrand = () => {
-    setActiveBrandIndex(
-      (prevIndex) => (prevIndex + 1) % featuredIndustrialBrands.length,
-    );
-  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -960,154 +1056,209 @@ export default function Home() {
 
       <IndustryCardsSection />
 
-      <section id="features" className="border-t border-slate-800 bg-[#07111a] py-20 sm:py-28">
+      <section
+        id="features"
+        ref={brandsSectionRef}
+        className="relative isolate overflow-hidden border-t border-white/5 bg-[#0b1733] py-20 sm:py-28"
+      >
+        {/* AMCOL navy field with a faint red glow, echoing the logo colours. */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_85%_10%,rgba(46,72,140,0.45),transparent_45%),radial-gradient(circle_at_5%_95%,rgba(229,57,77,0.12),transparent_40%)]"
+        />
         <div className="mx-auto max-w-[1440px] px-6 sm:px-8 lg:px-10">
-          <div className="flex flex-col gap-4 text-center sm:flex-row sm:items-end sm:justify-between sm:text-left">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-sky-400">
-                Featured Industrial Brands
+              <p className="flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.24em] text-slate-300">
+                <span aria-hidden="true" className="h-px w-10 bg-[#e5394d]" />
+                Featured industrial brands
               </p>
-              <h2 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-                Trusted by industry. Delivered by Amcol.
+              <h2 className="mt-5 text-3xl font-bold tracking-[-0.02em] text-white sm:text-4xl lg:text-[2.75rem]">
+                Trusted by industry.{" "}
+                <span className="text-[#ef4a5c]">Delivered by AMCOL.</span>
               </h2>
-              <p className="mt-3 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">
+              <p className="mt-4 max-w-2xl text-pretty text-base leading-7 text-slate-300 sm:text-lg">
                 We partner with world-class brands to bring reliable solutions to every job, every day.
               </p>
             </div>
-            <div className="flex justify-center gap-2 sm:justify-end">
-              <button
-                type="button"
-                onClick={showPreviousBrand}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-700 bg-slate-950 text-lg text-sky-100 transition hover:border-sky-400 hover:bg-slate-900"
-                aria-label="Show previous featured brand"
-              >
-                ←
-              </button>
-              <button
-                type="button"
-                onClick={showNextBrand}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-700 bg-slate-950 text-lg text-sky-100 transition hover:border-sky-400 hover:bg-slate-900"
-                aria-label="Show next featured brand"
-              >
-                →
-              </button>
-            </div>
+            <Link
+              href="/products"
+              className="group inline-flex shrink-0 items-center gap-2 text-sm font-semibold text-slate-200 transition hover:text-white"
+            >
+              Browse all products
+              <HeroLineIcon name="arrowRight" className="h-4 w-4 transition group-hover:translate-x-0.5" />
+            </Link>
           </div>
 
-          <div className="mt-12 overflow-hidden rounded-[1.25rem] border border-slate-700 bg-[#101b25] shadow-[0_28px_80px_-48px_rgba(0,0,0,0.95)]">
-            <div className="grid gap-0 lg:grid-cols-[1.08fr_0.92fr]">
-              <Link
-                href={activeBrand.href}
-                className="group relative flex min-h-[560px] flex-col overflow-hidden bg-[#07111a] p-7 text-white sm:p-9 lg:min-h-[620px] lg:p-10"
-              >
-                <div className="absolute inset-y-0 right-0 w-[46%] bg-[#101b25]" />
-                <div className="absolute inset-x-0 bottom-0 h-44 bg-[linear-gradient(180deg,transparent_0%,rgba(3,9,14,0.88)_100%)]" />
-                <div className="relative z-10 flex max-w-[58%] flex-1 flex-col sm:max-w-[50%]">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-sky-400">
-                    Featured Brand
-                  </p>
-                  <h3 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-                    {activeBrand.name}
-                  </h3>
-                  <span className="mt-5 h-px w-9 bg-sky-400" />
-                  <p className="mt-5 text-sm leading-6 text-slate-300 sm:text-base sm:leading-7">
-                    {activeBrand.description}
-                  </p>
-                  <div className="mt-7 space-y-3 text-sm text-slate-300">
-                    <p>Heavy-duty products built for demanding work.</p>
-                    <p>Trusted by maintenance and field crews.</p>
-                    <p>Reliable performance when it matters.</p>
-                  </div>
-                  <span className="mt-8 inline-flex w-fit items-center gap-3 rounded-md bg-[#2879ce] px-5 py-3 text-sm font-semibold text-white transition group-hover:bg-[#3a8fe3]">
-                    View products <span aria-hidden="true">→</span>
+          {/* Auto-rotation pauses while the card is hovered or focused. */}
+          <div
+            onMouseEnter={() => setIsBrandHovered(true)}
+            onMouseLeave={() => setIsBrandHovered(false)}
+            onFocus={() => setIsBrandHovered(true)}
+            onBlur={(event) => {
+              if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+                setIsBrandHovered(false);
+              }
+            }}
+            className="mt-12 overflow-hidden rounded-2xl border border-white/10 bg-[#0f1d3d] shadow-[0_32px_90px_-50px_rgba(0,0,0,0.95)]"
+          >
+            <div aria-hidden="true" className="h-1 bg-[#e5394d]" />
+
+            <div className="grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
+              {/* Product stage */}
+              <div className="relative min-h-[340px] overflow-hidden bg-[radial-gradient(circle_at_50%_55%,#263b73_0%,#16264f_42%,#0c1733_100%)] sm:min-h-[440px] lg:min-h-[580px]">
+                <div
+                  aria-hidden="true"
+                  className="absolute left-1/2 top-[55%] h-[78%] w-auto aspect-square -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/[0.06]"
+                />
+                <div
+                  aria-hidden="true"
+                  className="absolute left-1/2 top-[55%] h-[52%] w-auto aspect-square -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/[0.08]"
+                />
+                <div
+                  aria-hidden="true"
+                  className="absolute bottom-[9%] left-1/2 h-6 w-[45%] -translate-x-1/2 rounded-[50%] bg-black/45 blur-xl"
+                />
+
+                <div className="absolute left-5 top-5 z-10 flex items-center gap-3 sm:left-7 sm:top-7">
+                  <span className="relative flex h-11 w-20 items-center justify-center overflow-hidden rounded-md bg-white shadow-[0_8px_20px_-10px_rgba(0,0,0,0.6)]">
+                    <Image
+                      src={activeBrand.logo}
+                      alt={`${activeBrand.name} logo`}
+                      fill
+                      sizes="80px"
+                      className="object-contain p-1.5"
+                    />
+                  </span>
+                  <span className="rounded-full border border-white/15 bg-white/[0.06] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-200 backdrop-blur-sm">
+                    {activeBrand.category}
                   </span>
                 </div>
-                <div className="absolute inset-y-[18%] right-[3%] z-10 flex w-[36%] items-center justify-center sm:inset-y-[12%] sm:right-[7%] sm:w-[46%]">
+
+                <div key={activeBrand.image} className="brand-swap-image absolute inset-x-8 bottom-[8%] top-[26%] sm:inset-x-14 sm:top-[18%] sm:bottom-[10%]">
                   <Image
-                    key={activeBrand.image}
                     src={activeBrand.image}
-                    alt={`${activeBrand.name} products`}
-                    width={700}
-                    height={700}
-                    className="h-auto max-h-[460px] w-full object-contain transition duration-500 group-hover:scale-[1.04]"
+                    alt={`${activeBrand.name} ${activeBrand.product}`}
+                    fill
+                    sizes="(min-width: 1024px) 50vw, 100vw"
+                    className="object-contain drop-shadow-[0_24px_40px_rgba(0,0,0,0.45)]"
                   />
                 </div>
-                <div className="relative z-10 mt-auto rounded-lg border border-slate-700/80 bg-slate-900/80 px-4 py-4 backdrop-blur-sm">
-                  <span className="text-sm font-semibold text-sky-400">Applications:</span>
-                  <span className="ml-3 text-sm text-slate-300">Mechanical crews&nbsp; • &nbsp;Pipefitters&nbsp; • &nbsp;Maintenance&nbsp; • &nbsp;Repair work</span>
-                </div>
-              </Link>
+              </div>
 
-              <div className="flex flex-col justify-between bg-[#101b25] p-6 sm:p-8 lg:p-9">
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-sky-400">
-                    Browse Brands
-                  </p>
-                  <h3 className="mt-3 text-2xl font-semibold tracking-tight text-white">
-                    Choose a trusted supply line
-                  </h3>
-                </div>
+              {/* Product information */}
+              <div
+                key={activeBrandIndex}
+                className="brand-swap flex flex-col border-t border-white/10 p-7 sm:p-10 lg:border-l lg:border-t-0 lg:p-12"
+              >
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#ff6b7d]">
+                  Featured brand
+                </p>
+                <h3 className="mt-3 text-3xl font-bold tracking-[-0.02em] text-white sm:text-4xl">
+                  {activeBrand.name}
+                </h3>
+                <p className="mt-1.5 text-lg font-medium text-slate-300">{activeBrand.product}</p>
+                <span aria-hidden="true" className="mt-6 h-0.5 w-10 bg-[#e5394d]" />
+                <p className="mt-6 text-base leading-7 text-slate-300">{activeBrand.description}</p>
 
-                <div className="mt-7 grid gap-3 sm:grid-cols-2">
-                  {featuredIndustrialBrands.map((brand, index) => {
-                    const isActive = index === activeBrandIndex;
+                <p className="mt-8 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                  Key features
+                </p>
+                <ul className="mt-4 space-y-3">
+                  {activeBrand.highlights.map((highlight) => (
+                    <li key={highlight} className="flex items-start gap-3 text-sm leading-6 text-slate-200">
+                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#e5394d]/15 text-[#ff6b7d] ring-1 ring-inset ring-[#e5394d]/35">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
+                          <path d="m5 12.5 4.5 4.5L19 7.5" />
+                        </svg>
+                      </span>
+                      {highlight}
+                    </li>
+                  ))}
+                </ul>
 
-                    return (
-                      <button
-                        key={brand.name}
-                        type="button"
-                        onClick={() => setActiveBrandIndex(index)}
-                        className={`group flex min-h-[88px] items-center gap-3 rounded-lg border p-3 text-left transition ${
-                          isActive
-                            ? "border-sky-400 bg-slate-900 shadow-[0_0_24px_-10px_rgba(56,189,248,0.9)]"
-                            : "border-slate-700 bg-slate-900/30 hover:border-slate-500 hover:bg-slate-900/70"
-                        }`}
-                        aria-pressed={isActive}
-                      >
-                        <span className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-md bg-white p-1.5">
-                          <Image
-                            src={brand.logo ?? brand.image}
-                            alt=""
-                            fill
-                            sizes="56px"
-                            className="object-contain p-1.5 transition duration-300 group-hover:scale-105"
-                          />
-                        </span>
-                        <span className="min-w-0 flex-1">
-                          <span className="block text-sm font-semibold text-white">
-                            {brand.name}
-                          </span>
-                          <span className={`mt-1 block text-xs leading-5 ${isActive ? "text-sky-400" : "text-slate-400"}`}>
-                            {isActive ? "Currently featured" : "View spotlight"}
-                          </span>
-                        </span>
-                        <span className="text-base text-slate-300" aria-hidden="true">→</span>
-                      </button>
-                    );
-                  })}
-                </div>
+                <p className="mt-8 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                  Applications
+                </p>
+                <ul className="mt-3 flex flex-wrap gap-2">
+                  {activeBrand.applications.map((application) => (
+                    <li
+                      key={application}
+                      className="rounded-full border border-white/12 bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-slate-200"
+                    >
+                      {application}
+                    </li>
+                  ))}
+                </ul>
 
-                <div className="mt-7 flex items-center justify-between border-t border-slate-700 pt-5">
-                  <div className="flex gap-2">
-                    {featuredIndustrialBrands.map((brand, index) => (
-                      <button
-                        key={`${brand.name}-indicator`}
-                        type="button"
-                        onClick={() => setActiveBrandIndex(index)}
-                        className={`h-2.5 rounded-full transition-all ${
-                          index === activeBrandIndex
-                            ? "w-8 bg-sky-500"
-                            : "w-2.5 bg-slate-600 hover:bg-sky-400"
-                        }`}
-                        aria-label={`Show ${brand.name}`}
-                      />
-                    ))}
-                  </div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                    {activeBrandIndex + 1} / {featuredIndustrialBrands.length}
-                  </p>
+                <div className="mt-auto flex flex-col gap-3 pt-10 sm:flex-row">
+                  <Link href={activeBrand.href} className="btn btn-primary group h-12 px-6 text-sm">
+                    View products
+                    <HeroLineIcon name="arrowRight" className="h-4 w-4 transition group-hover:translate-x-0.5" />
+                  </Link>
+                  <Link href="/contact" className="btn btn-secondary-dark h-12 px-6 text-sm">
+                    Request a quote
+                  </Link>
                 </div>
               </div>
+            </div>
+
+            {/* Brand selector: the single way to switch the featured brand. */}
+            <div
+              ref={brandRailRef}
+              role="group"
+              aria-label="Choose a featured brand"
+              className="grid snap-x auto-cols-[minmax(176px,1fr)] grid-flow-col divide-x divide-white/10 overflow-x-auto border-t border-white/10 bg-[#0b1630]"
+            >
+              {featuredIndustrialBrands.map((brand, index) => {
+                const isActive = index === activeBrandIndex;
+
+                return (
+                  <button
+                    key={`${brand.name}-${brand.product}`}
+                    type="button"
+                    onClick={() => setActiveBrandIndex(index)}
+                    aria-pressed={isActive}
+                    className={`group relative flex snap-start items-center gap-2.5 px-3.5 py-4 text-left transition ${
+                      isActive ? "bg-white/[0.07]" : "hover:bg-white/[0.04]"
+                    }`}
+                  >
+                    <span
+                      aria-hidden="true"
+                      className={`absolute inset-x-0 top-0 h-0.5 overflow-hidden transition ${
+                        isActive ? "bg-white/15" : "bg-transparent group-hover:bg-white/20"
+                      }`}
+                    >
+                      {isActive && (
+                        <span
+                          key={activeBrandIndex}
+                          onAnimationEnd={showNextBrand}
+                          className="brand-progress-fill absolute inset-0 bg-[#e5394d]"
+                          style={
+                            {
+                              "--brand-slide-duration": `${BRAND_SLIDE_DURATION_MS}ms`,
+                              animationPlayState: isBrandRotationPaused ? "paused" : "running",
+                            } as React.CSSProperties
+                          }
+                        />
+                      )}
+                    </span>
+                    <span
+                      className={`relative flex h-10 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md bg-white transition ${
+                        isActive ? "opacity-100" : "opacity-75 group-hover:opacity-100"
+                      }`}
+                    >
+                      <Image src={brand.logo} alt="" fill sizes="48px" className="object-contain p-1" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className={`block truncate text-sm font-semibold ${isActive ? "text-white" : "text-slate-300"}`}>
+                        {brand.shortName ?? brand.name}
+                      </span>
+                      <span className="block truncate text-xs text-slate-400">{brand.category}</span>
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>

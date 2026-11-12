@@ -223,6 +223,52 @@ body {
   }
 }
 
+/* Homepage featured brands: content swap when a brand is selected */
+@keyframes brand-swap {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes brand-swap-image {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.brand-swap {
+  animation: brand-swap 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.brand-swap-image {
+  animation: brand-swap-image 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* The fill finishing is what advances to the next brand (onAnimationEnd in page.tsx). */
+.brand-progress-fill {
+  transform-origin: left;
+  animation: hero-progress var(--brand-slide-duration, 7s) linear both;
+}
+
+/* Reduced motion: no fill animation means no auto-rotation; the active tab just shows a solid bar. */
+@media (prefers-reduced-motion: reduce) {
+  .brand-swap,
+  .brand-swap-image,
+  .brand-progress-fill {
+    animation: none;
+  }
+}
+
 .hero-nav-link[aria-current="page"]::after,
 .hero-nav-link:hover::after,
 .hero-nav-link:focus-visible::after {
